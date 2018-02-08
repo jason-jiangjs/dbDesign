@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <th:block th:replace="/layout/head"></th:block>
+</head>
+
+<body>
+<section style="position: absolute; left: 50%; top: 25%;width:500px;height:300px;margin-left:-250px;">
+    <h2>帐号登录</h2>
+    <div style="margin:20px 0;"></div>
+    <div class="easyui-panel" style="width:100%;max-width:400px;padding:30px 60px;">
+        <form method="post" th:action="@{/doLogin}">
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="username" style="width:100%" data-options="label:'用户名:',required:true">
+            </div>
+            <div style="margin-bottom:20px">
+                <input class="easyui-passwordbox" name="password" style="width:100%" data-options="label:'密码:',required:true">
+            </div>
+            <div style="text-align:center;padding:5px 0">
+                <button type="submit" class="easyui-linkbutton" style="width:80px">登录</button>
+            </div>
+        </form>
+    </div>
+</section>
+</body>
+</html>

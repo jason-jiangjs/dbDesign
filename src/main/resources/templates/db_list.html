@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <th:block th:replace="/layout/head"></th:block>
+</head>
+
+<body>
+<section style="position: absolute; left: 50%; top: 25%;width:500px;height:300px;margin-left:-250px;">
+    <h2>当前数据库表设计一览</h2>
+    <p style="font-size: small">点击一览中的项目后，跳转到编辑画面</p>
+    <div style="margin:20px 0"></div>
+    <ul id="dbList" class="easyui-datalist" lines="true" style="width:100%;height:250px">
+        <li th:each="dbItem : ${dbList}" th:value="${dbItem.id}" th:text="${dbItem.text}"></li>
+    </ul>
+    <div style="margin-top: 5px">
+        <input type="checkbox" id="defaultFlg"><label style="font-size: small">将所选择的数据库设置为默认工作环境，下次再登录时不会出现该一览画面．</label>
+    </div>
+</section>
+<form id="itemForm" method="post" th:action="@{/table_list}">
+    <input type="hidden" id="dbId" name="dbId" />
+    <input type="hidden" id="checkFlg" name="checkFlg" />
+</form>
+<script>
+    $('#dbList').datalist({
+        onClickRow: function (index, row) {
+            $('#dbId').val(row.value);
+            var isChecked = $('#defaultFlg').prop('checked');
+            if (isChecked) {
+                $('#checkFlg').val(1);
+            } else {
+                $('#checkFlg').val(0);
+            }
+            $('#itemForm').submit();
+        }
+    });
+</script>
+</body>
+</html>

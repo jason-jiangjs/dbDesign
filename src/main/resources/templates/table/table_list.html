@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <th:block th:replace="/layout/head"></th:block>
+    <script th:src="@{/js/easyui/datagrid-dnd.js}"></script>
+    <script th:src="@{/js/table_list.js}"></script>
+</head>
+
+<body class="easyui-layout" style="width:100%;height:100%;">
+    <div id="cc" data-options="region:'west',split:true,collapsible:false,tools:'#db-tools'" style="width:200px">
+        <div class="easyui-layout" data-options="fit:true,border:false"><!--/* 这里必须再嵌套一层layout，否则tblList的滚动条不正常 */-->
+            <div data-options="region:'north',border:false">
+                <input id="tbl_searchbox" class="easyui-searchbox" data-options="prompt:'Please Input Value',searcher:doSearch" style="width:100%">
+            </div>
+            <div data-options="region:'center',border:false">
+                <div id="tblList"></div>
+            </div>
+        </div>
+    </div>
+    <div data-options="region:'center',border:false">
+        <div id="tbl-tabs" class="easyui-tabs" data-options="tools:'#tab-tools',fit:true,border:false">
+            <div title="主页" style="padding:10px" data-options="closable: true">
+                <p style="font-size:14px">该内容暂为空。</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-tools"><!--/* 表定义区域的工具栏和弹出菜单 */-->
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-more'" onclick="javascript:popmenu(event,'tab-tools_menu')"></a>
+    </div>
+    <div id="tab-tools_menu" class="easyui-menu" style="width:120px;">
+        <!--<div onclick="javascript:alert('new')">保存当前修改</div>-->
+        <div class="menu-sep"></div>
+        <div data-options="href:'logout'">退出</div>
+    </div>
+
+    <div id="db-tools"><!--/* 表一览区域的工具栏和弹出菜单 */-->
+        <a href="javascript:void(0)" class="icon-filter" onclick="javascript:popmenu(event,'db-tools_menu')"></a>
+    </div>
+    <div id="db-tools_menu" class="easyui-menu" style="width:150px;">
+        <div onclick="javascript:convertType(1)">切换到表一览</div>
+        <div onclick="javascript:convertType(2)">切换到视图一览</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'icon-save'">设置缺省工作环境</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'icon-save'" onclick="javascript:createNewTable()">创建项目</div>
+        <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()">删除当前项目</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'icon-reload'" onclick="javascript:doSearch('',1)">刷新</div>
+        <div class="menu-sep"></div>
+    </div>
+
+    <div id="tb_info" style="display:none">
+        <table style="padding:5px 0px 5px 10px">
+            <tr>
+                <td style="width:80px">表名</td>
+                <td><input class="_tbl_name" style="width:300px"></td>
+                <td rowspan="2" style="width:60px;text-align:right;padding-right:10px;padding-top:6px" valign="top">说明</td>
+                <td rowspan="2"><input class="_tbl_desc" style="width:500px;height:55px"></td>
+            </tr>
+            <tr>
+                <td>表名(中文)</td><td><input class="_tbl_name_cn" style="width:300px"></td>
+            </tr>
+        </table>
+        <input type="hidden" class="_tbl_name_p"><input type="hidden" class="_tbl_desc_p"><input type="hidden" class="_tbl_name_cn_p">
+        <div style="padding:8px 0px 8px 12px;border-top:1px solid #e0e0e0">
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="javascript:addColumn(event)" style="width:90px">添加栏位</a>
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit'" onclick="javascript:insertColumn(event)" style="width:90px;margin-left:10px">插入栏位</a>
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove'" onclick="javascript:delColumn(event)" style="width:90px;margin-left:10px">删除栏位</a>
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-save'" onclick="javascript:saveAll(event)" style="width:80px;margin-left:10px">保存</a>
+        </div>
+    </div>
+
+    <input type="hidden" id="dbn" th:value="${dbName}" />
+    <input type="hidden" id="dbId" th:value="${dbId}" />
+</body>
+</html>
