@@ -4,7 +4,21 @@
 
 // 画面项目初始化
 $(function () {
+    // 设置当前编辑的数据库名
     $('#cc').panel({title: $('#dbn').val()});
+
+    // 创建搜索框
+    $('#tbl_searchbox').textbox({
+        prompt: 'Please Input Value',
+        iconCls: 'icon-search',
+        iconAlign: 'left'
+    });
+    $('#tbl_searchbox').textbox('textbox').bind({
+        keyup: function (e) {
+            doSearch($(this).val(), 0);
+        }
+    });
+
     //$('textarea').each(function () {
     //    this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;overflow-y:hidden;');
     //}).on('input', function () {
@@ -25,7 +39,13 @@ $(function () {
                 _curTblId = tabId;
             }
             // 要同步高亮tblList列表
-            $('#tblList').datalist("selectRecord", tabId);
+            var rowIdx = $('#tblList').datalist("getRowIndex", tabId);
+            if (rowIdx >= 0) {
+                // 有可能指定的表不在一览中（比如检索时）
+                $('#tblList').datalist("selectRecord", tabId);
+            } else {
+                $('#tblList').datalist('unselectAll');
+            }
         }
     });
 
@@ -154,9 +174,6 @@ function popmenu(e, menuKey) {
 function doSearch(value, freshFlg) {
     if (freshFlg == 1) {
         $('#tbl_searchbox').searchbox({ value: '' });
-    }
-    if (freshFlg == undefined && $.trim(value) == '') {
-        return false;
     }
     $('#tblList').datalist('load', {
         dbId: $('#dbId').val(),
@@ -429,7 +446,7 @@ function saveAll(event) {
 }
 
 // 备注一栏的显示形式
-function descformatter(value,row,index) {
+function descformatter(value, row, index) {
     if (row.desc) {
         return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + row.desc + '</div>';
     }

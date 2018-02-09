@@ -9,8 +9,8 @@
 <body class="easyui-layout" style="width:100%;height:100%;">
     <div id="cc" data-options="region:'west',split:true,collapsible:false,tools:'#db-tools'" style="width:200px">
         <div class="easyui-layout" data-options="fit:true,border:false"><!--/* 这里必须再嵌套一层layout，否则tblList的滚动条不正常 */-->
-            <div data-options="region:'north',border:false">
-                <input id="tbl_searchbox" class="easyui-searchbox" data-options="prompt:'Please Input Value',searcher:doSearch" style="width:100%">
+            <div data-options="region:'north',border:false" style="height:27px;">
+                <input id="tbl_searchbox" type="text" style="width:100%">
             </div>
             <div data-options="region:'center',border:false">
                 <div id="tblList"></div>

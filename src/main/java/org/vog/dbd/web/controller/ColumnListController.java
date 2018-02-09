@@ -43,6 +43,15 @@ public class ColumnListController extends BaseController {
     private UpdateHisService updateHisService;
 
     /**
+     * 获取数据类型的定义
+     */
+    @ResponseBody
+    @RequestMapping(value = "/ajax/getColDataType", method = RequestMethod.GET)
+    public String getColDef(@RequestParam Map<String, String> params) {
+        return "[ {\"text\":\"char\"}, {\"text\":\"varchar\"}, {\"text\":\"tinytext\"}, {\"text\":\"text\"}, {\"text\":\"blob\"}, {\"text\":\"mediumtext\"}, {\"text\":\"mediumblob\"}, {\"text\":\"longtext\"}, {\"text\":\"longblob\"}, {\"text\":\"tinyint\"}, {\"text\":\"smallint\"}, {\"text\":\"mediumint\"}, {\"text\":\"int\"}, {\"text\":\"bigint\"}, {\"text\":\"float\"}, {\"text\":\"double\"}, {\"text\":\"decimal\"}, {\"text\":\"date\"}, {\"text\":\"datetime\"}, {\"text\":\"timestamp\"} ]";
+    }
+
+    /**
      * 查询指定表的所有列一览
      */
     @ResponseBody

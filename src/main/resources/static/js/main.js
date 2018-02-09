@@ -49,6 +49,5 @@ function $translate(key) {
             str = str.replace(re, argArr[i]);
         }
         return str;
-    };
+    }
 }
-
