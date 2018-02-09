@@ -96,8 +96,8 @@ public class TableListController extends BaseController {
     public Map<String, Object> getTable(@RequestParam Map<String, String> params) {
         Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
         if (userId == null || userId == 0) {
-            logger.error("客户未登录 sessionid={}", request.getSession().getId());
-            return ApiResponseUtil.error(ErrorCode.S9004, "客户未登录");
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
         }
 
         long tblId = StringUtil.convertToLong(params.get("tblId"));
@@ -155,8 +155,8 @@ public class TableListController extends BaseController {
         CustomerUserDetails userObj = (CustomerUserDetails) ((Authentication) request.getUserPrincipal()).getPrincipal();
         Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
         if (userObj == null || userId == null || userId == 0) {
-            logger.error("客户未登录 sessionid={}", request.getSession().getId());
-            return ApiResponseUtil.error(ErrorCode.S9004, "客户未登录");
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
         }
 
         long tblId = StringUtil.convertToLong(params.get("tblId"));

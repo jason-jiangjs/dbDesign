@@ -59,8 +59,8 @@ public class ColumnListController extends BaseController {
     public Map<String, Object> getColumnList(@RequestParam Map<String, String> params) {
         Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
         if (userId == null || userId == 0) {
-            logger.error("客户未登录 sessionid={}", request.getSession().getId());
-            return ApiResponseUtil.error(ErrorCode.S9004, "客户未登录");
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
         }
 
         long tblId = StringUtil.convertToLong(params.get("tblId"));
@@ -94,8 +94,8 @@ public class ColumnListController extends BaseController {
         Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
         CustomerUserDetails userObj = (CustomerUserDetails) ((Authentication) request.getUserPrincipal()).getPrincipal();
         if (userObj == null || userId == null || userId == 0) {
-            logger.error("客户未登录 sessionid={}", request.getSession().getId());
-            return ApiResponseUtil.error(ErrorCode.S9004, "客户未登录");
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
         }
 
         Long tblId = StringUtil.convertToLong(params.get("_tbl_id")); // tblId < 100视为新增表定义

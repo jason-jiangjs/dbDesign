@@ -72,7 +72,7 @@ public class ErrorCode {
     public static int S9001 = 9001;
 
     /**
-     * 客户未登录/会话过期
+     * 用户未登录/会话过期
      */
     public static int S9004 = 9004;
     /**

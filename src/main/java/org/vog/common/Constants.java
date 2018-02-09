@@ -15,7 +15,7 @@ public class Constants {
     // 存放在session中的密码输错次数的key(登录时)
     public static final String PASSWORD_ERROR_COUNT_KEY = "__password_error_count_key_";
 
-    // 存放在http attribute中表示客户ID的变量名
+    // 存放在http attribute中表示用户ID的变量名
     public static final String KEY_USER_ID = "_CUSTOMER_ID";
     public static final String KEY_CURR_DB_ID = "_CURR_DB_ID";
     public static final String KEY_USER_NAME = "_CUSTOMER_NAME";
