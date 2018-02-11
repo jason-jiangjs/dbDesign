@@ -560,6 +560,7 @@ function descformatter(value, row, index) {
     }
     return '';
 }
+// 说明一栏的显示形式
 function nameformatter(value, row, index) {
     if (row.columnNameCN) {
         return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + row.columnNameCN + '</div>';
