@@ -2,6 +2,7 @@ package org.vog.dbd.dao;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -37,6 +38,7 @@ public class TableDao extends BaseMongoDao {
         queryObj.addCriteria(where("deleteFlg").is(false));
         queryObj.fields().include("tableName");
 
+        queryObj.with(new Sort(Sort.Direction.ASC, "tableName"));
         return mongoTemplate.find(queryObj, BaseMongoMap.class, COLL_NAME);
     }
 
@@ -49,6 +51,7 @@ public class TableDao extends BaseMongoDao {
         queryObj.addCriteria(where("deleteFlg").is(false));
         queryObj.fields().include("tableName");
 
+        queryObj.with(new Sort(Sort.Direction.ASC, "tableName"));
         return mongoTemplate.find(queryObj, BaseMongoMap.class, COLL_NAME);
     }
 

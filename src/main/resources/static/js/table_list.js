@@ -11,7 +11,8 @@ $(function () {
     $('#tbl_searchbox').textbox({
         prompt: 'Please Input Value',
         iconCls: 'icon-search',
-        iconAlign: 'left'
+        iconAlign: 'left',
+        fit: true
     });
     $('#tbl_searchbox').textbox('textbox').bind({
         keyup: function (e) {
@@ -69,11 +70,33 @@ $(function () {
             }
         }
     });
+    $.extend($.fn.datagrid.methods, {
+        editCell: function(jq,param){
+            return jq.each(function(){
+                var opts = $(this).datagrid('options');
+                var fields = $(this).datagrid('getColumnFields',true).concat($(this).datagrid('getColumnFields'));
+                for(var i=0; i<fields.length; i++){
+                    var col = $(this).datagrid('getColumnOption', fields[i]);
+                    col.editor1 = col.editor;
+                    if (fields[i] != param.field){
+                        col.editor = null;
+                    }
+                }
+                $(this).datagrid('beginEdit', param.index);
+                for(var i=0; i<fields.length; i++){
+                    var col = $(this).datagrid('getColumnOption', fields[i]);
+                    col.editor = col.editor1;
+                }
+            });
+        }
+    });
 
     $('#tblList').datalist({
         url: Ap_servletContext + '/ajax/getTableList?dbId=' + $('#dbId').val() + '&targetType=' + $('#targetType').val() + '&_t=' + new Date().getTime(),
         border: false,
         lines: true,
+        fit: true,
+        striped: true,
         valueField: '_id',
         textField: 'tableName',
         idField: '_id',
@@ -130,7 +153,7 @@ function _createNewTab(tblId, tabTitle) {
                 $(prefixId + ' input._tbl_desc_p').val(data.data.tblDesc);
 
                 tabDiv.append($('<div style="height:1px;background:#e0e0e0"></div>'));
-                tabDiv.append($('<table id="col_grid_' + data.data.tblId + '" class="easyui-datagrid" idField="columnId" data-options="fitColumns:true,rownumbers:true,nowrap:false,singleSelect:true,border:false"></table>'));
+                tabDiv.append($('<table id="col_grid_' + data.data.tblId + '" class="easyui-datagrid" idField="columnId" data-options="fitColumns:true,rownumbers:true,nowrap:false,striped:true,singleSelect:true,border:false"></table>'));
 
                 var colHeader = data.data.columns;
                 // 在这里添加列定义的formatter，styler，editor（目前只有这3个）
@@ -138,6 +161,8 @@ function _createNewTab(tblId, tabTitle) {
                 $(colHeader[0]).each(function(index, el) {
                     if (colHeader[0][index].field == 'desc') {
                         colHeader[0][index].formatter = descformatter;
+                    } else if (colHeader[0][index].field == 'columnNameCN') {
+                        colHeader[0][index].formatter = nameformatter;
                     }
                 });
 
@@ -146,12 +171,12 @@ function _createNewTab(tblId, tabTitle) {
                 $("#col_grid_" + data.data.tblId).datagrid({
                     url: Ap_servletContext + '/ajax/getColumnList?tblId=' + tblId + '&_t=' + new Date().getTime(),
                     columns: colHeader,
-                    onDblClickRow: onClickRowBegEdit,
+                    onDblClickCell: onClickRowBegEdit,
                     onLoadSuccess: function () {
                         $(this).datagrid('enableDnd');
                     },
                     onDrop: function (targetRow, sourceRow, point) {
-                        console.log(targetRow + ' ' + sourceRow + " " + point)
+                        isRowEdited = true;
                     }
                 });
 
@@ -218,7 +243,7 @@ function createNewTable(value) {
     $(prefixId + ' input._tbl_desc').textbox({ multiline: true });
 
     tabDiv.append($('<div style="height:1px;background:#e0e0e0"></div>'));
-    tabDiv.append($('<table id="col_grid_' + newTblId + '" class="easyui-datagrid" idField="columnId" data-options="fitColumns:true,rownumbers:true,nowrap:false,singleSelect:true,border:false"></table>'));
+    tabDiv.append($('<table id="col_grid_' + newTblId + '" class="easyui-datagrid" idField="columnId" data-options="fitColumns:true,rownumbers:true,nowrap:false,striped:true,singleSelect:true,border:false"></table>'));
 
     var loadLy = layer.load(1);
     // 查询表定义信息，动态加载列定义
@@ -229,20 +254,31 @@ function createNewTable(value) {
             layer.close(loadLy);
             if (data.code == 0 && data.data) {
                 var colHeader = data.data.columns;
+                var colDef = {};
                 // 在这里添加列定义的formatter，styler，editor（目前只有这3个）
                 // 这里还没有更好的办法直接定位到需要添加属性的所在列，只能循环
                 $(colHeader[0]).each(function(index, el) {
+                    colDef[colHeader[0][index].field] = '';
                     if (colHeader[0][index].field == 'desc') {
                         colHeader[0][index].formatter = descformatter;
+                    } else if (colHeader[0][index].field == 'columnNameCN') {
+                        colHeader[0][index].formatter = nameformatter;
                     }
                 });
 
-                var rows = [{},{},{},{},{},{},{},{},{},{},{}];
+                // 注意这里必须使用不同的colDef，否则所有行都指向同一个colDef值
+                var rows = [colDef,$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef)];
                 // 然后加载列定义
                 $("#col_grid_" + newTblId).datagrid({
                     data: rows,
                     columns: colHeader,
-                    onDblClickRow: onClickRowBegEdit
+                    onDblClickCell: onClickRowBegEdit,
+                    onLoadSuccess: function () {
+                        $(this).datagrid('enableDnd');
+                    },
+                    onDrop: function (targetRow, sourceRow, point) {
+                        isRowEdited = true;
+                    }
                 });
             }
         }
@@ -251,7 +287,42 @@ function createNewTable(value) {
 
 // 删除当前项目
 function delCurrTable() {
-    layer.confirm('确定要删除选定项目？该操作不可恢复，是否确认删除？', { icon: 7,
+    var pTab = $('#tbl-tabs').tabs('getSelected');
+    var tabIdx = $('#tbl-tabs').tabs('getTabIndex', pTab);
+    var tabId = pTab.panel('options').id;
+    if (tabId == 0) { // 如果是主页，直接关闭
+        $('#tbl-tabs').tabs('close', tabIdx);
+    }
+
+    if (tabId < 100 ) {
+        // 新建的项目，直接关闭当前tab
+        // 还要确认一下是否有填写了内容
+        layer.confirm('确定要删除当前新建项目？<br>该操作不可恢复，已经填写的内容不会保存，是否确认删除？', { icon: 7,
+            btn: ['确定','取消'] //按钮
+        }, function(index) {
+            layer.close(index);
+            $('#tbl-tabs').tabs('close', tabIdx);
+        }, function() {
+            // 无操作
+        });
+        return;
+    }
+
+    // 先简单验证tab栏和tablelist中的表明是否一致
+    var tblName = pTab.panel('options').title;
+    var pTblItem = $('#tblList').datalist("getSelected");
+    if (pTblItem == null || pTblItem == undefined) {
+        // 可以删除
+    } else if (pTblItem._id != undefined && pTblItem.tableName != undefined && tabId == pTblItem._id && pTblItem.tableName == tblName) {
+        // 可以删除
+    } else {
+        // 数据不一致
+        layer.msg("当前选择的数据出错了，不能删除。<br>请联系管理员。");
+        console.log('tab栏和tablelist中所选数据不一致:', pTblItem, tabId, tblName);
+        return;
+    }
+
+    layer.confirm('确定要删除选定项目: ' + tblName + '？<br>该操作不可恢复，是否确认删除？', { icon: 7,
         btn: ['确定','取消'] //按钮
     }, function(index) {
         layer.close(index);
@@ -301,32 +372,38 @@ function _getCurTabId() {
 // 当前所查看的表id（点击左边表一栏时会刷新，tab切换时会刷新）
 var _curTblId = null;
 
+var editIndex = undefined;
 var isRowEdited = false;
 // 双击表格行，开始编辑，只允许一行一行编辑
-function onClickRowBegEdit(index, rowVal) {
+function onClickRowBegEdit(index,　field,　value) {
     if (_curTblId == undefined || _curTblId == null || _curTblId == '') {
         return false;
     }
     isRowEdited = true;
-    if (editIndex != index) {
+
         if (endEditing()) {
-            $('#col_grid_' + _curTblId).datagrid('selectRow', index).datagrid('beginEdit', index);
+            $('#col_grid_' + _curTblId).datagrid('selectRow', index).datagrid('editCell', { index: index, field: field });
+            var ed = $('#col_grid_' + _curTblId).datagrid('getEditor', { index: index, field: field });
+            if (ed && ed.target) {
+                if (field == 'desc') {
+                    $(ed.target).focus();
+                } else {
+                    if ($(ed.target).closest('td').find("input.textbox-text")[0]) {
+                        $(ed.target).closest('td').find("input.textbox-text")[0].focus();
+                    }
+                }
+            }
+            //$(ed.target).focus();
             editIndex = index;
-        } else {
-            $('#col_grid_' + _curTblId).datagrid('selectRow', editIndex);
         }
-    }
+
 }
 
-var editIndex = undefined;
 function endEditing() {
     if (editIndex == undefined) {
         return true
     }
     if ($('#col_grid_' + _curTblId).datagrid('validateRow', editIndex)) {
-        //var ed = $('#col_grid_' + _curTblId).datagrid('getEditor', {index: editIndex, field: 'productid'});
-        //var productname = $(ed.target).combobox('getText');
-        //$('#col_grid_' + _curTblId).datagrid('getRows')[editIndex]['productname'] = productname;
         $('#col_grid_' + _curTblId).datagrid('endEdit', editIndex);
         editIndex = undefined;
         return true;
@@ -411,6 +488,37 @@ function saveAll(event) {
     $('#col_grid_' + _curTblId).datagrid('acceptChanges');
     postData.column_list = $('#col_grid_' + _curTblId).datagrid('getRows');
 
+    // 对输入值简单验证，新建表时表名重复，列名重复，缺少类型
+    var duplicate = false;
+    if (_curTblId < 100) {
+        var rowData = $('#tblList').datalist('getRows');
+        for (x in rowData) {
+            if (rowData[x].tableName == tName) {
+                duplicate = true;
+                break;
+            }
+        }
+        if (duplicate) {
+            layer.msg("表名: " + tName + " 与现有的重复，请修改后再保存。");
+            return;
+        }
+    }
+
+    if (postData.column_list.length != undefined && postData.column_list.length > 0) {
+        var colNmArr = [];
+        for (x in postData.column_list) {
+            var colNm = $.trim(postData.column_list[x].columnName);
+            if (colNm == '') {
+                continue;
+            }
+            if (colNmArr.indexOf(colNm) >= 0) {
+                layer.msg("列名: " + colNm + " 与现有的重复，请修改后再保存。");
+                return;
+            }
+            colNmArr.push(colNm);
+        }
+    }
+
     var loadLy = layer.load(1);
     $.ajax({
         type: 'post',
@@ -449,6 +557,12 @@ function saveAll(event) {
 function descformatter(value, row, index) {
     if (row.desc) {
         return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + row.desc + '</div>';
+    }
+    return '';
+}
+function nameformatter(value, row, index) {
+    if (row.columnNameCN) {
+        return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + row.columnNameCN + '</div>';
     }
     return '';
 }
