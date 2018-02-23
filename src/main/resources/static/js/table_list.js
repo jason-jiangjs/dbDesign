@@ -131,19 +131,41 @@ function _createNewTab(tblId, tabTitle) {
             layer.close(loadLy);
             if (data.code == 0 && data.data) {
                 // 先动态创建tab
-                var prefixId = 'tbltab_' + data.data.tblId;
                 $('#tbl-tabs').tabs('add', {
                     id: data.data.tblId,  // tab页的id默认是当前表的id(从数据库而来的)
                     title: data.data.tblName,
-                    content: '<div id="' + prefixId + '" data-tblidx="' + data.data.tblId + '"></div>',
+                    content: '<div id="tabDiv_' + tblId + '" class="easyui-layout" fit="true"></div>',
                     closable: true
                 });
+
+                // 动态创建layout
+                $('#tabDiv_' + tblId).layout();
+                $('#tabDiv_' + tblId).layout('add',{
+                    region: 'north',
+                    height: '112px',
+                    border: false,
+                    content: $($('#tb_info').html())
+                });
+                $('#tabDiv_' + tblId).layout('add',{
+                    region: 'center',
+                    border: false,
+                    content: '<table id="col_grid_' + tblId + '"></table>'
+                });
+
                 // 然后加载tab内容
-                prefixId = "#" + prefixId;
-                var tabDiv = $(prefixId);
-                tabDiv.append($('#tb_info').html());
-                // 修改输入框字体颜色
-                $("div" + prefixId + ' table td span .textbox-text').removeClass("textbox-prompt");
+                var prefixId = "#" + tblId;
+                $(prefixId + ' a._linkbtn_add').linkbutton({
+                    iconCls: 'icon-add'
+                });
+                $(prefixId + ' a._linkbtn_edit').linkbutton({
+                    iconCls: 'icon-edit'
+                });
+                $(prefixId + ' a._linkbtn_remove').linkbutton({
+                    iconCls: 'icon-remove'
+                });
+                $(prefixId + ' a._linkbtn_save').linkbutton({
+                    iconCls: 'icon-save'
+                });
 
                 $(prefixId + ' input._tbl_name').textbox({ value: data.data.tblName });
                 $(prefixId + ' input._tbl_name_cn').textbox({ value: data.data.tblNameCn });
@@ -151,9 +173,6 @@ function _createNewTab(tblId, tabTitle) {
                 $(prefixId + ' input._tbl_name_p').val(data.data.tblName);
                 $(prefixId + ' input._tbl_name_cn_p').val(data.data.tblNameCn);
                 $(prefixId + ' input._tbl_desc_p').val(data.data.tblDesc);
-
-                tabDiv.append($('<div style="height:1px;background:#e0e0e0"></div>'));
-                tabDiv.append($('<table id="col_grid_' + data.data.tblId + '" class="easyui-datagrid" idField="columnId" data-options="fitColumns:true,rownumbers:true,nowrap:false,striped:true,singleSelect:true,border:false"></table>'));
 
                 var colHeader = data.data.columns;
                 // 在这里添加列定义的formatter，styler，editor（目前只有这3个）
@@ -163,12 +182,21 @@ function _createNewTab(tblId, tabTitle) {
                         colHeader[0][index].formatter = descformatter;
                     } else if (colHeader[0][index].field == 'columnNameCN') {
                         colHeader[0][index].formatter = nameformatter;
+                    } else if (colHeader[0][index].field == 'columnName' && $.trim($('#dbType').val()) == 2) {
+                        colHeader[0][index].formatter = nameDspformatter;
                     }
                 });
 
                 // 然后加载列定义
-                //$("#col_grid_" + data.data.tblId).datagrid("loadData", data.data.gridData);
-                $("#col_grid_" + data.data.tblId).datagrid({
+                $('#col_grid_' + tblId).datagrid({
+                    idField: "columnId",
+                    fit: true,
+                    fitColumns: true,
+                    rownumbers: true,
+                    nowrap: false,
+                    striped: true,
+                    singleSelect: true,
+                    border: false,
                     url: Ap_servletContext + '/ajax/getColumnList?tblId=' + tblId + '&_t=' + new Date().getTime(),
                     columns: colHeader,
                     onDblClickCell: onClickRowBegEdit,
@@ -181,7 +209,7 @@ function _createNewTab(tblId, tabTitle) {
                 });
 
             } else {
-                layer.msg(data.msg);
+                layer.msg(data.msg + ' (code=' + data.code + ")");
             }
         }
     });
@@ -224,32 +252,53 @@ function createNewTable(value) {
     }
     newTblId ++;
     _curTblId = newTblId;
-    var prefixId = 'tbltab_' + newTblId;
+    var prefixId = 'tabDiv_' + newTblId;
     $('#tbl-tabs').tabs('add', {
         id: newTblId,
         title: "新建表",
-        content: '<div id="' + prefixId + '" data-tblidx="' + newTblId + '"></div>',
+        content: '<div id="' + prefixId + '" class="easyui-layout" fit="true"></div>',
         closable: true
     });
+
+    prefixId = '#' + prefixId;
+    // 动态创建layout
+    $(prefixId).layout();
+    $(prefixId).layout('add',{
+        region: 'north',
+        height: '112px',
+        border: false,
+        content: $($('#tb_info').html())
+    });
+    $(prefixId).layout('add',{
+        region: 'center',
+        border: false,
+        content: '<table id="col_grid_' + newTblId + '"></table>'
+    });
+
     // 然后加载tab内容
-    prefixId = "#" + prefixId;
-    var tabDiv = $(prefixId);
-    tabDiv.append($('#tb_info').html());
-    // 修改输入框字体颜色
-    $("div" + prefixId + ' table td span .textbox-text').removeClass("textbox-prompt");
+    prefixId = "#" + newTblId;
+    $(prefixId + ' a._linkbtn_add').linkbutton({
+        iconCls: 'icon-add'
+    });
+    $(prefixId + ' a._linkbtn_edit').linkbutton({
+        iconCls: 'icon-edit'
+    });
+    $(prefixId + ' a._linkbtn_remove').linkbutton({
+        iconCls: 'icon-remove'
+    });
+    $(prefixId + ' a._linkbtn_save').linkbutton({
+        iconCls: 'icon-save'
+    });
 
     $(prefixId + ' input._tbl_name').textbox();
     $(prefixId + ' input._tbl_name_cn').textbox();
     $(prefixId + ' input._tbl_desc').textbox({ multiline: true });
 
-    tabDiv.append($('<div style="height:1px;background:#e0e0e0"></div>'));
-    tabDiv.append($('<table id="col_grid_' + newTblId + '" class="easyui-datagrid" idField="columnId" data-options="fitColumns:true,rownumbers:true,nowrap:false,striped:true,singleSelect:true,border:false"></table>'));
-
     var loadLy = layer.load(1);
     // 查询表定义信息，动态加载列定义
     $.ajax({
         type: 'get',
-        url: Ap_servletContext + '/ajax/getColDef?_t=' + new Date().getTime(),
+        url: Ap_servletContext + '/ajax/getColDef?type=' + $.trim($('#dbType').val()) + '&_t=' + new Date().getTime(),
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0 && data.data) {
@@ -263,6 +312,8 @@ function createNewTable(value) {
                         colHeader[0][index].formatter = descformatter;
                     } else if (colHeader[0][index].field == 'columnNameCN') {
                         colHeader[0][index].formatter = nameformatter;
+                    } else if (colHeader[0][index].field == 'columnName' && $.trim($('#dbType').val()) == 2) {
+                        colHeader[0][index].formatter = nameDspformatter;
                     }
                 });
 
@@ -270,6 +321,14 @@ function createNewTable(value) {
                 var rows = [colDef,$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef)];
                 // 然后加载列定义
                 $("#col_grid_" + newTblId).datagrid({
+                    idField: "columnId",
+                    fit: true,
+                    fitColumns: true,
+                    rownumbers: true,
+                    nowrap: false,
+                    striped: true,
+                    singleSelect: true,
+                    border: false,
                     data: rows,
                     columns: colHeader,
                     onDblClickCell: onClickRowBegEdit,
@@ -280,6 +339,8 @@ function createNewTable(value) {
                         isRowEdited = true;
                     }
                 });
+            } else {
+                layer.msg(data.msg + ' (code=' + data.code + ")");
             }
         }
     });
@@ -354,19 +415,14 @@ function delCurrTable() {
                     });
                     $('#tblList').datalist("load", {});
                     layer.close(loadLy);
+                } else {
+                    layer.msg(data.msg + ' (code=' + data.code + ")");
                 }
             }
         });
     }, function() {
         // 无操作
     });
-}
-
-// 取得当前tab框的id(实际也是当前datagrid的id)
-// 小于100视为新建
-function _getCurTabId() {
-    // 要区分新增还是编辑, 用于jquery选择对象
-    return;
 }
 
 // 当前所查看的表id（点击左边表一栏时会刷新，tab切换时会刷新）
@@ -414,17 +470,13 @@ function endEditing() {
 
 // 添加栏位
 function addColumn() {
-    var pp = $('#tbl-tabs').tabs('getSelected');
-    var tabId = pp.panel('options').id;
-    var prefixId = '#col_grid_' + tabId;
+    var prefixId = '#col_grid_' + _curTblId;
     $(prefixId).datagrid('appendRow', { default: "" });
 }
 
 // 插入栏位
 function insertColumn() {
-    var pp = $('#tbl-tabs').tabs('getSelected');
-    var tabId = pp.panel('options').id;
-    var prefixId = '#col_grid_' + tabId;
+    var prefixId = '#col_grid_' + _curTblId;
     var s1 = $(prefixId).datagrid('getSelected');
     var s2 = $(prefixId).datagrid('getRowIndex', s1.columnId);
     if (s2 == -1) {
@@ -445,9 +497,7 @@ function delColumn() {
         btn: ['确定','取消'] //按钮
     }, function(index) {
         layer.close(index);
-        var pp = $('#tbl-tabs').tabs('getSelected');
-        var tabId = pp.panel('options').id;
-        var prefixId = '#col_grid_' + tabId;
+        var prefixId = '#col_grid_' + _curTblId;
         var s1 = $(prefixId).datagrid('getSelected');
         var s2 = $(prefixId).datagrid('getRowIndex', s1.columnId);
         if (s2 >= 0) {
@@ -462,12 +512,9 @@ function delColumn() {
 
 // 保存所有修改内容
 // 前端不详细判断确实是有内容修改，直接把所有数据提交到后台，由后台负责处理
-function saveAll(event) {
-    var $this = $(event.target);
+function saveAll() {
     // 要先定位到当前tab
-    var pp = $('#tbl-tabs').tabs('getSelected');
-    var tabId = pp.panel('options').id;
-    var prefixId = '#tbltab_' + tabId;
+    var prefixId = '#' + _curTblId;
     var tName = $.trim($(prefixId + ' input._tbl_name').textbox('getValue'));
     var tNameCn = $.trim($(prefixId + ' input._tbl_name_cn').textbox('getValue'));
     var tDesc = $.trim($(prefixId + ' input._tbl_desc').textbox('getValue'));
@@ -480,6 +527,7 @@ function saveAll(event) {
     }
 
     var postData = {};
+    postData.dbId = $.trim($('#dbId').val());
     postData._tbl_id = _curTblId;
     postData._tbl_name = tName;
     postData._tbl_name_cn = tNameCn;
@@ -504,7 +552,7 @@ function saveAll(event) {
         }
     }
 
-    if (postData.column_list.length != undefined && postData.column_list.length > 0) {
+    if (postData.column_list.length != undefined && postData.column_list.length > 0 && $.trim($('#dbType').val()) != 2) {
         var colNmArr = [];
         for (x in postData.column_list) {
             var colNm = $.trim(postData.column_list[x].columnName);
@@ -534,7 +582,7 @@ function saveAll(event) {
                     loadLy = layer.load(1);
                     // 刷新当前tab（经试验，只能关闭当前tab,再打开新的tab）
                     var _newTblId = data.data._newTblId;
-                    var tabIdx = $('#tbl-tabs').tabs('getTabIndex', pp);
+                    var tabIdx = $('#tbl-tabs').tabs('getTabIndex', $('#tbl-tabs').tabs('getSelected'));
                     $('#tbl-tabs').tabs('close', tabIdx);
                     _createNewTab(_newTblId, tName);
 
@@ -564,6 +612,22 @@ function descformatter(value, row, index) {
 function nameformatter(value, row, index) {
     if (row.columnNameCN) {
         return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + row.columnNameCN + '</div>';
+    }
+    return '';
+}
+
+function nameDspformatter(value, row, index) {
+    if (row.columnName) {
+        var txt = '';
+        var prex = row.columnName.lastIndexOf(" ") + 1;
+        if (row.type == 'object') {
+            txt = row.columnName.substring(0, prex) + '+&nbsp;' + row.columnName.substring(prex);
+        } else if (row.type == 'array') {
+            txt = row.columnName.substring(0, prex) + '*&nbsp;' + row.columnName.substring(prex);
+        } else {
+            txt = '&nbsp;&nbsp;' + row.columnName;
+        }
+        return '<span style="font-family:Consolas;font-size:14px">' + txt.replace(/ /g, "&nbsp;") + '</span>';
     }
     return '';
 }

@@ -48,6 +48,8 @@
         <div class="menu-sep"></div>
         <div data-options="iconCls:'icon-reload'" onclick="javascript:doSearch('',1)">刷新</div>
         <div class="menu-sep"></div>
+        <div data-options="iconCls:'icon-back'" th:href="@{/home}">返回选择数据库</div>
+        <div class="menu-sep"></div>
     </div>
 
     <div id="tb_info" style="display:none">
@@ -63,15 +65,16 @@
             </tr>
         </table>
         <input type="hidden" class="_tbl_name_p"><input type="hidden" class="_tbl_desc_p"><input type="hidden" class="_tbl_name_cn_p">
-        <div style="padding:8px 0px 8px 12px;border-top:1px solid #e0e0e0">
-            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="javascript:addColumn(event)" style="width:90px">添加栏位</a>
-            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit'" onclick="javascript:insertColumn(event)" style="width:90px;margin-left:10px">插入栏位</a>
-            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove'" onclick="javascript:delColumn(event)" style="width:90px;margin-left:10px">删除栏位</a>
-            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-save'" onclick="javascript:saveAll(event)" style="width:80px;margin-left:10px">保存</a>
+        <div style="padding:7px 0px 0px 12px;border-top:1px solid #e0e0e0">
+            <a href="#" class="_linkbtn_add" onclick="javascript:addColumn()" style="width:90px">添加栏位</a>
+            <a href="#" class="_linkbtn_edit" onclick="javascript:insertColumn()" style="width:90px;margin-left:10px">插入栏位</a>
+            <a href="#" class="_linkbtn_remove" onclick="javascript:delColumn()" style="width:90px;margin-left:10px">删除栏位</a>
+            <a href="#" class="_linkbtn_save" onclick="javascript:saveAll()" style="width:80px;margin-left:10px">保存</a>
         </div>
     </div>
 
     <input type="hidden" id="dbn" th:value="${dbName}" />
     <input type="hidden" id="dbId" th:value="${dbId}" />
+    <input type="hidden" id="dbType" th:value="${dbType}" />
 </body>
 </html>

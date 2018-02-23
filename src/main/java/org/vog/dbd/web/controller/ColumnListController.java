@@ -48,7 +48,16 @@ public class ColumnListController extends BaseController {
     @ResponseBody
     @RequestMapping(value = "/ajax/getColDataType", method = RequestMethod.GET)
     public String getColDef(@RequestParam Map<String, String> params) {
-        return "[ {\"text\":\"char\"}, {\"text\":\"varchar\"}, {\"text\":\"tinytext\"}, {\"text\":\"text\"}, {\"text\":\"blob\"}, {\"text\":\"mediumtext\"}, {\"text\":\"mediumblob\"}, {\"text\":\"longtext\"}, {\"text\":\"longblob\"}, {\"text\":\"tinyint\"}, {\"text\":\"smallint\"}, {\"text\":\"mediumint\"}, {\"text\":\"int\"}, {\"text\":\"bigint\"}, {\"text\":\"float\"}, {\"text\":\"double\"}, {\"text\":\"decimal\"}, {\"text\":\"date\"}, {\"text\":\"datetime\"}, {\"text\":\"timestamp\"} ]";
+        int dbType = StringUtil.convertToInt(params.get("dbType"));
+        if (dbType == 1) {
+            return "[ {\"text\":\"char\"}, {\"text\":\"varchar\"}, {\"text\":\"tinytext\"}, {\"text\":\"text\"}, {\"text\":\"blob\"}, {\"text\":\"mediumtext\"}, {\"text\":\"mediumblob\"}, {\"text\":\"longtext\"}, {\"text\":\"longblob\"}, {\"text\":\"tinyint\"}, {\"text\":\"smallint\"}, {\"text\":\"mediumint\"}, {\"text\":\"int\"}, {\"text\":\"bigint\"}, {\"text\":\"float\"}, {\"text\":\"double\"}, {\"text\":\"decimal\"}, {\"text\":\"date\"}, {\"text\":\"datetime\"}, {\"text\":\"timestamp\"} ]";
+        } else if (dbType == 2) {
+            return "[{\"text\":\"objectId\"},{\"text\":\"bool\"},{\"text\":\"int\"},{\"text\":\"long\"},{\"text\":\"double\"},{\"text\":\"decimal\"},{\"text\":\"string\"},{\"text\":\"object\"},{\"text\":\"array\"},{\"text\":\"binData\"},{\"text\":\"date\"},{\"text\":\"timestamp\"},{\"text\":\"regex\"}]";
+        } else if (dbType == 3) {
+            return "[{\"text\":\"ancestor_path\"}, {\"text\":\"descendent_path\"}, {\"text\":\"binary\"}, {\"text\":\"boolean\"}, {\"text\":\"booleans\"}, {\"text\":\"currency\"}, {\"text\":\"date\"}, {\"text\":\"dates\"}, {\"text\":\"double\"}, {\"text\":\"doubles\"}, {\"text\":\"float\"}, {\"text\":\"floats\"}, {\"text\":\"ignored\"}, {\"text\":\"int\"}, {\"text\":\"ints\"}, {\"text\":\"location\"}, {\"text\":\"location_rpt\"}, {\"text\":\"long\"}, {\"text\":\"longs\"}, {\"text\":\"lowercase\"}, {\"text\":\"phonetic_en\"}, {\"text\":\"point\"}, {\"text\":\"random\"}, {\"text\":\"string\"}, {\"text\":\"strings\"}, {\"text\":\"tdate\"}, {\"text\":\"tdates\"}, {\"text\":\"tint\"}, {\"text\":\"tints\"}, {\"text\":\"tlong\"}, {\"text\":\"tlongs\"}, {\"text\":\"tfloat\"}, {\"text\":\"tfloats\"}, {\"text\":\"tdouble\"}, {\"text\":\"tdoubles\"}, {\"text\":\"text_cjk\"}, {\"text\":\"text_en\"}, {\"text\":\"text_en_splitting\"}, {\"text\":\"text_en_splitting_tight\"}, {\"text\":\"text_general\"}, {\"text\":\"text_general_rev\"}, {\"text\":\"text_ws\"}, {\"text\":\"textComplex\"}, {\"text\":\"textMaxWord\"}, {\"text\":\"textSimple\"}, {\"text\":\"text_ik\"}]";
+        } else {
+            return "[]";
+        }
     }
 
     /**
@@ -98,10 +107,15 @@ public class ColumnListController extends BaseController {
             return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
         }
 
+        Long dbId = StringUtil.convertToLong(params.get("dbId"));
+        if (dbId == 0) {
+            logger.warn("saveColDefine 缺少参数dbId");
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数dbId");
+        }
         Long tblId = StringUtil.convertToLong(params.get("_tbl_id")); // tblId < 100视为新增表定义
         if (tblId == 0) {
             logger.warn("saveColDefine 缺少参数_tbl_id");
-            return ApiResponseUtil.error(ErrorCode.E5001, "缺少参数_tbl_id");
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数_tbl_id");
         }
 
         String tblName = StringUtils.trimToNull((String) params.get("_tbl_name"));
@@ -137,7 +151,7 @@ public class ColumnListController extends BaseController {
             tblId = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_TABLE_ID);
             tblData.put("_id", tblId);
             retData.put("_newTblId", tblId);
-            tblData.put("dbId", (Long) userObj.getContextAttr(Constants.KEY_CURR_DB_ID));
+            tblData.put("dbId", dbId);
             tblData.put("deleteFlg", false);
             tblData.put("type", 1); // 此值要根据数据库类型来定
             tblData.put("creator", userId);
@@ -173,7 +187,7 @@ public class ColumnListController extends BaseController {
 
         tblData.put("column_list", colDataList);
         tableService.saveTblDefInfo(tblId, tblData);
-        updateHisService.saveUpdateHis(userObj, dbMap, params);
+        updateHisService.saveUpdateHis(userObj, dbId, dbMap, params);
         return ApiResponseUtil.success(retData);
     }
 

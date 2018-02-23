@@ -9,7 +9,7 @@ $(function () {
             if (xhr.responseText && status == 'error') {
                 var errObj = JSON.parse(xhr.responseText);
                 if (errObj.status == 408) {
-                    window.location = "/index";
+                    window.location = Ap_servletContext + "/index";
                 }
             }
         }

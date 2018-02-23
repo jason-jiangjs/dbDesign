@@ -28,7 +28,7 @@ public abstract class BaseController {
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
     public Map<String, Object> jsonHandler(HttpServletRequest request, Exception e) {
-        logger.error("未知错误 path={} msg={}", request.getServletPath(), e.getMessage());
+        logger.error("未知错误 path={} msg={}", request.getServletPath(), e.getMessage(), e);
         return ApiResponseUtil.error(ErrorCode.S9001, "未知错误 msg={}", e.getMessage());
     }
 

@@ -58,7 +58,6 @@ public class TableListController extends BaseController {
             userService.setUserFavorite(userObj.getId(), dbId);
         }
 
-        userObj.putContext(Constants.KEY_CURR_DB_ID, dbId);
         ModelAndView model = new ModelAndView();
         model.setViewName("table/table_list");
 
@@ -68,6 +67,11 @@ public class TableListController extends BaseController {
             model.addObject("dbId", 0);
         } else {
             model.addObject("dbId", dbId);
+            int dbType = dbMap.getIntAttribute("type");
+            if (dbType == 0) {
+                logger.warn("getColumnList 未设置数据库类型 id={}", dbId);
+            }
+            model.addObject("dbType", dbType);
             model.addObject("dbName", dbMap.getStringAttribute("dbName"));
         }
         return model;
@@ -117,6 +121,7 @@ public class TableListController extends BaseController {
             logger.warn("getColumnList 表不存在 tblId={}, userId={}", tblId, userId);
             return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={} tblName={}", tblId, tblName);
         }
+        Long dbId = dbMap.getLongAttribute("dbId");
 
         Map<String, Object> data = new HashMap<>();
         data.put("tblId", tblId);
@@ -126,7 +131,7 @@ public class TableListController extends BaseController {
 
         // 列的表头定义
         List<List<Map<String, Object>>> columnsList = new ArrayList<>(1);
-        columnsList.add(tableService.getColDefineByType(1));
+        columnsList.add(tableService.getColDefineByType(tableService.getDbTypeById(dbId)));
         data.put("columns", columnsList);
         return ApiResponseUtil.success(data);
     }
@@ -141,7 +146,7 @@ public class TableListController extends BaseController {
 
         // 列的表头定义
         List<List<Map<String, Object>>> columnsList = new ArrayList<>(1);
-        columnsList.add(tableService.getColDefineByType(1));
+        columnsList.add(tableService.getColDefineByType(StringUtil.convertToInt(params.get("type"))));
         data.put("columns", columnsList);
         return ApiResponseUtil.success(data);
     }
@@ -173,7 +178,7 @@ public class TableListController extends BaseController {
         }
 
         tableService.delTableById(tblId);
-        updateHisService.saveUpdateHis(userObj, dbMap, null);
+        updateHisService.saveUpdateHis(userObj, dbMap.getLongAttribute("dbId"), dbMap, null);
         return ApiResponseUtil.success();
     }
 }

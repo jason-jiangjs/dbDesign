@@ -3,7 +3,6 @@ package org.vog.dbd.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
-import org.vog.common.Constants;
 import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.JacksonUtil;
 import org.vog.dbd.dao.UpdateHisDao;
@@ -22,9 +21,9 @@ public class UpdateHisService {
     /**
      * 保存操作历史
      */
-    public void saveUpdateHis(CustomerUserDetails userObj, BaseMongoMap infoMap, Map<String, Object> params) {
+    public void saveUpdateHis(CustomerUserDetails userObj, long dbId, BaseMongoMap infoMap, Map<String, Object> params) {
         Map<String, Object> data = new HashMap<>();
-        data.put("dbId", userObj.getContextAttr(Constants.KEY_CURR_DB_ID));
+        data.put("dbId", dbId);
         int hisType = 0;
         if (infoMap == null) {
             // 新增

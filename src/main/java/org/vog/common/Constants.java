@@ -17,7 +17,6 @@ public class Constants {
 
     // 存放在http attribute中表示用户ID的变量名
     public static final String KEY_USER_ID = "_CUSTOMER_ID";
-    public static final String KEY_CURR_DB_ID = "_CURR_DB_ID";
     public static final String KEY_USER_NAME = "_CUSTOMER_NAME";
 
 

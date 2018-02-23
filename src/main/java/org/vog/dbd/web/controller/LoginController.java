@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.vog.base.controller.BaseController;
 import org.vog.base.model.mongo.BaseMongoMap;
-import org.vog.common.Constants;
 import org.vog.dbd.service.TableService;
 import org.vog.dbd.web.login.CustomerUserDetails;
 
@@ -31,7 +30,6 @@ public class LoginController extends BaseController {
         CustomerUserDetails userObj = (CustomerUserDetails) ((Authentication) request.getUserPrincipal()).getPrincipal();
         Long dbId = userObj.getFavorite();
         if (dbId != null && dbId != 0) {
-            userObj.putContext(Constants.KEY_CURR_DB_ID, dbId);
             model.setViewName("table/table_list");
 
             BaseMongoMap dbMap = tableService.findDbById(dbId);

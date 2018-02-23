@@ -35,6 +35,18 @@ public class TableService extends BaseService {
     }
 
     /**
+     * 查询指定数据库
+     */
+    public int getDbTypeById(long dbId) {
+        BaseMongoMap dbObj = dbDao.findDbById(dbId);
+        int dbType = dbObj.getIntAttribute("type");
+        if (dbType == 0) {
+            logger.warn("未设置数据库类型 id={}", dbId);
+        }
+        return dbType;
+    }
+
+    /**
      * 查询数据库的表一览
      */
     public List<Map<String, Object>> findDbList() {
@@ -51,6 +63,10 @@ public class TableService extends BaseService {
             String cnName = StringUtils.trimToNull(item.getStringAttribute("dbNameCN"));
             if (cnName != null) {
                 dbTxt = dbTxt + "  =>  " + cnName;
+            }
+            String dbVerStr = StringUtils.trimToNull(item.getStringAttribute("typeStr"));
+            if (dbVerStr != null) {
+                dbTxt = dbTxt + " (" + dbVerStr + ")";
             }
             dataMap.put("text", dbTxt);
             dataList.add(dataMap);
