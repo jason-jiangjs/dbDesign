@@ -38,6 +38,7 @@ public class UserDao extends BaseMongoDao {
         queryObj.fields().include("userName");
         queryObj.fields().include("password");
         queryObj.fields().include("favorite");
+        queryObj.fields().include("role");
 
         return mongoTemplate.findOne(queryObj, BaseMongoMap.class, COLL_NAME);
     }

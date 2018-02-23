@@ -38,14 +38,14 @@
         <a href="javascript:void(0)" class="icon-filter" onclick="javascript:popmenu(event,'db-tools_menu')"></a>
     </div>
     <div id="db-tools_menu" class="easyui-menu" style="width:150px;">
-        <div onclick="javascript:convertType(1)">切换到表一览</div>
-        <div onclick="javascript:convertType(2)">切换到视图一览</div>
-        <div class="menu-sep"></div>
+        <div onclick="javascript:convertType(1)" th:if="${dbType==1}">切换到表一览</div>
+        <div onclick="javascript:convertType(2)" th:if="${dbType==1}">切换到视图一览</div>
+        <div class="menu-sep" th:if="${dbType==1}"></div>
         <div data-options="iconCls:'icon-save'">设置缺省工作环境</div>
         <div class="menu-sep"></div>
-        <div data-options="iconCls:'icon-save'" onclick="javascript:createNewTable()">创建项目</div>
-        <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()">删除当前项目</div>
-        <div class="menu-sep"></div>
+        <div data-options="iconCls:'icon-save'" onclick="javascript:createNewTable()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">创建项目</div>
+        <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">删除当前项目</div>
+        <div class="menu-sep" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')"></div>
         <div data-options="iconCls:'icon-reload'" onclick="javascript:doSearch('',1)">刷新</div>
         <div class="menu-sep"></div>
         <div data-options="iconCls:'icon-back'" th:href="@{/home}">返回选择数据库</div>
@@ -53,7 +53,7 @@
     </div>
 
     <div id="tb_info" style="display:none">
-        <table style="padding:5px 0px 5px 10px">
+        <table style="margin:5px 0px 5px 10px">
             <tr>
                 <td style="width:80px">表名</td>
                 <td><input class="_tbl_name" style="width:300px"></td>
@@ -65,7 +65,8 @@
             </tr>
         </table>
         <input type="hidden" class="_tbl_name_p"><input type="hidden" class="_tbl_desc_p"><input type="hidden" class="_tbl_name_cn_p">
-        <div style="padding:7px 0px 0px 12px;border-top:1px solid #e0e0e0">
+        <div style="border-top:1px solid #e0e0e0" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')"></div>
+        <div style="padding:7px 0px 7px 12px" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">
             <a href="#" class="_linkbtn_add" onclick="javascript:addColumn()" style="width:90px">添加栏位</a>
             <a href="#" class="_linkbtn_edit" onclick="javascript:insertColumn()" style="width:90px;margin-left:10px">插入栏位</a>
             <a href="#" class="_linkbtn_remove" onclick="javascript:delColumn()" style="width:90px;margin-left:10px">删除栏位</a>

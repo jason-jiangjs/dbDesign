@@ -1,12 +1,10 @@
 package org.vog.dbd.web.login;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -41,7 +39,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
 
         CustomerUserDetails userObj = new CustomerUserDetails(StringUtils.trimToNull((String) employee.get("userName")), (String) employee.get("password"),
-                createGrantedAuthorities(userId, StringUtils.trimToNull((String) employee.get("type")), StringUtils.trimToNull((String) employee.get("role"))));
+                createGrantedAuthorities(userId, employee.getIntAttribute("role")));
         userObj.setAccount(userId);
         userObj.setId(employee.getLongAttribute("_id"));
         userObj.setFavorite(employee.getLongAttribute("favorite"));
@@ -49,26 +47,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return userObj;
     }
 
-    private List<GrantedAuthority> createGrantedAuthorities(String userId, String userType, String roleListStr) {
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
-        if (userType == null) {
-            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+    private List<GrantedAuthority> createGrantedAuthorities(String userId, int userRole) {
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+        if (userRole == 0) {
+            logger.warn("该用户的角色未设置 userid={}", userId);
+            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_EMPTY"));
+        } else if (userRole == 1) {
+            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_READONLY"));
+        } else if (userRole == 2) {
+            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_WRITABLE"));
+        } else if (userRole == 8) {
+            grantedAuthorities.add(new SimpleGrantedAuthority("PROJ_MNG_USER"));
+        } else if (userRole == 9) {
+            grantedAuthorities.add(new SimpleGrantedAuthority("ADMIN_USER"));
         } else {
-            if (roleListStr == null) {
-                int userTypeVal = NumberUtils.toInt(userType);
-                if (userTypeVal == 2) {
-                    grantedAuthorities.add(new SimpleGrantedAuthority("DIST_USER"));
-                } else if (userTypeVal == 3) {
-                    grantedAuthorities.add(new SimpleGrantedAuthority("CSR_USER"));
-                } else if (userTypeVal == 9) {
-                    grantedAuthorities.add(new SimpleGrantedAuthority("ADMIN_USER"));
-                } else {
-                    logger.error("该用户的类型设置不正确 userid={}", userId);
-                    grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-                }
-            } else {
-                return AuthorityUtils.commaSeparatedStringToAuthorityList(roleListStr);
-            }
+            logger.warn("该用户的角色设置不正确 userid={}，role={}", userId, userRole);
+            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_EMPTY"));
         }
         return grantedAuthorities;
     }

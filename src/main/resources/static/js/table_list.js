@@ -101,7 +101,6 @@ $(function () {
         textField: 'tableName',
         idField: '_id',
         loadMsg: '',
-        //toolbar: "#tbl_search_bar",
         onClickRow: function (index, row) {
             var tblId = row._id;
             if (tblId) {
@@ -112,7 +111,7 @@ $(function () {
                     return;
                 }
 
-                _createNewTab(tblId, row.tableName);
+                _openNewTab(tblId, row.tableName);
             } else {
                 $.messager.alert('发生错误', '可能是数据加载错误．', 'error');
             }
@@ -120,7 +119,7 @@ $(function () {
     });
 });
 
-function _createNewTab(tblId, tabTitle) {
+function _openNewTab(tblId, tabTitle) {
     var loadLy = layer.load(1);
     // 查询表定义信息，动态加载列定义
     var tblName = encodeURIComponent(tabTitle);
@@ -130,84 +129,8 @@ function _createNewTab(tblId, tabTitle) {
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0 && data.data) {
-                // 先动态创建tab
-                $('#tbl-tabs').tabs('add', {
-                    id: data.data.tblId,  // tab页的id默认是当前表的id(从数据库而来的)
-                    title: data.data.tblName,
-                    content: '<div id="tabDiv_' + tblId + '" class="easyui-layout" fit="true"></div>',
-                    closable: true
-                });
-
-                // 动态创建layout
-                $('#tabDiv_' + tblId).layout();
-                $('#tabDiv_' + tblId).layout('add',{
-                    region: 'north',
-                    height: '112px',
-                    border: false,
-                    content: $($('#tb_info').html())
-                });
-                $('#tabDiv_' + tblId).layout('add',{
-                    region: 'center',
-                    border: false,
-                    content: '<table id="col_grid_' + tblId + '"></table>'
-                });
-
-                // 然后加载tab内容
-                var prefixId = "#" + tblId;
-                $(prefixId + ' a._linkbtn_add').linkbutton({
-                    iconCls: 'icon-add'
-                });
-                $(prefixId + ' a._linkbtn_edit').linkbutton({
-                    iconCls: 'icon-edit'
-                });
-                $(prefixId + ' a._linkbtn_remove').linkbutton({
-                    iconCls: 'icon-remove'
-                });
-                $(prefixId + ' a._linkbtn_save').linkbutton({
-                    iconCls: 'icon-save'
-                });
-
-                $(prefixId + ' input._tbl_name').textbox({ value: data.data.tblName });
-                $(prefixId + ' input._tbl_name_cn').textbox({ value: data.data.tblNameCn });
-                $(prefixId + ' input._tbl_desc').textbox({ value: data.data.tblDesc, multiline: true });
-                $(prefixId + ' input._tbl_name_p').val(data.data.tblName);
-                $(prefixId + ' input._tbl_name_cn_p').val(data.data.tblNameCn);
-                $(prefixId + ' input._tbl_desc_p').val(data.data.tblDesc);
-
-                var colHeader = data.data.columns;
-                // 在这里添加列定义的formatter，styler，editor（目前只有这3个）
-                // 这里还没有更好的办法直接定位到需要添加属性的所在列，只能循环
-                $(colHeader[0]).each(function(index, el) {
-                    if (colHeader[0][index].field == 'desc') {
-                        colHeader[0][index].formatter = descformatter;
-                    } else if (colHeader[0][index].field == 'columnNameCN') {
-                        colHeader[0][index].formatter = nameformatter;
-                    } else if (colHeader[0][index].field == 'columnName' && $.trim($('#dbType').val()) == 2) {
-                        colHeader[0][index].formatter = nameDspformatter;
-                    }
-                });
-
-                // 然后加载列定义
-                $('#col_grid_' + tblId).datagrid({
-                    idField: "columnId",
-                    fit: true,
-                    fitColumns: true,
-                    rownumbers: true,
-                    nowrap: false,
-                    striped: true,
-                    singleSelect: true,
-                    border: false,
-                    url: Ap_servletContext + '/ajax/getColumnList?tblId=' + tblId + '&_t=' + new Date().getTime(),
-                    columns: colHeader,
-                    onDblClickCell: onClickRowBegEdit,
-                    onLoadSuccess: function () {
-                        $(this).datagrid('enableDnd');
-                    },
-                    onDrop: function (targetRow, sourceRow, point) {
-                        isRowEdited = true;
-                    }
-                });
-
+                _createTblHeadDiv(tblId, data.data.tblName, data.data.tblNameCn, data.data.tblDesc);
+                _createTblGrid(tblId, data.data.columns);
             } else {
                 layer.msg(data.msg + ' (code=' + data.code + ")");
             }
@@ -226,7 +149,7 @@ function popmenu(e, menuKey) {
 // 根据名称查询表一览
 function doSearch(value, freshFlg) {
     if (freshFlg == 1) {
-        $('#tbl_searchbox').searchbox({ value: '' });
+        $('#tbl_searchbox').searchbox('clear');
     }
     $('#tblList').datalist('load', {
         dbId: $('#dbId').val(),
@@ -243,40 +166,49 @@ function convertType(value) {
 
 }
 
-var newTblId = 0;
-// 创建表／视图
-function createNewTable(value) {
-    if (newTblId > 10) {
-        layer.msg("新建了太多项目，慢慢来吧。");
-        return false;
+// 创建表头说明
+function _createTblHeadDiv(tblId, tblName, tblNameCn, tblDesc) {
+    var isCreated = false;
+    if (tblName == '' || tblName == null || tblName == undefined) {
+        isCreated = true;
+        tblName = '新建表';
     }
-    newTblId ++;
-    _curTblId = newTblId;
-    var prefixId = 'tabDiv_' + newTblId;
+    // 先动态创建tab
     $('#tbl-tabs').tabs('add', {
-        id: newTblId,
-        title: "新建表",
-        content: '<div id="' + prefixId + '" class="easyui-layout" fit="true"></div>',
+        id: tblId,  // tab页的id默认是当前表的id(从数据库而来的)
+        title: tblName,
+        content: '<div id="tabDiv_' + tblId + '" class="easyui-layout" fit="true"></div>',
         closable: true
     });
 
-    prefixId = '#' + prefixId;
     // 动态创建layout
-    $(prefixId).layout();
-    $(prefixId).layout('add',{
+    $('#tabDiv_' + tblId).layout();
+    $('#tabDiv_' + tblId).layout('add',{
         region: 'north',
-        height: '112px',
         border: false,
         content: $($('#tb_info').html())
     });
-    $(prefixId).layout('add',{
+    $('#tabDiv_' + tblId).layout('add',{
         region: 'center',
         border: false,
-        content: '<table id="col_grid_' + newTblId + '"></table>'
+        content: '<table id="col_grid_' + tblId + '"></table>'
     });
 
-    // 然后加载tab内容
-    prefixId = "#" + newTblId;
+    // 只读权限的用户不显示操作按钮
+    var p = $('#tabDiv_' + tblId).layout('panel', 'north');	// get the north panel
+    var oldHeight = p.panel('panel').outerHeight();
+    if (oldHeight < 100) { // 这里暂时使用这种方法来自适应高度，期待更好的方案
+        p.panel('resize', {height: '72px'});
+    } else {
+        p.panel('resize', {height: '112px'});
+    }
+    var newHeight = p.panel('panel').outerHeight();
+    $('#tabDiv_' + tblId).layout('resize', {
+        height: ($('#tabDiv_' + tblId).height() + newHeight - oldHeight)
+    });
+
+    // 然后加载操作按钮
+    var prefixId = "#" + tblId;
     $(prefixId + ' a._linkbtn_add').linkbutton({
         iconCls: 'icon-add'
     });
@@ -290,9 +222,77 @@ function createNewTable(value) {
         iconCls: 'icon-save'
     });
 
-    $(prefixId + ' input._tbl_name').textbox();
-    $(prefixId + ' input._tbl_name_cn').textbox();
-    $(prefixId + ' input._tbl_desc').textbox({ multiline: true });
+    // 设置表名等初始值
+    if (isCreated) {
+        $(prefixId + ' input._tbl_name').textbox();
+        $(prefixId + ' input._tbl_name_cn').textbox();
+        $(prefixId + ' input._tbl_desc').textbox({ multiline: true });
+    } else {
+        $(prefixId + ' input._tbl_name').textbox({value: tblName});
+        $(prefixId + ' input._tbl_name_cn').textbox({value: tblNameCn});
+        $(prefixId + ' input._tbl_desc').textbox({value: tblDesc, multiline: true});
+        $(prefixId + ' input._tbl_name_p').val(tblName);
+        $(prefixId + ' input._tbl_name_cn_p').val(tblNameCn);
+        $(prefixId + ' input._tbl_desc_p').val(tblDesc);
+    }
+}
+
+// 创建表的定义一览
+function _createTblGrid(tblId, colHeader) {
+    var colDef = {};
+    // 在这里添加列定义的formatter，styler，editor（目前只有这3个）
+    // 这里还没有更好的办法直接定位到需要添加属性的所在列，只能循环
+    $(colHeader[0]).each(function(index, el) {
+        colDef[colHeader[0][index].field] = ''; // 该变量只有在创建表时才有用，数据稍有冗余
+        if (colHeader[0][index].field == 'desc') {
+            colHeader[0][index].formatter = descformatter;
+        } else if (colHeader[0][index].field == 'columnNameCN') {
+            colHeader[0][index].formatter = nameformatter;
+        } else if (colHeader[0][index].field == 'columnName' && $.trim($('#dbType').val()) == 2) {
+            colHeader[0][index].formatter = nameDspformatter;
+        }
+    });
+
+    // 然后加载列定义
+    var options = {
+        idField: "columnId",
+        fit: true,
+        fitColumns: true,
+        rownumbers: true,
+        nowrap: false,
+        striped: true,
+        singleSelect: true,
+        border: false,
+        columns: colHeader,
+        onDblClickCell: onClickRowBegEdit,
+        onLoadSuccess: function () {
+            $(this).datagrid('enableDnd');
+        },
+        onDrop: function (targetRow, sourceRow, point) {
+            isRowEdited = true;
+        }
+    };
+    if (tblId < 100) {
+        // 注意这里必须使用不同的colDef，否则所有行都指向同一个colDef值
+        var rows = [colDef,$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef)];
+        options.data = rows;
+    } else {
+        options.url = Ap_servletContext + '/ajax/getColumnList?tblId=' + tblId + '&_t=' + new Date().getTime();
+    }
+    $('#col_grid_' + tblId).datagrid(options);
+}
+
+
+var newTblId = 0;
+// 创建表／视图
+function createNewTable(value) {
+    if (newTblId > 10) {
+        layer.msg("新建了太多项目，慢慢来吧。");
+        return false;
+    }
+    newTblId ++;
+    _curTblId = newTblId;
+    _createTblHeadDiv(newTblId);
 
     var loadLy = layer.load(1);
     // 查询表定义信息，动态加载列定义
@@ -302,43 +302,7 @@ function createNewTable(value) {
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0 && data.data) {
-                var colHeader = data.data.columns;
-                var colDef = {};
-                // 在这里添加列定义的formatter，styler，editor（目前只有这3个）
-                // 这里还没有更好的办法直接定位到需要添加属性的所在列，只能循环
-                $(colHeader[0]).each(function(index, el) {
-                    colDef[colHeader[0][index].field] = '';
-                    if (colHeader[0][index].field == 'desc') {
-                        colHeader[0][index].formatter = descformatter;
-                    } else if (colHeader[0][index].field == 'columnNameCN') {
-                        colHeader[0][index].formatter = nameformatter;
-                    } else if (colHeader[0][index].field == 'columnName' && $.trim($('#dbType').val()) == 2) {
-                        colHeader[0][index].formatter = nameDspformatter;
-                    }
-                });
-
-                // 注意这里必须使用不同的colDef，否则所有行都指向同一个colDef值
-                var rows = [colDef,$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef)];
-                // 然后加载列定义
-                $("#col_grid_" + newTblId).datagrid({
-                    idField: "columnId",
-                    fit: true,
-                    fitColumns: true,
-                    rownumbers: true,
-                    nowrap: false,
-                    striped: true,
-                    singleSelect: true,
-                    border: false,
-                    data: rows,
-                    columns: colHeader,
-                    onDblClickCell: onClickRowBegEdit,
-                    onLoadSuccess: function () {
-                        $(this).datagrid('enableDnd');
-                    },
-                    onDrop: function (targetRow, sourceRow, point) {
-                        isRowEdited = true;
-                    }
-                });
+                _createTblGrid(newTblId, data.data.columns);
             } else {
                 layer.msg(data.msg + ' (code=' + data.code + ")");
             }
@@ -584,7 +548,7 @@ function saveAll() {
                     var _newTblId = data.data._newTblId;
                     var tabIdx = $('#tbl-tabs').tabs('getTabIndex', $('#tbl-tabs').tabs('getSelected'));
                     $('#tbl-tabs').tabs('close', tabIdx);
-                    _createNewTab(_newTblId, tName);
+                    _openNewTab(_newTblId, tName);
 
                     $('#tblList').datalist({
                         onLoadSuccess: function(data) {

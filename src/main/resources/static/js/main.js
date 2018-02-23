@@ -1,6 +1,11 @@
 /**
  *
  */
+
+// 默认的web context路径，如果在部署时使用其他路径，必须修改此处代码
+Ap_servletContext = "/dbd";
+
+// 加载画面时的一些全局性的初始化设置
 $(function () {
 
     // 全局的ajax访问设置，处理ajax请求时sesion超时
@@ -15,7 +20,7 @@ $(function () {
         }
     });
 
-    // 加载资源文件
+    // 加载资源文件（如果不考虑多语言问题，则不需要这样处理，直接在html中加载该js）
     var lang = navigator.language;
     if (!lang) {
         lang = navigator.browserLanguage;
@@ -26,7 +31,6 @@ $(function () {
 
 });
 
-Ap_servletContext = "/dbd";
 
 // 获取资源文件中的属性值(支持参数形式)
 function $translate(key) {
@@ -45,7 +49,7 @@ function $translate(key) {
             return null;
         var str = argArr[0];
         for ( var i = 1; i < argArr.length; i++) {
-            var re = new RegExp('\\{' + (i - 1) + '\\}', 'gm');
+            var re = new RegExp('\\{' + (i - 1) + '\\}', 'gm'); // 根据参数值替换文字中的预留通配符
             str = str.replace(re, argArr[i]);
         }
         return str;

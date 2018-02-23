@@ -86,7 +86,7 @@
 |userId | string | 用户登录帐号 | 登录用
 |userName | string | 用户姓名 | 显示用
 |password | string | 登录密码 | 使用BCrypt加密
-|permission | int | 用户权限 | 1:只读，2:修改列(增删改)，3:修改表/库(增删改)，4:导出SQL文，9:admin(全部)
+|role | int | 用户角色 | 1:只读用户，2:可写用户，8:proj_mng，9:admin(全部)
 |dbs | array | 可以访问的数据库
 |favorite | long | 目前常用数据库 | "对应表db_list的_id,设值后不会出现数据库一览选择画面，直接去该数据库内容画面"
 |lastopen | map | 上次打开的表设计
