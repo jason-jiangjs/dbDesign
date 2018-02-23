@@ -65,8 +65,7 @@
             </tr>
         </table>
         <input type="hidden" class="_tbl_name_p"><input type="hidden" class="_tbl_desc_p"><input type="hidden" class="_tbl_name_cn_p">
-        <div style="border-top:1px solid #e0e0e0" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')"></div>
-        <div style="padding:7px 0px 7px 12px" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">
+        <div style="padding:7px 0px 7px 12px;border-top:1px solid #e0e0e0" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">
             <a href="#" class="_linkbtn_add" onclick="javascript:addColumn()" style="width:90px">添加栏位</a>
             <a href="#" class="_linkbtn_edit" onclick="javascript:insertColumn()" style="width:90px;margin-left:10px">插入栏位</a>
             <a href="#" class="_linkbtn_remove" onclick="javascript:delColumn()" style="width:90px;margin-left:10px">删除栏位</a>
