@@ -138,6 +138,7 @@ $(function () {
     });
 
     $('body').on('click', 'span.tree-hit.tree-expanded', function() {
+        endEditing();
         var rowObj = $(this);
         rowObj.addClass('tree-collapsed');
         rowObj.removeClass('tree-expanded');
@@ -172,6 +173,7 @@ $(function () {
         $(this).removeClass('tree-expanded-hover');
     });
     $('body').on('click', 'span.tree-hit.tree-collapsed', function() {
+        endEditing();
         var rowObj = $(this);
         rowObj.addClass('tree-expanded');
         rowObj.removeClass('tree-collapsed');
@@ -197,6 +199,11 @@ $(function () {
             }
             $(trColArr[index]).show();
             $(trDataArr[index]).show();
+            var exp = $(trDataArr[index]).find('span.tree-hit');
+            if (exp) {
+                exp.addClass('tree-expanded');
+                exp.removeClass('tree-collapsed');
+            }
         });
     });
     $('body').on('mouseenter', 'span.tree-hit.tree-collapsed', function() {
@@ -351,20 +358,22 @@ function _createTblGrid(tblId, colHeader) {
         striped: true,
         singleSelect: true,
         border: false,
-        columns: colHeader,
-        onDblClickCell: onClickRowBegEdit,
-        onLoadSuccess: function () {
+        columns: colHeader
+    };
+    if ($.trim($('#readAttr').val()) == 0) {
+        options.onDblClickCell = onClickRowBegEdit;
+        options.onLoadSuccess = function () {
             $(this).datagrid('enableDnd');
-        },
-        onBeforeDrag : function(row) {
+        };
+        options.onBeforeDrag = function(row) {
             if (editIndex !== null) {
                 return false;
             }
-        },
-        onDrop: function (targetRow, sourceRow, point) {
+        };
+        options.onDrop = function (targetRow, sourceRow, point) {
             isRowEdited = true;
-        }
-    };
+        };
+    }
 
     if (tblId < 100) {
         // 注意这里必须使用不同的colDef，否则所有行都指向同一个colDef值

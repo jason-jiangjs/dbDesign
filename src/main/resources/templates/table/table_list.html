@@ -30,9 +30,9 @@
     </div>
     <div id="tab-tools_menu" class="easyui-menu" style="width:120px;">
         <div data-options="iconCls:'icon-save'" onclick="javascript:endEditing()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">结束编辑状态</div>
-        <div class="menu-sep"></div>
+        <div class="menu-sep" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')"></div>
         <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">删除当前项目</div>
-        <div class="menu-sep"></div>
+        <div class="menu-sep" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')"></div>
         <div data-options="href:'logout'">退出</div>
     </div>
 
@@ -75,6 +75,7 @@
         </div>
     </div>
     <input type="hidden" id="favDb" th:value="${#authentication.principal.favorite}" />
+    <input type="hidden" id="readAttr" th:value="${userReadonly}" />
     <input type="hidden" id="dbn" th:value="${dbName}" />
     <input type="hidden" id="dbId" th:value="${dbId}" />
     <input type="hidden" id="dbType" th:value="${dbType}" />

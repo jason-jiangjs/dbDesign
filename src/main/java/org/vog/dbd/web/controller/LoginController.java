@@ -2,6 +2,7 @@ package org.vog.dbd.web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +57,14 @@ public class LoginController extends BaseController {
                 if (dbType == 0) {
                     logger.warn("getColumnList 未设置数据库类型 id={}", dbId);
                 }
+                int userReadonly = 1;
+                if (userObj.getAuthorities() != null &&
+                        (userObj.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_WRITABLE")) ||
+                                userObj.getAuthorities().contains(new SimpleGrantedAuthority("PROJ_MNG_USER")) ||
+                                userObj.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN_USER")))) {
+                    userReadonly = 0;
+                }
+                model.addObject("userReadonly", userReadonly);
                 model.addObject("dbType", dbType);
                 model.addObject("dbName", dbMap.getStringAttribute("dbName"));
             }
