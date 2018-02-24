@@ -32,21 +32,11 @@ public class TableDao extends BaseMongoDao {
     /**
      * 查询指定数据库的表一览
      */
-    public List<BaseMongoMap> findTableList(long dbId, int type) {
+    public List<BaseMongoMap> findTableList(long dbId, String tblName, int type) {
         Query queryObj = new Query(where("dbId").is(dbId));
-        queryObj.addCriteria(where("type").is(type));
-        queryObj.addCriteria(where("deleteFlg").is(false));
-        queryObj.fields().include("tableName");
-
-        queryObj.with(new Sort(Sort.Direction.ASC, "tableName"));
-        return mongoTemplate.find(queryObj, BaseMongoMap.class, COLL_NAME);
-    }
-
-    /**
-     * 查询指定数据库的表一览
-     */
-    public List<BaseMongoMap> findTableListByName(String tblName, int type) {
-        Query queryObj = new Query(where("tableName").regex(tblName, "i"));
+        if (tblName != null) {
+            queryObj.addCriteria(where("tableName").regex(tblName, "i"));
+        }
         queryObj.addCriteria(where("type").is(type));
         queryObj.addCriteria(where("deleteFlg").is(false));
         queryObj.fields().include("tableName");

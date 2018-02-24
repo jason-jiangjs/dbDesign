@@ -81,11 +81,7 @@ public class TableService extends BaseService {
         if (dbId == 0 && tblName == null) {
             return Collections.EMPTY_LIST;
         }
-        if (tblName == null) {
-            return tableDao.findTableList(dbId, type);
-        } else {
-            return tableDao.findTableListByName(tblName, type);
-        }
+        return tableDao.findTableList(dbId, tblName, type);
     }
 
     /**

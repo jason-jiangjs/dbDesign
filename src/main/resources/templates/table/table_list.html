@@ -26,10 +26,12 @@
     </div>
 
     <div id="tab-tools"><!--/* 表定义区域的工具栏和弹出菜单 */-->
-        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-more'" onclick="javascript:popmenu(event,'tab-tools_menu')"></a>
+        <a href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,iconCls:'icon-more'" onclick="javascript:popmenu(event,'tab-tools_menu')"></a>
     </div>
     <div id="tab-tools_menu" class="easyui-menu" style="width:120px;">
-        <!--<div onclick="javascript:alert('new')">保存当前修改</div>-->
+        <div data-options="iconCls:'icon-save'" onclick="javascript:endEditing()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">结束编辑状态</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">删除当前项目</div>
         <div class="menu-sep"></div>
         <div data-options="href:'logout'">退出</div>
     </div>
@@ -41,14 +43,14 @@
         <div onclick="javascript:convertType(1)" th:if="${dbType==1}">切换到表一览</div>
         <div onclick="javascript:convertType(2)" th:if="${dbType==1}">切换到视图一览</div>
         <div class="menu-sep" th:if="${dbType==1}"></div>
-        <div data-options="iconCls:'icon-save'">设置缺省工作环境</div>
+        <div data-options="name:'setdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(1)">设置缺省工作环境</div>
+        <div data-options="name:'unsetdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(0)">取消缺省工作环境</div>
         <div class="menu-sep"></div>
         <div data-options="iconCls:'icon-save'" onclick="javascript:createNewTable()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">创建项目</div>
-        <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">删除当前项目</div>
         <div class="menu-sep" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')"></div>
         <div data-options="iconCls:'icon-reload'" onclick="javascript:doSearch('',1)">刷新</div>
         <div class="menu-sep"></div>
-        <div data-options="iconCls:'icon-back'" th:href="@{/home}">返回选择数据库</div>
+        <div data-options="iconCls:'icon-back'" th:href="@{/home?type=1}">返回选择数据库</div>
         <div class="menu-sep"></div>
     </div>
 
@@ -72,7 +74,7 @@
             <a href="#" class="_linkbtn_save" onclick="javascript:saveAll()" style="width:80px;margin-left:10px">保存</a>
         </div>
     </div>
-
+    <input type="hidden" id="favDb" th:value="${#authentication.principal.favorite}" />
     <input type="hidden" id="dbn" th:value="${dbName}" />
     <input type="hidden" id="dbId" th:value="${dbId}" />
     <input type="hidden" id="dbType" th:value="${dbType}" />

@@ -7,6 +7,27 @@ $(function () {
     // 设置当前编辑的数据库名
     $('#cc').panel({title: $('#dbn').val()});
 
+    var favDb = $.trim($('#favDb').val());
+    if (favDb == '' || favDb == '0' || favDb != $.trim($('#dbId').val())) {
+        var item = $('#db-tools_menu').menu('findItem', 'setdbenv');
+        if (item) {
+            $('#db-tools_menu').menu('enableItem', item.target);
+        }
+        item = $('#db-tools_menu').menu('findItem', 'unsetdbenv');
+        if (item) {
+            $('#db-tools_menu').menu('disableItem', item.target);
+        }
+    } else {
+        var item = $('#db-tools_menu').menu('findItem', 'setdbenv');
+        if (item) {
+            $('#db-tools_menu').menu('enableItem', item.target);
+        }
+        item = $('#db-tools_menu').menu('findItem', 'unsetdbenv');
+        if (item) {
+            $('#db-tools_menu').menu('enableItem', item.target);
+        }
+    }
+
     // 创建搜索框
     $('#tbl_searchbox').textbox({
         prompt: 'Please Input Value',
@@ -17,15 +38,9 @@ $(function () {
     $('#tbl_searchbox').textbox('textbox').bind({
         keyup: function (e) {
             doSearch($(this).val(), 0);
+            $('#tblList').datalist('unselectAll');
         }
     });
-
-    //$('textarea').each(function () {
-    //    this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;overflow-y:hidden;');
-    //}).on('input', function () {
-    //    this.style.height = 'auto';
-    //    this.style.height = (this.scrollHeight) + 'px';
-    //});
 
     $('#tbl-tabs').tabs({
         onSelect: function(title, index) {
@@ -64,6 +79,10 @@ $(function () {
             },
             setValue: function (target, value) {
                 $(target).val(value);
+                // 编辑时，加载内容后，重新设置textarea高度
+                $(target).each(function () {
+                    this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;width:100%;overflow-y:hidden;');
+                });
             },
             resize: function (target, width) {
                 $(target)._outerWidth(width);
@@ -116,6 +135,75 @@ $(function () {
                 $.messager.alert('发生错误', '可能是数据加载错误．', 'error');
             }
         }
+    });
+
+    $('body').on('click', 'span.tree-hit.tree-expanded', function() {
+        var rowObj = $(this);
+        rowObj.addClass('tree-collapsed');
+        rowObj.removeClass('tree-expanded');
+        rowObj.removeClass('tree-expanded-hover');
+        // 展开/收缩当前节点
+        var rowIdx = rowObj.data('id');
+        var itemVal = rowObj.data('value');
+        var prex = itemVal.lastIndexOf(" ");
+
+        var trColArr = rowObj.closest('div.datagrid div.datagrid-view').find('div.datagrid-view1 div.datagrid-body div.datagrid-body-inner table.datagrid-btable tbody tr');
+        var trDataArr = rowObj.closest('div.datagrid div.datagrid-view').find('div.datagrid-view2 div.datagrid-body table.datagrid-btable tbody tr');
+
+        var allDatas = $('#col_grid_' + _curTblId).datagrid('getRows');
+        var inSameLvl = false;
+        allDatas.forEach(function(item, index, array) {
+            if (index <= rowIdx || inSameLvl) {
+                return;
+            }
+            // 比较是否在同一层
+            if (prex >= item.columnName.lastIndexOf(" ")) {
+                inSameLvl = true;
+                return;
+            }
+            $(trColArr[index]).hide();
+            $(trDataArr[index]).hide();
+        });
+    });
+    $('body').on('mouseenter', 'span.tree-hit.tree-expanded', function() {
+        $(this).addClass('tree-expanded-hover');
+    });
+    $('body').on('mouseleave', 'span.tree-hit.tree-expanded', function() {
+        $(this).removeClass('tree-expanded-hover');
+    });
+    $('body').on('click', 'span.tree-hit.tree-collapsed', function() {
+        var rowObj = $(this);
+        rowObj.addClass('tree-expanded');
+        rowObj.removeClass('tree-collapsed');
+        rowObj.removeClass('tree-collapsed-hover')
+        // 展开/收缩当前节点
+        var rowIdx = rowObj.data('id');
+        var itemVal = rowObj.data('value');
+        var prex = itemVal.lastIndexOf(" ");
+
+        var trColArr = rowObj.closest('div.datagrid div.datagrid-view').find('div.datagrid-view1 div.datagrid-body div.datagrid-body-inner table.datagrid-btable tbody tr');
+        var trDataArr = rowObj.closest('div.datagrid div.datagrid-view').find('div.datagrid-view2 div.datagrid-body table.datagrid-btable tbody tr');
+
+        var allDatas = $('#col_grid_' + _curTblId).datagrid('getRows');
+        var inSameLvl = false;
+        allDatas.forEach(function(item, index, array) {
+            if (index <= rowIdx || inSameLvl) {
+                return;
+            }
+            // 比较是否在同一层
+            if (prex >= item.columnName.lastIndexOf(" ")) {
+                inSameLvl = true;
+                return;
+            }
+            $(trColArr[index]).show();
+            $(trDataArr[index]).show();
+        });
+    });
+    $('body').on('mouseenter', 'span.tree-hit.tree-collapsed', function() {
+        $(this).addClass('tree-collapsed-hover');
+    });
+    $('body').on('mouseleave', 'span.tree-hit.tree-collapsed', function() {
+        $(this).removeClass('tree-collapsed-hover')
     });
 });
 
@@ -268,10 +356,16 @@ function _createTblGrid(tblId, colHeader) {
         onLoadSuccess: function () {
             $(this).datagrid('enableDnd');
         },
+        onBeforeDrag : function(row) {
+            if (editIndex !== null) {
+                return false;
+            }
+        },
         onDrop: function (targetRow, sourceRow, point) {
             isRowEdited = true;
         }
     };
+
     if (tblId < 100) {
         // 注意这里必须使用不同的colDef，否则所有行都指向同一个colDef值
         var rows = [colDef,$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef),$.extend({},colDef)];
@@ -317,6 +411,7 @@ function delCurrTable() {
     var tabId = pTab.panel('options').id;
     if (tabId == 0) { // 如果是主页，直接关闭
         $('#tbl-tabs').tabs('close', tabIdx);
+        return;
     }
 
     if (tabId < 100 ) {
@@ -389,10 +484,46 @@ function delCurrTable() {
     });
 }
 
+// 设置缺省工作环境
+function setDevEnv(devType) {
+    var loadLy = layer.load(1);
+    var postData = {};
+    postData.checkFlg = devType;
+    if (devType == 1) {
+        postData.dbId = $.trim($('#dbId').val());
+    }
+    $.ajax({
+        type: 'post',
+        url: Ap_servletContext + '/ajax/setDefaultDbEnv',
+        data: JSON.stringify(postData),
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            layer.close(loadLy);
+            if (data.code == 0) {
+                layer.msg('操作成功');
+                // 刷新菜单
+                if (devType == 0) {
+                    var item = $('#db-tools_menu').menu('findItem', 'setdbenv');
+                    $('#db-tools_menu').menu('enableItem', item.target);
+                    item = $('#db-tools_menu').menu('findItem', 'unsetdbenv');
+                    $('#db-tools_menu').menu('disableItem', item.target);
+                } else {
+                    var item = $('#db-tools_menu').menu('findItem', 'setdbenv');
+                    $('#db-tools_menu').menu('disableItem', item.target);
+                    item = $('#db-tools_menu').menu('findItem', 'unsetdbenv');
+                    $('#db-tools_menu').menu('enableItem', item.target);
+                }
+            } else {
+                layer.msg(data.msg + ' (code=' + data.code + ")");
+            }
+        }
+    });
+}
+
 // 当前所查看的表id（点击左边表一栏时会刷新，tab切换时会刷新）
 var _curTblId = null;
 
-var editIndex = undefined;
+var editIndex = null;
 var isRowEdited = false;
 // 双击表格行，开始编辑，只允许一行一行编辑
 function onClickRowBegEdit(index,　field,　value) {
@@ -401,31 +532,31 @@ function onClickRowBegEdit(index,　field,　value) {
     }
     isRowEdited = true;
 
-        if (endEditing()) {
-            $('#col_grid_' + _curTblId).datagrid('selectRow', index).datagrid('editCell', { index: index, field: field });
-            var ed = $('#col_grid_' + _curTblId).datagrid('getEditor', { index: index, field: field });
-            if (ed && ed.target) {
-                if (field == 'desc') {
-                    $(ed.target).focus();
-                } else {
-                    if ($(ed.target).closest('td').find("input.textbox-text")[0]) {
-                        $(ed.target).closest('td').find("input.textbox-text")[0].focus();
-                    }
+    if (endEditing()) {
+        $('#col_grid_' + _curTblId).datagrid('selectRow', index).datagrid('editCell', { index: index, field: field });
+        var ed = $('#col_grid_' + _curTblId).datagrid('getEditor', { index: index, field: field });
+        if (ed && ed.target) {
+            if (field == 'desc') {
+                $(ed.target).focus();
+            } else {
+                if ($(ed.target).closest('td').find("input.textbox-text")[0]) {
+                    $(ed.target).closest('td').find("input.textbox-text")[0].focus();
                 }
             }
-            //$(ed.target).focus();
-            editIndex = index;
         }
-
+        //$(ed.target).focus();
+        editIndex = index;
+    }
 }
 
+// 结束编辑状态
 function endEditing() {
-    if (editIndex == undefined) {
+    if (editIndex == null) {
         return true
     }
     if ($('#col_grid_' + _curTblId).datagrid('validateRow', editIndex)) {
         $('#col_grid_' + _curTblId).datagrid('endEdit', editIndex);
-        editIndex = undefined;
+        editIndex = null;
         return true;
     } else {
         return false;
@@ -540,7 +671,7 @@ function saveAll() {
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0) {
-
+                editIndex = null;
                 // 保存成功后关闭表格的编辑状态，如果是新建表还要刷新tab
                 if (_curTblId < 100) {
                     loadLy = layer.load(1);
@@ -567,31 +698,33 @@ function saveAll() {
 
 // 备注一栏的显示形式
 function descformatter(value, row, index) {
-    if (row.desc) {
-        return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + row.desc + '</div>';
+    if (value) {
+        var reg = new RegExp("\n", "g");
+        var str = value.replace(reg, "<br/>");
+        return '<div style="width:100%;display:block;word-break: break-all;word-wrap: break-word">' + str + '</div>';
     }
     return '';
 }
 // 说明一栏的显示形式
 function nameformatter(value, row, index) {
-    if (row.columnNameCN) {
-        return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + row.columnNameCN + '</div>';
+    if (value) {
+        return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + value + '</div>';
     }
     return '';
 }
 
 function nameDspformatter(value, row, index) {
-    if (row.columnName) {
+    if (value) {
         var txt = '';
-        var prex = row.columnName.lastIndexOf(" ") + 1;
+        var prex = value.lastIndexOf(" ") + 1;
         if (row.type == 'object') {
-            txt = row.columnName.substring(0, prex) + '+&nbsp;' + row.columnName.substring(prex);
+            txt = value.substring(0, prex).replace(/ /g, "&nbsp;") + '<span data-id="' + index + '" data-value="' + value + '" class="tree-hit tree-expanded"/>+&nbsp;' + value.substring(prex);
         } else if (row.type == 'array') {
-            txt = row.columnName.substring(0, prex) + '*&nbsp;' + row.columnName.substring(prex);
+            txt = value.substring(0, prex).replace(/ /g, "&nbsp;") + '<span data-id="' + index + '" data-value="' + value + '" class="tree-hit tree-expanded"/>*&nbsp;' + value.substring(prex);
         } else {
-            txt = '&nbsp;&nbsp;' + row.columnName;
+            txt = '&nbsp;&nbsp;' + value.replace(/ /g, "&nbsp;");
         }
-        return '<span style="font-family:Consolas;font-size:14px">' + txt.replace(/ /g, "&nbsp;") + '</span>';
+        return '<span style="font-family:Consolas;font-size:14px">' + txt + '</span>';
     }
     return '';
 }
