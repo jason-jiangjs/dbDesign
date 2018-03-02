@@ -1,19 +1,15 @@
 ﻿//
 var msg = {
     no_params : '缺少参数。',
-    no_order_select : '请选择订单。',
-    no_deliver_select : '必须选择配送员。',
 
-    hotword_fromtype_sys : '系统预设',
-    hotword_fromtype_user : '用户输入',
+    role_val_1 : '只读权限',
+    role_val_2 : '读写权限',
+    role_val_8 : '项目管理员',
+    role_val_9 : '系统管理员',
 
-    user_origin_1 : '微信公众号',
-    user_origin_2 : '微信登录',
-    user_origin_3 : 'QQ登录',
-    user_origin_4 : '支付宝登录',
-    user_origin_5 : '微博登录',
-    user_origin_6 : 'APP',
-
-
+    user_status_val_0 : '创建',
+    user_status_val_1 : '正常',
+    user_status_val_2 : '锁定',
+    user_status_val_4 : '删除',
 
 };

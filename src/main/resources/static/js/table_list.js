@@ -116,6 +116,7 @@ $(function () {
         lines: true,
         fit: true,
         striped: true,
+        method: 'get',
         valueField: '_id',
         textField: 'tableName',
         idField: '_id',
@@ -358,6 +359,7 @@ function _createTblGrid(tblId, colHeader) {
         striped: true,
         singleSelect: true,
         border: false,
+        method: 'get',
         columns: colHeader
     };
     if ($.trim($('#readAttr').val()) == 0) {

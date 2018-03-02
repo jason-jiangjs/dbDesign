@@ -90,7 +90,7 @@ public class TableListController extends BaseController {
      * 查询表的一览
      */
     @ResponseBody
-    @RequestMapping(value = "/ajax/getTableList", method = RequestMethod.POST)
+    @RequestMapping(value = "/ajax/getTableList", method = RequestMethod.GET)
     public List<BaseMongoMap> getTableListByDbId(@RequestParam Map<String, Object> params) {
         long dbId = StringUtil.convertToLong(params.get("dbId"));
         int targetType = StringUtil.convertToInt(params.get("targetType"));

@@ -64,7 +64,7 @@ public class ColumnListController extends BaseController {
      * 查询指定表的所有列一览
      */
     @ResponseBody
-    @RequestMapping(value = "/ajax/getColumnList", method = RequestMethod.POST)
+    @RequestMapping(value = "/ajax/getColumnList", method = RequestMethod.GET)
     public Map<String, Object> getColumnList(@RequestParam Map<String, String> params) {
         Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
         if (userId == null || userId == 0) {

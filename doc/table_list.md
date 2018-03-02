@@ -33,6 +33,7 @@
 |tableNameCN | string | 表名（中文） 
 |type | int | 类型 | 1:表　2:视图
 |desc | string | 描述
+|inEdit | long | 当前编辑者ID，不编辑时值为0
 |+ column_list | map[] | 列定义一览
 |\\- columnId | long | 列ID | 系统内部ID，自增
 |\\- creator | long | 创建者ID
@@ -78,16 +79,16 @@
 | 列名 | 类型 | 说明 | 备注
 |-----|------|------|------
 |_id       | long | 用户ID | 系统内部ID，自增
-|deleteFlg | bool | 数据是否有效 | 缺省为"false", "true"表示该用户已被删除
+|status    | int | 用户状态 | 0:用户刚创建(初次登录需要修改密码)　1:正常状态　2:表示该用户已被锁定　4:表示该用户已被删除
 |creator   | long | 创建者ID
-|createdTime | timestamp | 创建时间
-|modifier | long | 更新者ID
+|createdTime  | timestamp | 创建时间
+|modifier     | long | 更新者ID
 |modifiedTime | timestamp | 更新时间
-|userId | string | 用户登录帐号 | 登录用
+|userId   | string | 用户登录帐号 | 登录用
 |userName | string | 用户姓名 | 显示用
 |password | string | 登录密码 | 使用BCrypt加密
-|role | int | 用户角色 | 1:只读用户，2:可写用户，8:proj_mng，9:admin(全部)
-|dbs | array | 可以访问的数据库
+|role     | int | 用户角色 | 1:只读用户，2:可写用户，8:proj_mng，9:admin(全部)
+|dbs      | array | 可以访问的数据库
 |favorite | long | 目前常用数据库 | "对应表db_list的_id,设值后不会出现数据库一览选择画面，直接去该数据库内容画面"
 |lastopen | map | 上次打开的表设计
 |. %KEY%: dbId | string | 数据库ID
