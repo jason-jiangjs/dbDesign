@@ -50,7 +50,7 @@ public class TableService extends BaseService {
      * 查询数据库的表一览
      */
     public List<Map<String, Object>> findDbList() {
-        List<BaseMongoMap> dbList = dbDao.findDbList();
+        List<BaseMongoMap> dbList = dbDao.findDbList(0, 0, true);
         if (dbList == null || dbList.isEmpty()) {
             return Collections.EMPTY_LIST;
         }

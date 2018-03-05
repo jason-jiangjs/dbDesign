@@ -38,6 +38,7 @@ public class UserMngController extends BaseController {
     public ModelAndView gotoUserMngPage(@RequestParam Map<String, String> params) {
         ModelAndView model = new ModelAndView();
         model.addObject("adminId", request.getSession().getAttribute(Constants.KEY_USER_ID));
+        model.addObject("hasAuth", 1);
         model.setViewName("admin/user_mng");
         return model;
     }

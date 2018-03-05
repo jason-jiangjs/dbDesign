@@ -1,79 +1,9 @@
 /**
- * 用户管理
+ * 数据库设计管理
  */
-
-var role_grid_cols = [[
-    { field:'dbId', title:'数据库名称', width:473,
-        formatter: function(value, row, index) {
-            // 因为从combobox中选中值获得的是该valueField，要再转换一次，用于画面显示
-            if (value) {
-                var nowTxt = null;
-                for (idx in this.editor.options.data) {
-                    if (value == this.editor.options.data[idx].dbId) {
-                        nowTxt = this.editor.options.data[idx].dbNameTxt;
-                    }
-                }
-                if (nowTxt) {
-                    return nowTxt;
-                }
-            }
-            return '';
-        },
-        editor : {
-            "type" : "combobox",
-            "options" : {
-                "valueField" : "dbId",
-                "textField" : "dbNameTxt",
-                "method" : "get",
-                "required" : true,
-                limitToList: true,
-                panelHeight: 100,
-                editable: false
-            }
-        }
-    },
-    { field:'role', title:'访问权限', width:95,
-        formatter: function(value, row, index) {
-            if (value) {
-                return $translate('role_val_' + value);
-            }
-            return '';
-        },
-        editor : {
-            "type" : "combobox",
-            "options" : {
-                "valueField" : "text",
-                "textField" : "name",
-                "data" : [
-                    {text:'1',name:'只读权限'},
-                    {text:'2',name:'读写权限'},
-                    {text:'8',name:'项目管理员'},
-                    {text:'9',name:'系统管理员'}
-                ],
-                "required" : true,
-                limitToList: true,
-                panelHeight: 100,
-                editable: false
-            }
-        }
-    }
-]];
 
 // 画面项目初始化，加载用户一览
 $(function () {
-
-    // 必须这样动态定义
-    var loadLy = layer.load(1);
-    $.ajax({
-        type: 'get',
-        async: false,
-        url: Ap_servletContext + "/ajax/getDbListByUser?iid=" + $.trim($('#adminId').val()) + '&_t=' + new Date().getTime(),
-        success: function (data) {
-            layer.close(loadLy);
-            role_grid_cols[0][0].editor.options.data = data;
-        }
-    });
-    //role_grid_cols[0][0].editor.options.url = Ap_servletContext + "/ajax/getDbListByUser?iid=" + $.trim($('#adminId').val()) + '&_t=' + new Date().getTime();
 
     // 加载列定义
     var options = {
@@ -87,50 +17,36 @@ $(function () {
         pagination: true,
         pageSize: 10,
         pageList: [10,20,50,100],
-        toolbar: '#user_grid_toolbar'
+        toolbar: '#db_grid_toolbar'
     };
-    options.onDblClickRow = function(index, row) {
-        // 弹出对话框，显示用户详细信息（包括数据库访问权限）
-        // 加载用户信息
-        $('#userId').val(row._id);
-        $('#optType').val(0);
-        $('#accNo').textbox('setValue', row.userId);
-        $('#userName').textbox('setValue', row.userName);
-        $('#role').combobox('select', row.role);
-        $('#status').combobox('select', row.status);
-
-        // 加载权限信息
-        $('#role_grid').datagrid({
-            url: Ap_servletContext + '/ajax/mng/getUserRoleList?iid=' + row._id + '&_t=' + new Date().getTime(),
-            columns: role_grid_cols,
-            onDblClickCell: onClickRowBegEdit
-        });
-        $('#user_dlg').dialog('open');
-    };
-    options.url = Ap_servletContext + '/ajax/mng/getUserList?_t=' + new Date().getTime();
+    options.url = Ap_servletContext + '/ajax/mng/getDbList?_t=' + new Date().getTime();
     options.columns = [[
         {field:'_id',title:'ID',width:80},
-        {field:'userId',title:'登录帐号',width:100},
-        {field:'userName',title:'姓名',width:100},
-        {field:'role',title:'角色',width:80,
+        {field:'dbName',title:'名称',width:100},
+        {field:'dbNameCN',title:'说明',width:100},
+        {field:'typeStr',title:'版本号',width:100},
+        {field:'desc',title:'备注',width:100},
+        {field:'type',title:'类型',width:100,
             formatter: function(value, row, index) {
                 if (value) {
-                    return $translate('role_val_' + value);
+                    return $translate('db_type_val_' + value);
                 }
                 return '';
             }
         },
-        {field:'status',title:'状态',width:100,
+        {field:'deleteFlg',title:'状态',width:80,
             formatter: function(value, row, index) {
-                if (value >= 0) {
-                    return $translate('user_status_val_' + value);
+                if (value == 'true') {
+                    return $translate('user_status_val_1');
+                } else if (value == 'false') {
+                    return $translate('user_status_val_4');
                 }
                 return '';
             }
         }
     ]];
 
-    $('#user_grid').datagrid(options);
+    $('#db_grid').datagrid(options);
 
     $.extend($.fn.datagrid.methods, {
         editCell: function(jq,param){
@@ -229,17 +145,6 @@ function submitForm() {
     });
 }
 
-// 关闭对话框,刷新用户一览(当前分页)
-function _endSave() {
-    $('#user_grid').datagrid('reload', {});
-    $('#user_dlg').dialog('close');
-}
-
-// 取消修改，并关闭对话框
-function cancelForm() {
-    $('#user_dlg').dialog('close');
-}
-
 
 // 添加用户
 function addUser() {
@@ -296,47 +201,4 @@ function deleteUser() {
     }, function() {
         // 无操作
     });
-}
-var defaultVal = 0;
-// 添加用户权限
-function addUserRole() {
-    defaultVal ++;
-    $('#role_grid').datagrid('appendRow', { default: defaultVal });
-}
-
-// 删除用户权限
-function deleteUserRole() {
-    var gridObj = $('#role_grid');
-    var s1 = gridObj.datagrid('getSelected');
-    if (s1 == null || s1 == undefined) {
-        layer.msg('请选择一个项目后再操作．')
-        return;
-    }
-    if (s1.default >= 1) {
-        // 新增的项目，直接删除
-        var s2 = gridObj.datagrid('getRowIndex', s1);
-        if (s2 < 0) {
-            layer.msg('数据错误，请刷新画面后再操作．')
-            return;
-        }
-        gridObj.datagrid('deleteRow', s2);
-        return;
-    }
-
-    var s2 = gridObj.datagrid('getRowIndex', s1.dbId);
-    if (s2 < 0) {
-        layer.msg('数据错误，请刷新画面后再操作．')
-        return;
-    }
-    // 再对比一下数据是否正确
-    var roleList = $('#role_grid').datagrid('getRows');
-    if (roleList.length == 0) {
-        layer.msg("数据错误，没有设置访问权限");
-        return;
-    }
-    if (roleList[s2].dbId == undefined || roleList[s2].dbId != s1.dbId) {
-        layer.msg("数据错误，id不一致");
-        return;
-    }
-    gridObj.datagrid('deleteRow', s2);
 }

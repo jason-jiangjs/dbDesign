@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <th:block th:replace="/layout/head"></th:block>
+    <script th:src="@{/js/db_mng.js}"></script>
+</head>
+<body>
+<div style="padding:4px;width:80px">
+    <div class="easyui-panel" style="padding:4px">
+        <a href="#" class="easyui-menubutton" data-options="menu:'#mm1',iconCls:'icon-more'">菜单</a>
+    </div>
+    <div id="mm1" style="width:150px;">
+        <div data-options="iconCls:'icon-back'" th:href="@{/home}">返回</div>
+        <div class="menu-sep"></div>
+        <div th:href="@{/logout}">退出</div>
+    </div>
+</div>
+<div style="margin:0 auto;width:1000px">
+    <h2>数据库一览</h2>
+    <p th:if="${hasAuth==1}">可以在此画面管理各项目的数据库设计，包括创建、编辑、删除。</p>
+    <p th:if="${hasAuth==0}">对不起，你没有权限操作该业务。</p>
+    <div style="height:600px" th:if="${hasAuth==1}">
+        <table id="db_grid"></table>
+    </div>
+</div>
+<div id="db_grid_toolbar" style="padding: 6px" th:if="${hasAuth==1}">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" onclick="addDb()">添加</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-remove" onclick="deleteDb()" style="margin-left:15px">删除</a>
+</div>
+<input type="hidden" id="adminId" th:value="${adminId}">
+<input type="hidden" id="optType">
+</body>
+</html>

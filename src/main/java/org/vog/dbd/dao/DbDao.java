@@ -28,7 +28,7 @@ public class DbDao extends BaseMongoDao {
      */
     public BaseMongoMap findDbById(long dbId) {
         Query queryObj = new Query(where("_id").is(dbId));
-        queryObj.addCriteria(where("deleteFlg").is(false));
+
 
         return mongoTemplate.findOne(queryObj, BaseMongoMap.class, COLL_NAME);
     }
@@ -36,11 +36,24 @@ public class DbDao extends BaseMongoDao {
     /**
      * 查询数据库的表一览
      */
-    public List<BaseMongoMap> findDbList() {
+    public List<BaseMongoMap> findDbList(int page, int limit, boolean checked) {
         Query queryObj = new Query();
-        queryObj.addCriteria(where("deleteFlg").is(false));
+        if (checked) {
+            queryObj.addCriteria(where("deleteFlg").is(false));
+        }
+        if (limit > 0) {
+            queryObj.skip((page - 1) * limit);
+            queryObj.limit(limit);
+        }
 
         return mongoTemplate.find(queryObj, BaseMongoMap.class, COLL_NAME);
     }
 
+    /**
+     * 统计数据库个数(全部)
+     */
+    public long countDbList() {
+        Query queryObj = new Query();
+        return mongoTemplate.count(queryObj, COLL_NAME);
+    }
 }
