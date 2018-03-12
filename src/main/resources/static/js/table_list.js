@@ -114,7 +114,7 @@ $(function () {
         url: Ap_servletContext + '/ajax/getTableList?dbId=' + $('#dbId').val() + '&targetType=' + $('#targetType').val() + '&_t=' + new Date().getTime(),
         border: false,
         lines: true,
-        fit: true,
+        fit: false,
         striped: true,
         method: 'get',
         valueField: '_id',
@@ -135,6 +135,12 @@ $(function () {
             } else {
                 $.messager.alert('发生错误', '可能是数据加载错误．', 'error');
             }
+        },
+        onLoadSuccess: function(data) {
+            var oldHeight = $('#dd').css('height');
+            oldHeight = oldHeight.replace(/px/, "");
+            oldHeight = oldHeight - 27;
+            $('#dd').css('height', oldHeight + 'px'); // 这里要重置region的高度，不知道是用法不对还是easyui的问题，只在第一次打开画面时有问题，浏览器尺寸变化时高度正常
         }
     });
 

@@ -28,8 +28,8 @@
         <input type="checkbox" id="defaultFlg"><label style="font-size: small">将所选择的数据库设置为默认工作环境，下次再登录时不会出现该一览画面．</label>
     </div>
 </section>
-<form id="itemForm" method="post" th:action="@{/table_list}">
-    <input type="hidden" id="dbId" name="dbId" />
+<form id="itemForm" method="get" th:action="@{/table_list}">
+    <input type="hidden" id="dbId" name="ddId" />
     <input type="hidden" id="checkFlg" name="checkFlg" />
 </form>
 <script>

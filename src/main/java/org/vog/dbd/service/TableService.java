@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.base.service.BaseService;
+import org.vog.common.util.AESCoderUtil;
 import org.vog.dbd.dao.ColumnDefineDao;
 import org.vog.dbd.dao.DbDao;
 import org.vog.dbd.dao.TableDao;
@@ -58,7 +59,7 @@ public class TableService extends BaseService {
         List<Map<String, Object>> dataList = new ArrayList<>();
         dbList.forEach(item -> {
             Map<String, Object> dataMap = new HashMap<>();
-            dataMap.put("id", item.getLongAttribute("_id"));
+            dataMap.put("id", AESCoderUtil.encode(item.getLongAttribute("_id").toString()));
             String dbTxt = StringUtils.trimToEmpty(item.getStringAttribute("dbName"));
             String cnName = StringUtils.trimToNull(item.getStringAttribute("dbNameCN"));
             if (cnName != null) {
@@ -82,6 +83,17 @@ public class TableService extends BaseService {
             return Collections.EMPTY_LIST;
         }
         return tableDao.findTableList(dbId, tblName, type);
+    }
+
+    /**
+     * 查询指定表名称查询
+     * 这里返回数组形式是为了防止万一有数据重复
+     */
+    public List<BaseMongoMap> findTableByName(long dbId, String tblName) {
+        if (dbId == 0 && tblName == null) {
+            return Collections.EMPTY_LIST;
+        }
+        return tableDao.findTableByName(dbId, tblName);
     }
 
     /**

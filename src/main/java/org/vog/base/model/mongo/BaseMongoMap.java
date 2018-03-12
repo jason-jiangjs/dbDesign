@@ -63,7 +63,7 @@ public class BaseMongoMap<K, V> extends HashMap<K, V> implements Map<K, V> {
         return convertToInt(getAttribute(key));
     }
 
-    public long getLongAttribute(K key) {
+    public Long getLongAttribute(K key) {
         return convertToLong(getAttribute(key));
     }
 

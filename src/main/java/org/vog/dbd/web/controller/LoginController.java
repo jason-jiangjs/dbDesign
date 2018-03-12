@@ -14,6 +14,7 @@ import org.vog.base.controller.BaseController;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.common.Constants;
 import org.vog.common.ErrorCode;
+import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.service.TableService;
@@ -52,7 +53,7 @@ public class LoginController extends BaseController {
                 // 数据库不存在
                 model.addObject("dbId", 0);
             } else {
-                model.addObject("dbId", dbId);
+                model.addObject("dbId", AESCoderUtil.encode(dbId.toString()));
                 int dbType = dbMap.getIntAttribute("type");
                 if (dbType == 0) {
                     logger.warn("getColumnList 未设置数据库类型 id={}", dbId);

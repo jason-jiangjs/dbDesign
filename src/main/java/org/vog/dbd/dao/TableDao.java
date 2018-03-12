@@ -46,6 +46,17 @@ public class TableDao extends BaseMongoDao {
     }
 
     /**
+     * 查询指定表名称查询
+     */
+    public List<BaseMongoMap> findTableByName(long dbId, String tblName) {
+        Query queryObj = new Query(where("dbId").is(dbId));
+        queryObj.addCriteria(where("tableName").is(tblName));
+        queryObj.addCriteria(where("deleteFlg").is(false));
+
+        return mongoTemplate.find(queryObj, BaseMongoMap.class, COLL_NAME);
+    }
+
+    /**
      * 查询指定表的定义
      */
     public BaseMongoMap findTableById(long tblId) {

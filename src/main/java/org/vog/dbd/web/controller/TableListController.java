@@ -15,6 +15,7 @@ import org.vog.base.controller.BaseController;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.common.Constants;
 import org.vog.common.ErrorCode;
+import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.service.TableService;
@@ -45,26 +46,33 @@ public class TableListController extends BaseController {
     /**
      * 查询表的一览
      */
-    @RequestMapping(value = "/table_list", method = RequestMethod.POST)
-    public ModelAndView getTableList(@RequestParam Map<String, Object> params) {
+    @RequestMapping(value = "/table_list", method = RequestMethod.GET)
+    public ModelAndView getTableList(@RequestParam Map<String, String> params) {
         CustomerUserDetails userObj = (CustomerUserDetails) ((Authentication) request.getUserPrincipal()).getPrincipal();
         if (userObj != null) {
 
         }
 
-        Long dbId = StringUtil.convertToLong(params.get("dbId"));
+        ModelAndView model = new ModelAndView();
+        model.setViewName("table/table_list");
+        String dbIdStr = StringUtils.trimToNull(params.get("ddId"));
+        if (dbIdStr == null) {
+            // 数据库不存在
+            logger.warn("getTableList 缺少参数dbId");
+            return model;
+        }
+
+        Long dbId = StringUtil.convertToLong(AESCoderUtil.decode(dbIdStr));
         int checkFlg = StringUtil.convertToInt(params.get("checkFlg"));
         if (checkFlg == 1) {
             // 保存默认工作环境
             userService.setUserFavorite(userObj.getId(), dbId);
         }
 
-        ModelAndView model = new ModelAndView();
-        model.setViewName("table/table_list");
-
         BaseMongoMap dbMap = tableService.findDbById(dbId);
         if (dbMap == null || dbMap.isEmpty()) {
             // 数据库不存在
+            logger.warn("getTableList 数据库不存在 id={}", dbId);
             model.addObject("dbId", 0);
         } else {
             model.addObject("dbId", dbId);

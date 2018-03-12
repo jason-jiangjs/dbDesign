@@ -1,24 +1,44 @@
 package dataimport;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.vog.base.model.mongo.BaseMongoMap;
+import org.vog.dbd.service.ComSequenceService;
+import org.vog.dbd.service.TableService;
+import org.vog.dbd.web.DbDesignApplication;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dell on 2018/3/5.
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = DbDesignApplication.class)
 public class Data4Xls {
 
     private static String _dirName = "";
-    private static String[] _FileNames = { "数据库表设计_2.xlsx" };
+    private static String[] _FileNames = { "数据库表设计_product.xlsx" };
 //    private static String[] _FileNames = { "数据库表设计.xlsx", "数据库表设计_admin.xlsx",
 //            "数据库表设计_order.xlsx", "数据库表设计_product.xlsx" };
+
+    @Autowired
+    private TableService tableService;
+
+    @Autowired
+    private ComSequenceService sequenceService;
 
     @Test
     public void importData() {
@@ -38,66 +58,87 @@ public class Data4Xls {
         }
     }
 
-    private void convertFile(File file) throws Exception {
-        XSSFWorkbook xssfWorkbook = new XSSFWorkbook(file);
-        XSSFSheet xssfSheet = xssfWorkbook.getSheetAt(0);
-
-        int rowstart = xssfSheet.getFirstRowNum();
-        int rowEnd = xssfSheet.getLastRowNum();
-        for (int i = rowstart; i <= rowEnd; i++) {
-            XSSFRow row = xssfSheet.getRow(i);
-            if (null == row) continue;
-            int cellStart = row.getFirstCellNum();
-            int cellEnd = row.getLastCellNum();
-
-            for (int k = cellStart; k <= cellEnd; k++) {
-                XSSFCell cell = row.getCell(k);
-                if (null == cell) continue;
-
-                switch (cell.getCellType()) {
-                    case HSSFCell.CELL_TYPE_NUMERIC: // 数字
-                        System.out.print(cell.getNumericCellValue()
-                                + "   ");
-                        break;
-                    case HSSFCell.CELL_TYPE_STRING: // 字符串
-                        System.out.print(cell.getStringCellValue()
-                                + "   ");
-                        break;
-                    default:
-                        System.out.print("未知类型 " + cell.getRawValue());
-                        break;
-                }
-
-            }
-            System.out.print("\n");
-        }
-    }
-
     private void scanSheet(XSSFSheet xssfSheet) throws Exception {
+        String tblName = null;
+        String tblNameCn = null;
+        String tblDesc = null;
+        XSSFRow hrow = xssfSheet.getRow(1);
+        if (null != hrow) {
+            tblName = StringUtils.trimToNull(hrow.getCell(3).getStringCellValue());
+        }
+        if (tblName == null) {
+            return;
+        }
+        hrow = xssfSheet.getRow(2);
+        if (null != hrow) {
+            tblNameCn = StringUtils.trimToNull(hrow.getCell(3).getStringCellValue());
+        }
+        hrow = xssfSheet.getRow(3);
+        if (null != hrow) {
+            tblDesc = StringUtils.trimToNull(hrow.getCell(3).getStringCellValue());
+        }
+
+        Long tblId = 0L;
+        BaseMongoMap tblObj = null;
+        // 根据表名查询
+        List<BaseMongoMap> mapList = tableService.findTableByName(1001, tblName);
+        if (mapList == null || mapList.isEmpty()) {
+            // 要新建该表
+            tblObj = new BaseMongoMap();
+            tblObj.put("tableNameCN", tblNameCn);
+            tblObj.put("desc", tblDesc);
+            tblObj.put("dbId", 1001L);
+        } else if (mapList.size() > 1) {
+            System.out.println("重复定义表: " + tblName);
+            return;
+        } else {
+            tblObj = mapList.get(0);
+            tblId = tblObj.getLongAttribute("_id");
+            tblObj.put("tableNameCN", tblNameCn);
+            tblObj.put("desc", tblDesc);
+        }
+
+        List<Map<String, Object>> infoList = new ArrayList<>();
         int rowEnd = xssfSheet.getLastRowNum();
         for (int i = 6; i <= rowEnd; i++) {
             XSSFRow row = xssfSheet.getRow(i);
             if (null == row) continue;
 
             XSSFCell cell = row.getCell(2);
-            XSSFCell cell2 = row.getCell(11);
-            XSSFCell cell3 = row.getCell(12);
             if (null == cell) continue;
 
-            System.out.print((i+1) + "\n");
-            String colName = StringUtils.trimToEmpty(cell.getStringCellValue());
-            if ("".equals(colName)) {
+            String colName = StringUtils.trimToNull(cell.getStringCellValue());
+            if (colName == null || "索引".equals(colName)) {
                 break;
             }
-            System.out.println(colName);
-            if (cell2 != null) {
-                System.out.println(StringUtils.trimToEmpty(cell2.getStringCellValue()));
-            }
-            if (cell3 != null) {
-                System.out.println(StringUtils.trimToEmpty(cell3.getStringCellValue()));
+
+            Map<String, Object> colData = new HashMap<>();
+            colData.put("columnId", sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_COLUMN_ID));
+            colData.put("tableId", tblId);
+            colData.put("columnName", colName);
+            infoList.add(colData);
+
+            String colType = StringUtils.trimToEmpty(row.getCell(3, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue());
+            int idx = colType.indexOf('(');
+            if (idx < 1) {
+                colData.put("type", colType);
+            } else {
+                colData.put("type", colType.substring(0, idx));
+                colData.put("columnLens", colType.substring(idx + 1, colType.length() - 1));
             }
 
-            System.out.print("\n");
+            colData.put("primary", StringUtils.trimToEmpty(row.getCell(4, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue()));
+            colData.put("notnull", StringUtils.trimToEmpty(row.getCell(5, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue()));
+            colData.put("indexDef", StringUtils.trimToEmpty(row.getCell(6, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue()));
+            colData.put("unique", StringUtils.trimToEmpty(row.getCell(7, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue()));
+            colData.put("foreign", StringUtils.trimToEmpty(row.getCell(8, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue()));
+            colData.put("increment", StringUtils.trimToEmpty(row.getCell(9, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue()));
+            colData.put("default", StringUtils.trimToEmpty(row.getCell(10, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getRawValue()));
+            colData.put("columnNameCN", StringUtils.trimToEmpty(row.getCell(11, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue()));
+            colData.put("desc", StringUtils.trimToEmpty(row.getCell(12, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue()));
         }
+
+        tblObj.put("column_list", infoList);
+        tableService.saveTblDefInfo(tblId, tblObj);
     }
 }

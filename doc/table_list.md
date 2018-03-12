@@ -47,12 +47,12 @@
 |\\- desc | string | 备注
 |\\- type | string | 类型
 |\\- columnLens | string | 列长度
-|\\- primary | bool | 是否主键
-|\\- notnull | bool | 是否非空
+|\\- primary | string | 是否主键，'Y'表示是
+|\\- notnull | string | 是否非空，'Y'表示是
 |\\- indexDef | string | 索引定义
-|\\- unique | bool | 是否唯一
-|\\- foreign | bool | 是否外键
-|\\- increment | bool | 是否自增长
+|\\- unique | string | 是否唯一，'Y'表示是
+|\\- foreign | string | 外键定义
+|\\- increment | string | 是否自增长，'Y'表示是
 |\\- default | string | 缺省值
 
 索引  
