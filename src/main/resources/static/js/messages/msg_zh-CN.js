@@ -12,8 +12,5 @@ var msg = {
     user_status_val_2 : '锁定',
     user_status_val_4 : '删除',
 
-    db_type_val_1 : 'sql',
-    db_type_val_2 : 'nosql',
-    db_type_val_3 : 'solr',
 
 };

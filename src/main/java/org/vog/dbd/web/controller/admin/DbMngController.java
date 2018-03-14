@@ -81,7 +81,7 @@ public class DbMngController extends BaseController {
             return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
         }
 
-        Long dbId = StringUtil.convertToLong(params.get("dbId"));
+        Long dbId = StringUtil.convertToLong(params.get("_id"));
         String dbName = StringUtils.trimToNull((String) params.get("dbName"));
         String typeStr = StringUtils.trimToNull((String) params.get("typeStr"));
         int type = StringUtil.convertToInt(params.get("type"));

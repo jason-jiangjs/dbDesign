@@ -24,21 +24,14 @@ $(function () {
         {field:'_id',title:'ID',width:80},
         {field:'dbName',title:'名称',width:100},
         {field:'dbNameCN',title:'说明',width:100},
-        {field:'typeStr',title:'版本号',width:100},
-        {field:'desc',title:'备注',width:100},
-        {field:'type',title:'类型',width:100,
+        {field:'typeStr',title:'版本号',width:100,
             formatter: function(value, row, index) {
-                if (value) {
-                    return $translate('db_type_val_' + value);
-                }
-                return '';
-            }
-        },
+                return $.trim(value) + ' ' + $.trim(row.typeVer);
+            }},
+        {field:'desc',title:'备注',width:100},
         {field:'deleteFlg',title:'状态',width:80,
             formatter: function(value, row, index) {
-                if (value == 'true') {
-                    return $translate('user_status_val_1');
-                } else if (value == 'false') {
+                if (value == true || value == 'true') {
                     return $translate('user_status_val_4');
                 }
                 return '';
@@ -48,33 +41,84 @@ $(function () {
 
     options.onDblClickRow = function(index, row) {
         // 弹出对话框，显示数据库详细信息
-        $('#userId').val(row._id);
-        $('#optType').val(0);
-        $('#accNo').textbox('setValue', row.userId);
-        $('#userName').textbox('setValue', row.userName);
-        $('#role').combobox('select', row.role);
-        $('#status').combobox('select', row.status);
+        $('#dbId').val(row._id);
+        $('#dbName').textbox('setValue', row.dbName);
+        $('#dbNameCN').textbox('setValue', row.dbNameCN);
+        $('#desc').textbox('setValue', row.desc);
+        $('#ver').textbox('setValue', row.typeVer);
+        $('#typeStr').combobox('setValue', row.typeStrVal);
         $('#db_dlg').dialog('open');
     };
 
     $('#db_grid').datagrid(options);
+
+    $('#typeStr').combobox({
+        data: [{
+            "id": 1,
+            "text": "mysql",
+            "type": 1
+        },{
+            "id": 2,
+            "text": "oracle",
+            "type": 1
+        },{
+            "id": 3,
+            "text": "db2",
+            "type": 1
+        },{
+            "id": 4,
+            "text": "mongodb",
+            "type": 2
+        },{
+            "id": 5,
+            "text": "solr",
+            "type": 3
+        }],
+        valueField: 'id',
+        textField: 'text'
+    });
 });
 
 // 提交修改(保存)
 function submitForm() {
     // 不判断是否已修改，全部提交至后台
     var postData = {};
-    postData.tiid = $.trim($('#userId').val());
-    postData.optType = $.trim($('#optType').val());
-    postData.accNo = $.trim($('#accNo').textbox('getValue'));
-    postData.accName = $.trim($('#userName').textbox('getValue'));
-    postData.role = $.trim($('#role').combobox('getValue'));
-    postData.status = $.trim($('#status').combobox('getValue'));
+    var idStr = $.trim($('#dbId').val());
+    if (idStr == '') {
+        postData._id = 0;
+    } else {
+        postData._id = parseInt(idStr);
+    }
+    postData.dbName = $.trim($('#dbName').textbox('getValue'));
+    postData.dbNameCN = $.trim($('#dbNameCN').textbox('getValue'));
+    postData.desc = $.trim($('#desc').textbox('getValue'));
+    postData.typeVer = $.trim($('#ver').textbox('getValue'));
+    var verInfo = $.trim($('#typeStr').combobox('getValue'));
+    postData.typeStrVal = verInfo;
+
+    // 先验证必须值
+    if (postData.dbName == '' || verInfo == '' || postData.typeVer == '') {
+        layer.msg("数据库名称，以及类型和版本必须输入！");
+        return;
+    }
+
+    var dbData = $('#typeStr').combobox('getData');
+    for (idx in dbData) {
+        if (verInfo == dbData[idx].id) {
+            postData.typeStr = dbData[idx].text;
+            postData.type = dbData[idx].type;
+            break;
+        }
+    }
+    if (postData.typeStr == undefined || postData.typeStr == null || postData.typeStr == '') {
+        layer.msg("类型和版本必须输入！");
+        return;
+    }
 
     var loadLy = layer.load(1);
     $.ajax({
         type: 'post',
-        url: Ap_servletContext + '/ajax/mng/saveUserInfo',
+        url: Ap_servletContext + '/ajax/mng/saveDbInfo',
         data: JSON.stringify(postData),
         contentType: "application/json; charset=utf-8",
         success: function (data) {
@@ -103,12 +147,12 @@ function cancelForm() {
 // 添加数据库
 function addDb() {
     // 弹出对话框
-    $('#userId').val(null);
-    $('#optType').val(1);
-    $('#accNo').textbox('setValue', null);
-    $('#userName').textbox('setValue', null);
-    $('#role').combobox('select', '0');
-    $('#status').combobox('select', '0');
+    $('#dbId').val(null);
+    $('#dbName').textbox('setValue', null);
+    $('#dbNameCN').textbox('setValue', null);
+    $('#desc').textbox('setValue', null);
+    $('#ver').textbox('setValue', null);
+    $('#typeStr').combobox('clear');
     $('#db_dlg').dialog('open');
 }
 
