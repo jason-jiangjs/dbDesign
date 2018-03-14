@@ -18,6 +18,7 @@ import org.vog.common.ErrorCode;
 import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
 import org.vog.common.util.StringUtil;
+import org.vog.dbd.service.DbService;
 import org.vog.dbd.service.TableService;
 import org.vog.dbd.service.UpdateHisService;
 import org.vog.dbd.service.UserService;
@@ -42,6 +43,9 @@ public class TableListController extends BaseController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DbService dbService;
 
     /**
      * 查询表的一览
@@ -69,7 +73,7 @@ public class TableListController extends BaseController {
             userService.setUserFavorite(userObj.getId(), dbId);
         }
 
-        BaseMongoMap dbMap = tableService.findDbById(dbId);
+        BaseMongoMap dbMap = dbService.findDbById(dbId);
         if (dbMap == null || dbMap.isEmpty()) {
             // 数据库不存在
             logger.warn("getTableList 数据库不存在 id={}", dbId);
@@ -148,7 +152,7 @@ public class TableListController extends BaseController {
 
         // 列的表头定义
         List<List<Map<String, Object>>> columnsList = new ArrayList<>(1);
-        columnsList.add(tableService.getColDefineByType(tableService.getDbTypeById(dbId)));
+        columnsList.add(tableService.getColDefineByType(dbService.getDbTypeById(dbId)));
         data.put("columns", columnsList);
         return ApiResponseUtil.success(data);
     }
@@ -194,7 +198,7 @@ public class TableListController extends BaseController {
             return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
         }
 
-        tableService.delTableById(tblId);
+        tableService.delTableById(userId, tblId);
         updateHisService.saveUpdateHis(userObj, dbMap.getLongAttribute("dbId"), dbMap, null);
         return ApiResponseUtil.success();
     }

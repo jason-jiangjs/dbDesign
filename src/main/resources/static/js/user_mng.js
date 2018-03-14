@@ -85,8 +85,8 @@ $(function () {
         singleSelect: true,
         method: 'get',
         pagination: true,
-        pageSize: 10,
-        pageList: [10,20,50,100],
+        pageSize: 20,
+        pageList: [20,50,100],
         toolbar: '#user_grid_toolbar'
     };
     options.onDblClickRow = function(index, row) {
@@ -156,7 +156,7 @@ $(function () {
 
 var editIndex = null;
 // 双击表格行，开始编辑，只允许一行一行编辑
-function onClickRowBegEdit(index,　field,　value) {
+function onClickRowBegEdit(index, field, value) {
     if (endEditing()) {
         $('#role_grid').datagrid('selectRow', index).datagrid('editCell', { index: index, field: field });
         var ed = $('#role_grid').datagrid('getEditor', { index: index, field: field });
@@ -240,10 +240,9 @@ function cancelForm() {
     $('#user_dlg').dialog('close');
 }
 
-
 // 添加用户
 function addUser() {
-    //　弹出对话框
+    // 弹出对话框
     $('#userId').val(null);
     $('#optType').val(1);
     $('#accNo').textbox('setValue', null);
@@ -253,7 +252,7 @@ function addUser() {
 
     // 加载权限信息
     $('#role_grid').datagrid({
-        url: Ap_servletContext + '/ajax/mng/getUserRoleList?iid=0&_t=' + new Date().getTime(),
+
         columns: role_grid_cols,
         onDblClickCell: onClickRowBegEdit
     });
@@ -281,7 +280,7 @@ function deleteUser() {
         var loadLy = layer.load(1);
         $.ajax({
             type: 'post',
-            url: Ap_servletContext + '/ajax/mng/delUser?userId=' + s1.userId,
+            url: Ap_servletContext + '/ajax/mng/delUser?userId=' + s1._id,
             success: function (data) {
                 layer.close(loadLy);
                 if (data.code == 0) {

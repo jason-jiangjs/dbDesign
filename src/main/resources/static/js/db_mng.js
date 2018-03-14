@@ -2,7 +2,7 @@
  * 数据库设计管理
  */
 
-// 画面项目初始化，加载用户一览
+// 画面项目初始化，加载数据库一览
 $(function () {
 
     // 加载列定义
@@ -15,8 +15,8 @@ $(function () {
         singleSelect: true,
         method: 'get',
         pagination: true,
-        pageSize: 10,
-        pageList: [10,20,50,100],
+        pageSize: 20,
+        pageList: [20,50,100],
         toolbar: '#db_grid_toolbar'
     };
     options.url = Ap_servletContext + '/ajax/mng/getDbList?_t=' + new Date().getTime();
@@ -46,77 +46,22 @@ $(function () {
         }
     ]];
 
+    options.onDblClickRow = function(index, row) {
+        // 弹出对话框，显示数据库详细信息
+        $('#userId').val(row._id);
+        $('#optType').val(0);
+        $('#accNo').textbox('setValue', row.userId);
+        $('#userName').textbox('setValue', row.userName);
+        $('#role').combobox('select', row.role);
+        $('#status').combobox('select', row.status);
+        $('#db_dlg').dialog('open');
+    };
+
     $('#db_grid').datagrid(options);
-
-    $.extend($.fn.datagrid.methods, {
-        editCell: function(jq,param){
-            return jq.each(function(){
-                var opts = $(this).datagrid('options');
-                var fields = $(this).datagrid('getColumnFields',true).concat($(this).datagrid('getColumnFields'));
-                for(var i=0; i<fields.length; i++){
-                    var col = $(this).datagrid('getColumnOption', fields[i]);
-                    col.editor1 = col.editor;
-                    if (fields[i] != param.field){
-                        col.editor = null;
-                    }
-                }
-                $(this).datagrid('beginEdit', param.index);
-                for(var i=0; i<fields.length; i++){
-                    var col = $(this).datagrid('getColumnOption', fields[i]);
-                    col.editor = col.editor1;
-                }
-            });
-        }
-    });
 });
-
-var editIndex = null;
-// 双击表格行，开始编辑，只允许一行一行编辑
-function onClickRowBegEdit(index,　field,　value) {
-    if (endEditing()) {
-        $('#role_grid').datagrid('selectRow', index).datagrid('editCell', { index: index, field: field });
-        var ed = $('#role_grid').datagrid('getEditor', { index: index, field: field });
-        if (ed && ed.target) {
-            if (field == 'desc') {
-                $(ed.target).focus();
-            } else {
-                if ($(ed.target).closest('td').find("input.textbox-text")[0]) {
-                    $(ed.target).closest('td').find("input.textbox-text")[0].focus();
-                }
-            }
-        }
-        //$(ed.target).focus();
-        editIndex = index;
-    }
-}
-
-// 结束编辑状态
-function endEditing() {
-    if (editIndex == null) {
-        return true
-    }
-    if ($('#role_grid').datagrid('validateRow', editIndex)) {
-        $('#role_grid').datagrid('endEdit', editIndex);
-        editIndex = null;
-        return true;
-    } else {
-        return false;
-    }
-}
 
 // 提交修改(保存)
 function submitForm() {
-    $('#role_grid').datagrid('acceptChanges');
-    var roleList = $('#role_grid').datagrid('getRows');
-    if (roleList.length > 0) {
-        for (idx in roleList) {
-            if (roleList[idx].dbName == '' || roleList[idx].role == '') {
-                layer.alert("没有正确设置访问权限,不允许设置空的值.");
-                return;
-            }
-        }
-    }
-
     // 不判断是否已修改，全部提交至后台
     var postData = {};
     postData.tiid = $.trim($('#userId').val());
@@ -125,7 +70,6 @@ function submitForm() {
     postData.accName = $.trim($('#userName').textbox('getValue'));
     postData.role = $.trim($('#role').combobox('getValue'));
     postData.status = $.trim($('#status').combobox('getValue'));
-    postData.roleList = roleList;
 
     var loadLy = layer.load(1);
     $.ajax({
@@ -145,32 +89,35 @@ function submitForm() {
     });
 }
 
+// 关闭对话框,刷新用户一览(当前分页)
+function _endSave() {
+    $('#db_grid').datagrid('reload', {});
+    $('#db_dlg').dialog('close');
+}
 
-// 添加用户
-function addUser() {
-    //　弹出对话框
+// 取消修改，并关闭对话框
+function cancelForm() {
+    $('#db_dlg').dialog('close');
+}
+
+// 添加数据库
+function addDb() {
+    // 弹出对话框
     $('#userId').val(null);
     $('#optType').val(1);
     $('#accNo').textbox('setValue', null);
     $('#userName').textbox('setValue', null);
     $('#role').combobox('select', '0');
     $('#status').combobox('select', '0');
-
-    // 加载权限信息
-    $('#role_grid').datagrid({
-        url: Ap_servletContext + '/ajax/mng/getUserRoleList?iid=0&_t=' + new Date().getTime(),
-        columns: role_grid_cols,
-        onDblClickCell: onClickRowBegEdit
-    });
-    $('#user_dlg').dialog('open');
+    $('#db_dlg').dialog('open');
 }
 
-// 删除用户
-function deleteUser() {
-    var gridObj = $('#user_grid');
+// 删除数据库
+function deleteDb() {
+    var gridObj = $('#db_grid');
     var s1 = gridObj.datagrid('getSelected');
     if (s1 == null || s1 == undefined) {
-        layer.msg('请选择一个用户后再操作．')
+        layer.msg('请选择一个数据库后再操作．')
         return;
     }
     var s2 = gridObj.datagrid('getRowIndex', s1._id);
@@ -179,20 +126,20 @@ function deleteUser() {
         return;
     }
 
-    layer.confirm('确定要删除选定的用户［' + s1.userId + '］?<br>该操作不可恢复，是否确认删除?', { icon: 7,
+    layer.confirm('确定要删除选定的数据库［' + s1.dbName + '］?<br>该操作不可恢复，是否确认删除?', { icon: 7,
         btn: ['确定','取消'] //按钮
     }, function(index) {
         // 提交请求到后台
         var loadLy = layer.load(1);
         $.ajax({
             type: 'post',
-            url: Ap_servletContext + '/ajax/mng/delUser?userId=' + s1.userId,
+            url: Ap_servletContext + '/ajax/mng/delDb?dbId=' + s1._id,
             success: function (data) {
                 layer.close(loadLy);
                 if (data.code == 0) {
                     layer.close(index);
                     // 刷新用户一览
-                    $('#user_grid').datagrid('reload', {});
+                    $('#db_grid').datagrid('reload', {});
                 } else {
                     layer.msg(data.msg + ' code=' + data.code);
                 }

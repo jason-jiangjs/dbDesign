@@ -86,47 +86,5 @@ public class UserDao extends BaseMongoDao {
         return mongoTemplate.findOne(queryObj, BaseMongoMap.class, COLL_NAME);
     }
 
-    /**
-     * 保存用户的默认工作数据库
-     */
-    public WriteResult setUserFavorite(long userId, long dbId) {
-        Query query = new Query(where("_id").is(userId));
-
-        Map<String, Object> infoMap = new HashMap<>();
-        infoMap.put("favorite", dbId);
-        BasicDBObject basicDBObject = new BasicDBObject();
-        basicDBObject.put("$set", infoMap);
-        Update update = new BasicUpdate(basicDBObject);
-
-        return mongoTemplate.updateFirst(query, update, COLL_NAME);
-    }
-
-    /**
-     * 删除用户
-     */
-    public WriteResult removeUser(long userId) {
-        Query query = new Query(where("_id").is(userId));
-
-        Map<String, Object> infoMap = new HashMap<>();
-        infoMap.put("status", 4);
-        BasicDBObject basicDBObject = new BasicDBObject();
-        basicDBObject.put("$set", infoMap);
-        Update update = new BasicUpdate(basicDBObject);
-
-        return mongoTemplate.updateFirst(query, update, COLL_NAME);
-    }
-
-    /**
-     * 修改(保存)指定表的定义
-     */
-    public WriteResult saveUser(long iid, Map infoMap) {
-        Query query = new Query(where("_id").is(iid));
-
-        BasicDBObject basicDBObject = new BasicDBObject();
-        basicDBObject.put("$set", infoMap);
-        Update update = new BasicUpdate(basicDBObject);
-
-        return mongoTemplate.upsert(query, update, COLL_NAME);
-    }
 
 }

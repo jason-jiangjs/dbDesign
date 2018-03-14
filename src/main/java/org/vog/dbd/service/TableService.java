@@ -1,16 +1,13 @@
 package org.vog.dbd.service;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.base.service.BaseService;
-import org.vog.common.util.AESCoderUtil;
+import org.vog.common.util.DateTimeUtil;
 import org.vog.dbd.dao.ColumnDefineDao;
-import org.vog.dbd.dao.DbDao;
 import org.vog.dbd.dao.TableDao;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -20,32 +17,10 @@ import java.util.Map;
 public class TableService extends BaseService {
 
     @Autowired
-    private DbDao dbDao;
-
-    @Autowired
     private TableDao tableDao;
 
     @Autowired
     private ColumnDefineDao columnDefineDao;
-
-    /**
-     * 查询指定数据库
-     */
-    public BaseMongoMap findDbById(long dbId) {
-        return dbDao.findDbById(dbId);
-    }
-
-    /**
-     * 查询指定数据库
-     */
-    public int getDbTypeById(long dbId) {
-        BaseMongoMap dbObj = dbDao.findDbById(dbId);
-        int dbType = dbObj.getIntAttribute("type");
-        if (dbType == 0) {
-            logger.warn("未设置数据库类型 id={}", dbId);
-        }
-        return dbType;
-    }
 
     /**
      * 查询指定数据库的表一览, 优先使用名称查询
@@ -76,10 +51,14 @@ public class TableService extends BaseService {
     }
 
     /**
-     * 删除指定的表
+     * 删除指定的表(逻辑删除)
      */
-    public void delTableById(long tblId) {
-        tableDao.delTableById(tblId);
+    public void delTableById(long userId, long tblId) {
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("deleteFlg", true);
+        infoMap.put("modifier", userId);
+        infoMap.put("modifiedTime", DateTimeUtil.getDate());
+        tableDao.saveObject(tblId, infoMap, false);
     }
 
     /**
@@ -97,7 +76,7 @@ public class TableService extends BaseService {
      * 修改(保存)指定表的定义
      */
     public void saveTblDefInfo(Long tblId, Map infoMap) {
-        tableDao.saveTblDefInfo(tblId, infoMap);
+        tableDao.saveObject(tblId, infoMap, true);
     }
 
 }

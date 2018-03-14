@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.base.service.BaseService;
 import org.vog.common.util.AESCoderUtil;
+import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.dao.DbDao;
 import org.vog.dbd.dao.UserDao;
@@ -37,17 +38,12 @@ public class UserService extends BaseService {
     }
 
     /**
-     * 根据登录帐号查询用户
-     */
-    public BaseMongoMap getUserByAccount(String userId) {
-        return userDao.getUserByAccount(userId);
-    }
-
-    /**
      * 保存用户的默认工作数据库
      */
     public void setUserFavorite(long userId, long dbId) {
-        userDao.setUserFavorite(userId, dbId);
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("favorite", dbId);
+        userDao.saveObject(userId, infoMap, false);
     }
 
     /**
@@ -135,8 +131,12 @@ public class UserService extends BaseService {
     /**
      * 删除用户
      */
-    public void removeUser(long userId) {
-        userDao.removeUser(userId);
+    public void removeUser(Long adminId, long userId) {
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("status", 4);
+        infoMap.put("modifier", adminId);
+        infoMap.put("modifiedTime", DateTimeUtil.getDate());
+        userDao.saveObject(userId, infoMap, false);
     }
 
     /**
@@ -160,7 +160,7 @@ public class UserService extends BaseService {
         }
         userObj.put("roleList", roleList);
 
-        userDao.saveUser(iid, userObj);
+        userDao.saveObject(iid, userObj, true);
     }
 
     /**
@@ -181,6 +181,6 @@ public class UserService extends BaseService {
         }
         userObj.put("roleList", roleList);
 
-        userDao.saveUser(iid, userObj);
+        userDao.saveObject(iid, userObj, false);
     }
 }

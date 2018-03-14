@@ -4,10 +4,8 @@
 |_id           | long      | 数据库ID | 系统内部ID，自增
 |deleteFlg     | bool      | 数据是否有效 | 缺省为"false", "true"表示该条数据已被删除
 |creator       | long      | 创建者ID 
-|creatorName   | string    | 创建者姓名
 |createdTime   | timestamp | 创建时间
 |modifier      | long      | 更新者ID
-|modifierName  | string 　 | 更新者姓名
 |modifiedTime  | timestamp | 更新时间
 |dbName        | string    | 数据库名称
 |dbNameCN      | string    | 数据库名称（中文）
@@ -24,10 +22,8 @@
 |dbId | long | 数据库ID
 |deleteFlg | bool | 数据是否有效 | 缺省为"false", "true"表示该条数据已被删除
 |creator | long | 创建者ID
-|creatorName   | string    | 创建者姓名
 |createdTime | timestamp | 创建时间
 |modifier | long | 更新者ID
-|modifierName  | string 　 | 更新者姓名
 |modifiedTime | timestamp | 更新时间
 |tableName | string | 表名
 |tableNameCN | string | 表名（中文） 
@@ -37,10 +33,8 @@
 |+ column_list | map[] | 列定义一览
 |\\- columnId | long | 列ID | 系统内部ID，自增
 |\\- creator | long | 创建者ID
-|\\- creatorName   | string    | 创建者姓名
 |\\- createdTime | timestamp | 创建时间
 |\\- modifier | long | 更新者ID
-|\\- modifierName  | string 　 | 更新者姓名
 |\\- modifiedTime | timestamp | 更新时间
 |\\- columnName | string | 列名
 |\\- columnNameCN | string | 列名（中文） | 对该列的说明

@@ -1,17 +1,13 @@
 package org.vog.dbd.dao;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 import org.vog.base.dao.mongo.BaseMongoDao;
 import org.vog.base.model.mongo.BaseMongoMap;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
@@ -71,21 +67,4 @@ public class TableDao extends BaseMongoDao {
         return mongoTemplate.findOne(queryObj, BaseMongoMap.class, COLL_NAME);
     }
 
-    /**
-     * 修改(保存)指定表的定义
-     */
-    public WriteResult saveTblDefInfo(long tblId, Map infoMap) {
-        Query query = new Query(where("_id").is(tblId));
-
-        BasicDBObject basicDBObject = new BasicDBObject();
-        basicDBObject.put("$set", infoMap);
-        Update update = new BasicUpdate(basicDBObject);
-
-        return mongoTemplate.upsert(query, update, COLL_NAME);
-    }
-
-    public WriteResult delTableById(long tblId) {
-        Query query = new Query(where("_id").is(tblId));
-        return mongoTemplate.remove(query, COLL_NAME);
-    }
 }

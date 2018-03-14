@@ -15,9 +15,11 @@ import org.vog.common.Constants;
 import org.vog.common.ErrorCode;
 import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
+import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.service.DbService;
 import org.vog.dbd.service.UpdateHisService;
+import org.vog.dbd.service.UserService;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +34,9 @@ public class DbMngController extends BaseController {
 
     @Autowired
     private DbService dbService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private UpdateHisService updateHisService;
@@ -70,40 +75,38 @@ public class DbMngController extends BaseController {
     @ResponseBody
     @RequestMapping(value = "/ajax/mng/saveDbInfo", method = RequestMethod.POST)
     public Map<String, Object> saveDbInfo(@RequestBody Map<String, Object> params) {
-        Long tiid = StringUtil.convertToLong(params.get("tiid"));
-        String accNo = StringUtils.trimToNull((String) params.get("accNo"));
-        String accName = StringUtils.trimToNull((String) params.get("accName"));
-        int optType = StringUtil.convertToInt(params.get("optType")); // 业务类型，为１时表示新增用户
-        int accRole = StringUtil.convertToInt(params.get("role"));
-        int accStatus = StringUtil.convertToInt(params.get("status"));
-        List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
-        if (optType == 0 && tiid == 0) {
-            logger.warn("saveUserInfo 缺少参数 tiid");
-            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数 tiid");
-        }
-        if (optType == 1 && accStatus != 0) {
-            logger.warn("saveUserInfo 用户状态错误");
-            return ApiResponseUtil.error(ErrorCode.W1001, "创建新用户时状态值只能是'创建'");
-        }
-        if (accNo == null) {
-            logger.warn("saveUserInfo 缺少参数 accNo");
-            return ApiResponseUtil.error(ErrorCode.W1001, "缺少登录帐号");
-        }
-        if (roleList == null || roleList.isEmpty()) {
-            logger.warn("saveUserInfo 缺少参数 roleList");
-            return ApiResponseUtil.error(ErrorCode.W1001, "没有设置访问权限");
+        Long adminId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+        if (adminId == null) {
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
         }
 
-//        if (optType == 1) {
-//            userService.addUser(params);
-//        } else {
-//            BaseMongoMap userObj = userService.getUserById(tiid);
-//            if (userObj == null) {
-//                logger.warn("deleteUser 用户不存在/已删除 userId={}", tiid);
-//                return ApiResponseUtil.error(ErrorCode.E5011, "该用户不存在/已删除 userId={}", tiid);
-//            }
-//            userService.updateUser(userObj, params);
-//        }
+        Long dbId = StringUtil.convertToLong(params.get("dbId"));
+        String dbName = StringUtils.trimToNull((String) params.get("dbName"));
+        String typeStr = StringUtils.trimToNull((String) params.get("typeStr"));
+        int type = StringUtil.convertToInt(params.get("type"));
+
+        if (dbName == null || type == 0 || typeStr == null) {
+            logger.warn("saveDbInfo 缺少参数 params={}", params.toString());
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数，请填写完整再保存。");
+        }
+
+        if (dbId == 0) {
+            // 新增
+            params.put("creator", adminId);
+            params.put("createdTime", DateTimeUtil.getDate());
+            dbService.saveDb(dbId, params);
+        } else {
+            // 修改
+            BaseMongoMap dbObj = dbService.findDbById(dbId);
+            if (dbObj == null) {
+                logger.warn("saveDbInfo 数据库不存在/已删除 dbId={}", dbId);
+                return ApiResponseUtil.error(ErrorCode.E5001, "该数据库不存在/已删除 dbId={}", dbId);
+            }
+            params.put("modifier", adminId);
+            params.put("modifiedTime", DateTimeUtil.getDate());
+            dbService.saveDb(dbId, params);
+        }
         return ApiResponseUtil.success();
     }
 
@@ -113,18 +116,28 @@ public class DbMngController extends BaseController {
     @ResponseBody
     @RequestMapping(value = "/ajax/mng/delDb", method = RequestMethod.POST)
     public Map<String, Object> deleteDb(@RequestParam Map<String, String> params) {
-        String userId = StringUtils.trimToNull(params.get("userId"));
-        if (userId == null) {
-            logger.warn("deleteUser 缺少参数 userId");
-            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数 userId");
+        Long dbId = StringUtil.convertToLong(params.get("dbId"));
+        if (dbId == 0) {
+            logger.warn("deleteDb 缺少参数 dbId");
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数dbId，请选择数据库后再操作。");
         }
-//        BaseMongoMap userObj = userService.getUserByAccount(userId);
-//        if (userObj == null) {
-//            logger.warn("deleteUser 用户不存在/已删除 userId={}", userId);
-//            return ApiResponseUtil.error(ErrorCode.E5011, "该用户不存在/已删除 userId={}", userId);
-//        }
-//
-//        userService.removeUser(userObj.getLongAttribute("_id"));
+        Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+        if (userId == null || userId == 0) {
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
+        }
+        BaseMongoMap userObj = userService.getUserById(userId);
+        if (userObj == null) {
+            logger.warn("deleteDb 用户不存在/已删除 userId={}", userId);
+            return ApiResponseUtil.error(ErrorCode.S9004, "该登录用户不存在/已删除 userId={}", userId);
+        }
+
+        if (userObj.getIntAttribute("role") != 9) {
+            logger.warn("deleteDb 用户无权限 userId={}", userId);
+            return ApiResponseUtil.error(ErrorCode.E5001, "该登录用户无删除权限 userId={}", userId);
+        }
+
+        dbService.removeDb(userId, dbId);
         return ApiResponseUtil.success();
     }
 

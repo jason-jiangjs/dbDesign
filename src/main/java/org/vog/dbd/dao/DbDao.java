@@ -28,8 +28,6 @@ public class DbDao extends BaseMongoDao {
      */
     public BaseMongoMap findDbById(long dbId) {
         Query queryObj = new Query(where("_id").is(dbId));
-
-
         return mongoTemplate.findOne(queryObj, BaseMongoMap.class, COLL_NAME);
     }
 
@@ -56,4 +54,6 @@ public class DbDao extends BaseMongoDao {
         Query queryObj = new Query();
         return mongoTemplate.count(queryObj, COLL_NAME);
     }
+
+
 }

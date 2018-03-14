@@ -155,12 +155,10 @@ public class ColumnListController extends BaseController {
             tblData.put("deleteFlg", false);
             tblData.put("type", 1); // 此值要根据数据库类型来定
             tblData.put("creator", userId);
-            tblData.put("creatorName", userObj.getUsername());
             tblData.put("createdTime", nowTime);
             params.put("_tbl_id", tblId);
         } else {
             tblData.put("modifier", userId);
-            tblData.put("modifierName", userObj.getUsername());
             tblData.put("modifiedTime", nowTime);
         }
 
@@ -176,11 +174,9 @@ public class ColumnListController extends BaseController {
                 colData.put("columnId", sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_COLUMN_ID));
                 colData.put("tableId", tblId);
                 colData.put("creator", userId);
-                colData.put("creatorName", userObj.getUsername());
                 colData.put("createdTime", nowTime);
             } else {
                 colData.put("modifier", userId);
-                colData.put("modifierName", userObj.getUsername());
                 colData.put("modifiedTime", nowTime);
             }
         }

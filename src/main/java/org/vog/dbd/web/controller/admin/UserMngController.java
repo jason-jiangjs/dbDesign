@@ -14,6 +14,7 @@ import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.common.Constants;
 import org.vog.common.ErrorCode;
 import org.vog.common.util.ApiResponseUtil;
+import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.service.UserService;
 
@@ -85,11 +86,15 @@ public class UserMngController extends BaseController {
     @ResponseBody
     @RequestMapping(value = "/ajax/mng/saveUserInfo", method = RequestMethod.POST)
     public Map<String, Object> saveUserInfo(@RequestBody Map<String, Object> params) {
+        Long adminId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+        if (adminId == null) {
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
+        }
+
         Long tiid = StringUtil.convertToLong(params.get("tiid"));
-        String accNo = StringUtils.trimToNull((String) params.get("accNo"));
-        String accName = StringUtils.trimToNull((String) params.get("accName"));
+        String accNo = StringUtils.trimToNull((String) params.get("accNo")); // 登录帐号
         int optType = StringUtil.convertToInt(params.get("optType")); // 业务类型，为１时表示新增用户
-        int accRole = StringUtil.convertToInt(params.get("role"));
         int accStatus = StringUtil.convertToInt(params.get("status"));
         List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
         if (optType == 0 && tiid == 0) {
@@ -110,6 +115,8 @@ public class UserMngController extends BaseController {
         }
 
         if (optType == 1) {
+            params.put("creator", adminId);
+            params.put("createdTime", DateTimeUtil.getDate());
             userService.addUser(params);
         } else {
             BaseMongoMap userObj = userService.getUserById(tiid);
@@ -117,6 +124,8 @@ public class UserMngController extends BaseController {
                 logger.warn("deleteUser 用户不存在/已删除 userId={}", tiid);
                 return ApiResponseUtil.error(ErrorCode.E5011, "该用户不存在/已删除 userId={}", tiid);
             }
+            params.put("modifier", adminId);
+            params.put("modifiedTime", DateTimeUtil.getDate());
             userService.updateUser(userObj, params);
         }
         return ApiResponseUtil.success();
@@ -128,18 +137,24 @@ public class UserMngController extends BaseController {
     @ResponseBody
     @RequestMapping(value = "/ajax/mng/delUser", method = RequestMethod.POST)
     public Map<String, Object> deleteUser(@RequestParam Map<String, String> params) {
-        String userId = StringUtils.trimToNull(params.get("userId"));
-        if (userId == null) {
+        Long adminId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+        if (adminId == null) {
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
+        }
+
+        Long userId = StringUtil.convertToLong(params.get("userId"));
+        if (userId == 0) {
             logger.warn("deleteUser 缺少参数 userId");
             return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数 userId");
         }
-        BaseMongoMap userObj = userService.getUserByAccount(userId);
+        BaseMongoMap userObj = userService.getUserById(userId);
         if (userObj == null) {
             logger.warn("deleteUser 用户不存在/已删除 userId={}", userId);
             return ApiResponseUtil.error(ErrorCode.E5011, "该用户不存在/已删除 userId={}", userId);
         }
 
-        userService.removeUser(userObj.getLongAttribute("_id"));
+        userService.removeUser(adminId, userId);
         return ApiResponseUtil.success();
     }
 

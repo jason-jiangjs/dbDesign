@@ -17,6 +17,7 @@ import org.vog.common.ErrorCode;
 import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
 import org.vog.common.util.StringUtil;
+import org.vog.dbd.service.DbService;
 import org.vog.dbd.service.TableService;
 import org.vog.dbd.service.UserService;
 import org.vog.dbd.web.login.CustomerUserDetails;
@@ -35,6 +36,9 @@ public class LoginController extends BaseController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private DbService dbService;
+
     /**
      * 登录成功
      */
@@ -48,7 +52,7 @@ public class LoginController extends BaseController {
         if (dbId != null && dbId != 0 && checkFlg == 0) {
             model.setViewName("table/table_list");
 
-            BaseMongoMap dbMap = tableService.findDbById(dbId);
+            BaseMongoMap dbMap = dbService.findDbById(dbId);
             if (dbMap == null || dbMap.isEmpty()) {
                 // 数据库不存在
                 model.addObject("dbId", 0);

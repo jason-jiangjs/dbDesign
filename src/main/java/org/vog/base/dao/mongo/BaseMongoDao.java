@@ -1,6 +1,8 @@
 package org.vog.base.dao.mongo;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.WriteResult;
+import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +13,8 @@ import org.springframework.data.mongodb.core.query.Update;
 
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 public abstract class BaseMongoDao {
 
@@ -63,6 +67,23 @@ public abstract class BaseMongoDao {
      */
     public WriteResult update(Query query, Update update) {
         return mongoTemplate.updateFirst(query, update, getTableName());
+    }
+
+    /**
+     * 保存数据(查询关键字为"_id")
+     */
+    public WriteResult saveObject(long id, Map<String, Object> infoMap, boolean upsert) {
+        Query query = new Query(where("_id").is(id));
+
+        BasicDBObject basicDBObject = new BasicDBObject();
+        basicDBObject.put("$set", infoMap);
+        Update update = new BasicUpdate(basicDBObject);
+
+        if (upsert) {
+            return mongoTemplate.upsert(query, update, getTableName());
+        } else {
+            return mongoTemplate.updateFirst(query, update, getTableName());
+        }
     }
 
     /**

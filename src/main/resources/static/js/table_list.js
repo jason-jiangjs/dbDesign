@@ -543,7 +543,7 @@ var _curTblId = null;
 var editIndex = null;
 var isRowEdited = false;
 // 双击表格行，开始编辑，只允许一行一行编辑
-function onClickRowBegEdit(index,　field,　value) {
+function onClickRowBegEdit(index, field, value) {
     if (_curTblId == undefined || _curTblId == null || _curTblId == '') {
         return false;
     }
