@@ -80,6 +80,7 @@ public class UserDao extends BaseMongoDao {
      */
     public BaseMongoMap getUserRoleInfo(long userId) {
         Query queryObj = new Query(where("_id").is(userId));
+        queryObj.fields().include("role");
         queryObj.fields().include("roleList");
 
         return mongoTemplate.findOne(queryObj, BaseMongoMap.class, COLL_NAME);

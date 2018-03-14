@@ -6,10 +6,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.base.service.BaseService;
+import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.dao.DbDao;
 import org.vog.dbd.dao.UserDao;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -65,68 +67,69 @@ public class UserService extends BaseService {
     /**
      * 查询用户一览
      */
-    public List<Map<String, Object>> findUserRoleList(long userId) {
+    public List<Map<String, Object>> findUserDbList(long userId, boolean needCrpId) {
         BaseMongoMap userMap = userDao.getUserRoleInfo(userId);
         if (userMap == null) {
             return Collections.EMPTY_LIST;
         }
 
-        List<Map<String, Object>> userList = (List<Map<String, Object>>) userMap.get("roleList");
-        if (userList == null || userList.isEmpty()) {
+        List<Map<String, Object>> roleList = null;
+        // 如果该用户是系统管理员，则返回所有的数据库一览
+        if (userMap.getIntAttribute("role") == 9) {
+            List<BaseMongoMap> dDbList = dbDao.findDbList(0, 0, true);
+            if (dDbList == null || dDbList.isEmpty()) {
+                logger.error("getUserRoleList 无数据库 iid={}", userId);
+                return Collections.EMPTY_LIST;
+            }
+            roleList = new ArrayList<>();
+            for (BaseMongoMap dbMap : dDbList) {
+                Map<String, Object> item = new HashMap<>();
+                Long dbId = dbMap.getLongAttribute("_id");
+                if (needCrpId) {
+                    item.put("id", AESCoderUtil.encode(dbId.toString()));
+                } else {
+                    item.put("dbId", dbId);
+                }
+                item.put("role", 9);
+
+                item.put("dbNameTxt", getDbNameTxt(dbMap));
+                roleList.add(item);
+            }
+            return roleList;
+        }
+
+        // 如果不是，只返回当前用户有权限操作的数据库一览
+        roleList = (List<Map<String, Object>>) userMap.get("roleList");
+        if (roleList == null || roleList.isEmpty()) {
             logger.warn("getUserRoleList 该用户未设置权限 iid={}", userId);
             return Collections.EMPTY_LIST;
         }
-        for (Map<String, Object> roleMap : userList) {
+        for (Map<String, Object> roleMap : roleList) {
             BaseMongoMap dbMap = dbDao.findDbById(StringUtil.convertToLong(roleMap.get("dbId")));
             if (dbMap == null) {
                 continue;
             }
-            String dbTxt = StringUtils.trimToEmpty(dbMap.getStringAttribute("dbName"));
-            String cnName = StringUtils.trimToNull(dbMap.getStringAttribute("dbNameCN"));
-            if (cnName != null) {
-                dbTxt = dbTxt + "  =>  " + cnName;
+            if (needCrpId) {
+                Long dbId = dbMap.getLongAttribute("_id");
+                roleMap.put("id", AESCoderUtil.encode(dbId.toString()));
+                roleMap.remove("dbId");
             }
-            String dbVerStr = StringUtils.trimToNull(dbMap.getStringAttribute("typeStr"));
-            if (dbVerStr != null) {
-                dbTxt = dbTxt + " (" + dbVerStr + ")";
-            }
-            roleMap.put("dbName", dbTxt);
+            roleMap.put("dbNameTxt", getDbNameTxt(dbMap));
         }
-        return userList;
+        return roleList;
     }
 
-    /**
-     * 查询用户一览
-     */
-    public List<Map<String, Object>> findUserDbList(long userId) {
-        BaseMongoMap userMap = userDao.getUserRoleInfo(userId);
-        if (userMap == null) {
-            return Collections.EMPTY_LIST;
+    private static String getDbNameTxt(BaseMongoMap dbMap) {
+        String dbTxt = StringUtils.trimToEmpty(dbMap.getStringAttribute("dbName"));
+        String cnName = StringUtils.trimToNull(dbMap.getStringAttribute("dbNameCN"));
+        if (cnName != null) {
+            dbTxt = dbTxt + "  =>  " + cnName;
         }
-
-        List<Map<String, Object>> userList = (List<Map<String, Object>>) userMap.get("roleList");
-        if (userList == null || userList.isEmpty()) {
-            logger.warn("getUserRoleList 该用户未设置权限 iid={}", userId);
-            return Collections.EMPTY_LIST;
+        String dbVerStr = StringUtils.trimToNull(dbMap.getStringAttribute("typeStr"));
+        if (dbVerStr != null) {
+            dbTxt = dbTxt + " (" + dbVerStr + ")";
         }
-        for (Map<String, Object> roleMap : userList) {
-            roleMap.remove("role");
-            BaseMongoMap dbMap = dbDao.findDbById(StringUtil.convertToLong(roleMap.get("dbId")));
-            if (dbMap == null) {
-                continue;
-            }
-            String dbTxt = StringUtils.trimToEmpty(dbMap.getStringAttribute("dbName"));
-            String cnName = StringUtils.trimToNull(dbMap.getStringAttribute("dbNameCN"));
-            if (cnName != null) {
-                dbTxt = dbTxt + "  =>  " + cnName;
-            }
-            String dbVerStr = StringUtils.trimToNull(dbMap.getStringAttribute("typeStr"));
-            if (dbVerStr != null) {
-                dbTxt = dbTxt + " (" + dbVerStr + ")";
-            }
-            roleMap.put("dbNameTxt", dbTxt);
-        }
-        return userList;
+        return dbTxt;
     }
 
     /**

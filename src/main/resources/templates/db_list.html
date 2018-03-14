@@ -22,7 +22,7 @@
     <p style="font-size: small">点击一览中的项目后，跳转到编辑画面</p>
     <div style="margin:20px 0"></div>
     <ul id="dbList" class="easyui-datalist" lines="true" style="width:100%;height:250px">
-        <li th:each="dbItem : ${dbList}" th:value="${dbItem.id}" th:text="${dbItem.text}"></li>
+        <li th:each="dbItem : ${dbList}" th:value="${dbItem.id}" th:text="${dbItem.dbNameTxt}"></li>
     </ul>
     <div style="margin-top: 5px">
         <input type="checkbox" id="defaultFlg"><label style="font-size: small">将所选择的数据库设置为默认工作环境，下次再登录时不会出现该一览画面．</label>

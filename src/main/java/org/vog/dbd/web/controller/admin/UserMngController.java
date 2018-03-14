@@ -73,7 +73,7 @@ public class UserMngController extends BaseController {
             model.put("total", 0);
             return model;
         }
-        List<Map<String, Object>> userList = userService.findUserRoleList(iid);
+        List<Map<String, Object>> userList = userService.findUserDbList(iid, false);
         model.put("rows", userList);
         model.put("total", userList.size());
         return model;
@@ -155,6 +155,6 @@ public class UserMngController extends BaseController {
             return Collections.EMPTY_LIST;
         }
 
-        return userService.findUserDbList(iid);
+        return userService.findUserDbList(iid, false);
     }
 }

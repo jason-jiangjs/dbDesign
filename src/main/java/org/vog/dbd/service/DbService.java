@@ -14,11 +14,8 @@ public class DbService extends BaseService {
     @Autowired
     private DbDao dbDao;
 
-    @Autowired
-    private ComSequenceService sequenceService;
-
     /**
-     * 查询用户一览
+     * 查询数据库一览
      */
     public List<BaseMongoMap> findDbList(int page, int limit) {
         return dbDao.findDbList(page, limit, false);

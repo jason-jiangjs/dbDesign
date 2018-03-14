@@ -48,34 +48,6 @@ public class TableService extends BaseService {
     }
 
     /**
-     * 查询数据库的表一览
-     */
-    public List<Map<String, Object>> findDbList() {
-        List<BaseMongoMap> dbList = dbDao.findDbList(0, 0, true);
-        if (dbList == null || dbList.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-
-        List<Map<String, Object>> dataList = new ArrayList<>();
-        dbList.forEach(item -> {
-            Map<String, Object> dataMap = new HashMap<>();
-            dataMap.put("id", AESCoderUtil.encode(item.getLongAttribute("_id").toString()));
-            String dbTxt = StringUtils.trimToEmpty(item.getStringAttribute("dbName"));
-            String cnName = StringUtils.trimToNull(item.getStringAttribute("dbNameCN"));
-            if (cnName != null) {
-                dbTxt = dbTxt + "  =>  " + cnName;
-            }
-            String dbVerStr = StringUtils.trimToNull(item.getStringAttribute("typeStr"));
-            if (dbVerStr != null) {
-                dbTxt = dbTxt + " (" + dbVerStr + ")";
-            }
-            dataMap.put("text", dbTxt);
-            dataList.add(dataMap);
-        });
-        return dataList;
-    }
-
-    /**
      * 查询指定数据库的表一览, 优先使用名称查询
      */
     public List<BaseMongoMap> getTableList(String tblName, long dbId, int type) {

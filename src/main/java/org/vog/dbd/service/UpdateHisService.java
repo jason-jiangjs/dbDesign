@@ -1,5 +1,6 @@
 package org.vog.dbd.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
@@ -10,7 +11,10 @@ import org.vog.dbd.dao.UpdateHisDao;
 import org.vog.dbd.web.login.CustomerUserDetails;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -52,6 +56,51 @@ public class UpdateHisService extends BaseService {
         data.put("userName", userObj.getUsername());
         data.put("modifiedTime", new Timestamp(DateTimeUtil.getDate().getTime()));
         updateHisDao.saveUpdateHis(data);
+    }
+
+    /**
+     * 查询操作历史一览
+     */
+    public List<Map<String, Object>> getUpdHisList(Long dbId, int page, int limit) {
+        List<BaseMongoMap> hisList = updateHisDao.findUpdHisList(dbId, page, limit);
+        if (hisList == null || hisList.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (BaseMongoMap item : hisList) {
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("name", item.getStringAttribute("userName"));
+            dataMap.put("updTime", item.getStringAttribute("modifiedTime"));
+            dataMap.put("type", item.getIntAttribute("type"));
+            dataMap.put("target", item.getStringAttribute("tableName"));
+            dataMap.put("info", item.getStringAttribute("info"));
+            StringBuilder updDesc = new StringBuilder();
+            String desc = StringUtils.trimToNull(item.getStringAttribute("desc"));
+            if (desc != null) {
+                updDesc.append(desc);
+            }
+            String contentBef = StringUtils.trimToNull(item.getStringAttribute("contentBef"));
+            if (contentBef != null) {
+                updDesc.append("\n修改前\n");
+                updDesc.append(contentBef);
+            }
+            String contentAft = StringUtils.trimToNull(item.getStringAttribute("contentAft"));
+            if (contentAft != null) {
+                updDesc.append("\n修改后\n");
+                updDesc.append(contentAft);
+            }
+            dataMap.put("desc", updDesc.toString());
+            dataList.add(dataMap);
+        }
+        return dataList;
+    }
+
+    /**
+     * 统计操作历史一览个数
+     */
+    public long countUpdHisList(Long dbId) {
+        return updateHisDao.countUpdHisList(dbId);
     }
 
 }

@@ -71,7 +71,7 @@ public class LoginController extends BaseController {
             }
         } else {
             model.setViewName("db_list");
-            model.addObject("dbList", tableService.findDbList());
+            model.addObject("dbList", userService.findUserDbList(userObj.getId(), true));
         }
         return model;
     }
