@@ -4,6 +4,33 @@
 
 // 画面项目初始化
 $(function () {
+    var curDbId = $.trim($('#dbId').val());
+    if (curDbId == 0 || curDbId == 1) {
+        $.messager.alert({
+            iconCls: 'icon-no',
+            title: '数据错误',
+            closable: false,
+            ok: '返回',
+            msg: '所选择的数据库不存在，请联系系统管理员。<br/>再见!',
+            fn: function(){
+                window.location.href = Ap_servletContext + '/home?type=1';
+            }
+        });
+        return;
+    } else if (curDbId == 2 || curDbId == 3) {
+        $.messager.alert({
+            iconCls: 'icon-no',
+            title: '权限错误',
+            closable: false,
+            ok: '返回',
+            msg: '没有权限访问选择的数据库，请联系系统管理员。<br/>再见!',
+            fn: function(){
+                window.location.href = Ap_servletContext + '/home?type=1';
+            }
+        });
+        return;
+    }
+
     // 设置当前编辑的数据库名
     $('#cc').panel({title: $('#dbn').val()});
 
@@ -736,10 +763,12 @@ function nameDspformatter(value, row, index) {
         var prex = value.lastIndexOf(" ") + 1;
         if (row.type == 'object') {
             txt = value.substring(0, prex).replace(/ /g, "&nbsp;") + '<span data-id="' + index + '" data-value="' + value + '" class="tree-hit tree-expanded"/>+&nbsp;' + value.substring(prex);
-        } else if (row.type == 'array') {
+        } else if (row.type == 'object array') {
             txt = value.substring(0, prex).replace(/ /g, "&nbsp;") + '<span data-id="' + index + '" data-value="' + value + '" class="tree-hit tree-expanded"/>*&nbsp;' + value.substring(prex);
+        } else if (row.type && row.type != 'object array' && row.type.indexOf('array') > 0) {
+            txt = value.substring(0, prex).replace(/ /g, "&nbsp;") + '&nbsp;&nbsp;*&nbsp;' + value.substring(prex);
         } else {
-            txt = '&nbsp;&nbsp;' + value.replace(/ /g, "&nbsp;");
+            txt = '&nbsp;&nbsp;&nbsp;&nbsp;' + value.replace(/ /g, "&nbsp;");
         }
         return '<span style="font-family:Consolas;font-size:14px">' + txt + '</span>';
     }

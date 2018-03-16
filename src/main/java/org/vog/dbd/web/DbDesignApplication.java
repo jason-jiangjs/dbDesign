@@ -5,7 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.vog.dbd.web.tag.dialect.VoDialect;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "org.vog")
@@ -21,4 +23,10 @@ public class DbDesignApplication extends SpringBootServletInitializer {
 	public static void main(String[] args) {
 		SpringApplication.run(DbDesignApplication.class, args);
 	}
+
+	@Bean
+	public VoDialect createVoDialect() {
+		return new VoDialect();
+	}
+
 }

@@ -50,6 +50,7 @@ public class LoginController extends BaseController {
         CustomerUserDetails userObj = (CustomerUserDetails) ((Authentication) request.getUserPrincipal()).getPrincipal();
         Long dbId = userObj.getFavorite();
         if (dbId != null && dbId != 0 && checkFlg == 0) {
+            // 设置了默认工作环境
             model.setViewName("table/table_list");
 
             BaseMongoMap dbMap = dbService.findDbById(dbId);

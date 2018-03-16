@@ -29,10 +29,10 @@
         <a href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,iconCls:'icon-more'" onclick="javascript:popmenu(event,'tab-tools_menu')"></a>
     </div>
     <div id="tab-tools_menu" class="easyui-menu" style="width:120px;">
-        <div data-options="iconCls:'icon-save'" onclick="javascript:endEditing()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">结束编辑状态</div>
-        <div class="menu-sep" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')"></div>
-        <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">删除当前项目</div>
-        <div class="menu-sep" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')"></div>
+        <div data-options="iconCls:'icon-save'" onclick="javascript:endEditing()" dbd:authorize="${dbId}">结束编辑状态</div>
+        <div class="menu-sep" dbd:authorize="${dbId}"></div>
+        <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()" dbd:authorize="${dbId}">删除当前项目</div>
+        <div class="menu-sep" dbd:authorize="${dbId}"></div>
         <div data-options="href:'logout'">退出</div>
     </div>
 
@@ -46,8 +46,8 @@
         <div data-options="name:'setdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(1)">设置缺省工作环境</div>
         <div data-options="name:'unsetdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(0)">取消缺省工作环境</div>
         <div class="menu-sep"></div>
-        <div data-options="iconCls:'icon-save'" onclick="javascript:createNewTable()" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">创建项目</div>
-        <div class="menu-sep" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')"></div>
+        <div data-options="iconCls:'icon-save'" onclick="javascript:createNewTable()" dbd:authorize="${dbId}">创建项目</div>
+        <div class="menu-sep" dbd:authorize="${dbId}"></div>
         <div data-options="iconCls:'icon-reload'" onclick="javascript:doSearch('',1)">刷新</div>
         <div class="menu-sep"></div>
         <div data-options="iconCls:'icon-back'" th:href="@{/home?type=1}">返回选择数据库</div>
@@ -67,7 +67,7 @@
             </tr>
         </table>
         <input type="hidden" class="_tbl_name_p"><input type="hidden" class="_tbl_desc_p"><input type="hidden" class="_tbl_name_cn_p">
-        <div style="padding:7px 0px 7px 12px;border-top:1px solid #e0e0e0" sec:authorize="hasAnyAuthority('ROLE_WRITABLE,PROJ_MNG_USER,ADMIN_USER')">
+        <div style="padding:7px 0px 7px 12px;border-top:1px solid #e0e0e0" dbd:authorize="${dbId}">
             <a href="#" class="_linkbtn_add" onclick="javascript:addColumn()" style="width:90px">添加栏位</a>
             <a href="#" class="_linkbtn_edit" onclick="javascript:insertColumn()" style="width:90px;margin-left:10px">插入栏位</a>
             <a href="#" class="_linkbtn_remove" onclick="javascript:delColumn()" style="width:90px;margin-left:10px">删除栏位</a>
