@@ -58,6 +58,10 @@ public class ErrorCode {
      */
     public static int E5101 = 5101;
     /**
+     * 表数据(更新时间)冲突
+     */
+    public static int E5102 = 5102;
+    /**
      * 验证码无效/错误
      */
     public static int E5105 = 5105;

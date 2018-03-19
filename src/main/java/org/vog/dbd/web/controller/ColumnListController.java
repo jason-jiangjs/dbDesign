@@ -21,7 +21,7 @@ import org.vog.dbd.service.TableService;
 import org.vog.dbd.service.UpdateHisService;
 import org.vog.dbd.web.login.CustomerUserDetails;
 
-import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -138,9 +138,17 @@ public class ColumnListController extends BaseController {
                 logger.warn("saveColDefine 表不存在 tblId={}, userId={}", tblId, userId);
                 return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
             }
+
+            // 判断上次更新时间
+            Long nowDate = StringUtil.convertToLong(params.get("_tbl_last_upd"));
+            Date lastUpd = (Date) dbMap.getAttribute("modifiedTime");
+            if (nowDate <= lastUpd.getTime()) {
+                logger.warn("saveColDefine 已经有人更新过了 tblId={}, userId={}", tblId, userId);
+                return ApiResponseUtil.error(ErrorCode.E5102, "已经有人更新过了 tblId={}", tblId);
+            }
         }
 
-        Timestamp nowTime = new Timestamp(DateTimeUtil.getDate().getTime());
+        Date nowTime = DateTimeUtil.getDate();
         Map<String, Object> retData = new HashMap<>();
         Map<String, Object> tblData = new HashMap<>();
         tblData.put("tableName", params.get("_tbl_name"));

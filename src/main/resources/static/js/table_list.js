@@ -364,6 +364,9 @@ function _createTblHeadDiv(tblId, tblName, tblNameCn, tblDesc) {
         $(prefixId + ' input._tbl_name_cn_p').val(tblNameCn);
         $(prefixId + ' input._tbl_desc_p').val(tblDesc);
     }
+
+    var now = new Date();
+    $(prefixId + ' input._tbl_last_updtime').val(now.getTime());
 }
 
 // 创建表的定义一览
@@ -671,6 +674,7 @@ function saveAll() {
     postData._tbl_name = tName;
     postData._tbl_name_cn = tNameCn;
     postData._tbl_desc = tDesc;
+    postData._tbl_last_upd = $.trim($(prefixId + ' input._tbl_last_updtime').val());
 
     $('#col_grid_' + _curTblId).datagrid('acceptChanges');
     postData.column_list = $('#col_grid_' + _curTblId).datagrid('getRows');

@@ -10,7 +10,6 @@ import org.vog.common.util.JacksonUtil;
 import org.vog.dbd.dao.UpdateHisDao;
 import org.vog.dbd.web.login.CustomerUserDetails;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,7 +53,7 @@ public class UpdateHisService extends BaseService {
         data.put("type", hisType);
         data.put("userId", userObj.getId());
         data.put("userName", userObj.getUsername());
-        data.put("modifiedTime", new Timestamp(DateTimeUtil.getDate().getTime()));
+        data.put("modifiedTime", DateTimeUtil.getDate());
         updateHisDao.saveUpdateHis(data);
     }
 

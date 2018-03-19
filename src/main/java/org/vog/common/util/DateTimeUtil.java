@@ -69,6 +69,8 @@ public final class DateTimeUtil {
 
     public static Map<String, SimpleDateFormat> DATE_FORMAT_CACHE = new HashMap<>();
 
+    private static final TimeZone beijingZone = TimeZone.getTimeZone("Asia/Shanghai");
+
     /**
      * 私有构造方法，禁止对该类进行实例化
      */
@@ -81,7 +83,7 @@ public final class DateTimeUtil {
      * @return 当前日期时间
      */
     public static Date getDate() {
-        return Calendar.getInstance().getTime();
+        return getCalendar().getTime();
     }
 
     /**
@@ -90,7 +92,7 @@ public final class DateTimeUtil {
      * @return 当前日期时间
      */
     public static Calendar getCalendar() {
-        return Calendar.getInstance();
+        return Calendar.getInstance(beijingZone);
     }
 
     /**
