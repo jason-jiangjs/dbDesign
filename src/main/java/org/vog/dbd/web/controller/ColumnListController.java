@@ -142,8 +142,8 @@ public class ColumnListController extends BaseController {
             // 判断上次更新时间
             Long nowDate = StringUtil.convertToLong(params.get("_tbl_last_upd"));
             Date lastUpd = (Date) dbMap.getAttribute("modifiedTime");
-            if (nowDate <= lastUpd.getTime()) {
-                logger.warn("saveColDefine 已经有人更新过了 tblId={}, userId={}", tblId, userId);
+            if (lastUpd != null && nowDate > 0 && nowDate <= lastUpd.getTime()) {
+                logger.warn("saveColDefine 已经有人更新过了 tblId={}, userId={}，date1={},date2={}", tblId, userId, new Date(nowDate).toString(), lastUpd.toString());
                 return ApiResponseUtil.error(ErrorCode.E5102, "已经有人更新过了 tblId={}", tblId);
             }
         }
