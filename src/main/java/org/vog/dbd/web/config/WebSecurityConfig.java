@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.vog.dbd.web.login.AjaxAwareAuthenticationEntryPoin;
 import org.vog.dbd.web.login.AuthenticationFailureHandlerImpl;
 import org.vog.dbd.web.login.AuthenticationProviderImpl;

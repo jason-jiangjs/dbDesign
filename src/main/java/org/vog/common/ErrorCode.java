@@ -52,7 +52,10 @@ public class ErrorCode {
      * 用户不存在/已删除
      */
     public static int E5011 = 5011;
-
+    /**
+     * 用户状态异常
+     */
+    public static int E5012 = 5012;
     /**
      * 表不存在
      */

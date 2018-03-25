@@ -39,11 +39,7 @@ public class AuthenticationFailureHandlerImpl implements AuthenticationFailureHa
         }
 
         // 要添加错误信息
-        // 这里的"inputFlg=true"是指在login画面中，直接显示用户名密码输入的tab(现有设计两种login方式，扫码和输入)
-        String paramsStr = "?inputFlg=true&errCode=" + errCode;
-        if (request.getAttribute("needChk") != null) {
-            paramsStr += "&needChk=needChk";
-        }
+        String paramsStr = "?msg=" + errCode;
         response.sendRedirect(request.getContextPath() + "/index" + paramsStr);
     }
 

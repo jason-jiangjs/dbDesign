@@ -112,6 +112,7 @@ $(function () {
         {field:'_id',title:'ID',width:80},
         {field:'userId',title:'登录帐号',width:100},
         {field:'userName',title:'姓名',width:100},
+        {field:'from',title:'来源',width:100},
         {field:'role',title:'角色',width:80,
             formatter: function(value, row, index) {
                 if (value) {

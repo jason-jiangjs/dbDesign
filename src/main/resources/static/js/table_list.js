@@ -357,9 +357,9 @@ function _createTblHeadDiv(tblId, tblName, tblNameCn, tblDesc) {
         $(prefixId + ' input._tbl_name_cn').textbox();
         $(prefixId + ' input._tbl_desc').textbox({ multiline: true });
     } else {
-        $(prefixId + ' input._tbl_name').textbox({value: tblName});
-        $(prefixId + ' input._tbl_name_cn').textbox({value: tblNameCn});
-        $(prefixId + ' input._tbl_desc').textbox({value: tblDesc, multiline: true});
+        $(prefixId + ' input._tbl_name').textbox({value: tblName, 'readonly': true});
+        $(prefixId + ' input._tbl_name_cn').textbox({value: tblNameCn, 'readonly': true});
+        $(prefixId + ' input._tbl_desc').textbox({value: tblDesc, multiline: true, 'readonly': true});
         $(prefixId + ' input._tbl_name_p').val(tblName);
         $(prefixId + ' input._tbl_name_cn_p').val(tblNameCn);
         $(prefixId + ' input._tbl_desc_p').val(tblDesc);
@@ -404,6 +404,9 @@ function _createTblGrid(tblId, colHeader) {
             $(this).datagrid('enableDnd');
         };
         options.onBeforeDrag = function(row) {
+            if (editable === false) {
+                return false;
+            }
             if (editIndex !== null) {
                 return false;
             }
@@ -574,6 +577,9 @@ var editIndex = null;
 var isRowEdited = false;
 // 双击表格行，开始编辑，只允许一行一行编辑
 function onClickRowBegEdit(index, field, value) {
+    if (editable === false) {
+        return false;
+    }
     if (_curTblId == undefined || _curTblId == null || _curTblId == '') {
         return false;
     }
@@ -594,6 +600,60 @@ function onClickRowBegEdit(index, field, value) {
         //$(ed.target).focus();
         editIndex = index;
     }
+}
+
+var editable = false;
+// 开始编辑，要先去后台确认该表是否有其他人正在编辑
+function startEditing() {
+    var loadLy = layer.load(1);
+    $.ajax({
+        type: 'post',
+        url: Ap_servletContext + '/ajax/chkTblEditable?tableId=' + _curTblId,
+        success: function (data) {
+            layer.close(loadLy);
+            if (data.code == 0) {
+                // 可以开始编辑
+                editable = true;
+                $('#' + _curTblId + ' input._tbl_name').textbox('readonly', false);
+                $('#' + _curTblId + ' input._tbl_name_cn').textbox('readonly', false);
+                $('#' + _curTblId + ' input._tbl_desc').textbox('readonly', false);
+
+            } else if (data.code == 1) {
+                layer.msg(data.msg);
+            } else if (data.code == 5011 || data.code == 5012) {
+                $.messager.confirm({
+                    title: '提示信息',
+                    msg: data.msg,
+                    ok: '强制编辑',
+                    cancel: '取消',
+                    fn: function(r) {
+                        if (r) {
+                            var loadLy = layer.load(1);
+                            $.ajax({
+                                type: 'post',
+                                url: Ap_servletContext + '/ajax/forceTblEditable?tableId=' + _curTblId,
+                                success: function (data) {
+                                    layer.close(loadLy);
+                                    if (data.code == 0) {
+                                        // 可以开始编辑
+                                        editable = true;
+                                        $('#' + _curTblId + ' input._tbl_name').textbox('readonly', false);
+                                        $('#' + _curTblId + ' input._tbl_name_cn').textbox('readonly', false);
+                                        $('#' + _curTblId + ' input._tbl_desc').textbox('readonly', false);
+
+                                    } else {
+                                        layer.msg(data.msg + ' code=' + data.code);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            } else {
+                layer.msg(data.msg + ' code=' + data.code);
+            }
+        }
+    });
 }
 
 // 结束编辑状态

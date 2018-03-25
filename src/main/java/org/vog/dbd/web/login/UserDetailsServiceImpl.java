@@ -31,9 +31,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     private UserDao userDao;
 
+    // 这里必须是注册用户
     @Override
     public UserDetails loadUserByUsername(String userId) {
-        BaseMongoMap employee = userDao.getUserByAccount(userId);
+        return loadUserByUsernameWithChkReg(userId, true);
+    }
+
+    public UserDetails loadUserByUsernameWithChkReg(String userId, boolean chkReg) {
+        BaseMongoMap employee = userDao.getUserByAccount(userId, chkReg);
         if (employee == null) {
             return null;
         }

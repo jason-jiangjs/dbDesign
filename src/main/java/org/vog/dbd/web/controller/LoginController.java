@@ -18,7 +18,6 @@ import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.service.DbService;
-import org.vog.dbd.service.TableService;
 import org.vog.dbd.service.UserService;
 import org.vog.dbd.web.login.CustomerUserDetails;
 
@@ -29,9 +28,6 @@ import java.util.Map;
  */
 @Controller
 public class LoginController extends BaseController {
-
-    @Autowired
-    private TableService tableService;
 
     @Autowired
     private UserService userService;

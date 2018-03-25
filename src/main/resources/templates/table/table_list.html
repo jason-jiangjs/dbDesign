@@ -29,10 +29,14 @@
         <a href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,iconCls:'icon-more'" onclick="javascript:popmenu(event,'tab-tools_menu')"></a>
     </div>
     <div id="tab-tools_menu" class="easyui-menu" style="width:120px;">
-        <div data-options="iconCls:'icon-save'" onclick="javascript:endEditing()" dbd:authorize="${dbId}">结束编辑状态</div>
-        <div class="menu-sep" dbd:authorize="${dbId}"></div>
-        <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()" dbd:authorize="${dbId}">删除当前项目</div>
-        <div class="menu-sep" dbd:authorize="${dbId}"></div>
+        <th:block dbd:authorize="${dbId}">
+            <div data-options="iconCls:'icon-save'" onclick="javascript:startEditing()">开始编辑</div>
+            <div class="menu-sep"></div>
+            <div data-options="iconCls:'icon-save'" onclick="javascript:endEditing()">结束编辑状态</div>
+            <div class="menu-sep"></div>
+            <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()">删除当前项目</div>
+            <div class="menu-sep"></div>
+        </th:block>
         <div data-options="href:'logout'">退出</div>
     </div>
 
@@ -46,8 +50,10 @@
         <div data-options="name:'setdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(1)">设置缺省工作环境</div>
         <div data-options="name:'unsetdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(0)">取消缺省工作环境</div>
         <div class="menu-sep"></div>
-        <div data-options="iconCls:'icon-save'" onclick="javascript:createNewTable()" dbd:authorize="${dbId}">创建项目</div>
-        <div class="menu-sep" dbd:authorize="${dbId}"></div>
+        <th:block dbd:authorize="${dbId}">
+            <div data-options="iconCls:'icon-save'" onclick="javascript:createNewTable()">创建项目</div>
+            <div class="menu-sep"></div>
+        </th:block>
         <div data-options="iconCls:'icon-reload'" onclick="javascript:doSearch('',1)">刷新</div>
         <div class="menu-sep"></div>
         <div data-options="iconCls:'icon-back'" th:href="@{/home?type=1}">返回选择数据库</div>
@@ -75,6 +81,7 @@
             <a href="#" class="_linkbtn_save" onclick="javascript:saveAll()" style="width:80px;margin-left:10px">保存</a>
         </div>
     </div>
+    <div id="popDlg">Dialog Content.</div>
     <input type="hidden" id="favDb" th:value="${#authentication.principal.favorite}" />
     <input type="hidden" id="readAttr" th:value="${userReadonly}" />
     <input type="hidden" id="dbn" th:value="${dbName}" />

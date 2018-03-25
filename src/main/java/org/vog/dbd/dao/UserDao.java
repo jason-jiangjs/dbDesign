@@ -38,11 +38,14 @@ public class UserDao extends BaseMongoDao {
     }
 
     /**
-     * 根据登录帐号查询用户
+     * 根据登录帐号（已注册的）查询用户
      */
-    public BaseMongoMap getUserByAccount(String userId) {
+    public BaseMongoMap getUserByAccount(String userId, boolean chkReg) {
         Query queryObj = new Query(where("userId").is(userId));
         queryObj.addCriteria(where("status").is(1));
+        if (chkReg) {
+            queryObj.addCriteria(where("registered").is(1));
+        }
         queryObj.fields().include("userId");
         queryObj.fields().include("userName");
         queryObj.fields().include("password");
@@ -61,6 +64,7 @@ public class UserDao extends BaseMongoDao {
         queryObj.fields().include("userName");
         queryObj.fields().include("role");
         queryObj.fields().include("status");
+        queryObj.fields().include("from");
         queryObj.skip((page - 1) * limit);
         queryObj.limit(limit);
 

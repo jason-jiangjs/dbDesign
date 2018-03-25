@@ -29,7 +29,8 @@
 |tableNameCN | string | 表名（中文） 
 |type | int | 类型 | 1:表　2:视图
 |desc | string | 描述
-|inEdit | long | 当前编辑者ID，不编辑时值为0
+|currEditorId | long | 当前编辑者ID，不编辑时值为0
+|startEditTime | date | 开始编辑的时间
 |+ column_list | map[] | 列定义一览
 |\\- columnId | long | 列ID | 系统内部ID，自增
 |\\- creator | long | 创建者ID
@@ -74,6 +75,8 @@
 |-----|------|------|------
 |_id       | long | 用户ID | 系统内部ID，自增
 |status    | int | 用户状态 | 0:用户刚创建(初次登录需要修改密码)　1:正常状态　2:表示该用户已被锁定　4:表示该用户已被删除
+|registered | int | 是否是注册用户 | 即是否是在管理界面创建的用户 1:表示是　0:表示第三方登录用户
+|from | string | 用户来源 | 用于第三方登录的用户　gitlab/jira/mantis...
 |creator   | long | 创建者ID
 |createdTime  | date | 创建时间
 |modifier     | long | 更新者ID

@@ -1,6 +1,10 @@
 package org.vog.dbd.service;
 
+import com.mongodb.BasicDBObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.BasicUpdate;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.base.service.BaseService;
@@ -12,6 +16,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 @Service
 public class TableService extends BaseService {
@@ -79,4 +85,19 @@ public class TableService extends BaseService {
         tableDao.saveObject(tblId, infoMap, true);
     }
 
+    /**
+     * 开始编辑表
+     */
+    public void startEditTable(long userId, long tblId) {
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("currEditorId", userId);
+        infoMap.put("startEditTime", DateTimeUtil.getDate());
+
+        Query query = new Query(where("_id").is(tblId));
+
+        BasicDBObject basicDBObject = new BasicDBObject();
+        basicDBObject.put("$set", infoMap);
+        Update update = new BasicUpdate(basicDBObject);
+        tableDao.update(query, update);
+    }
 }

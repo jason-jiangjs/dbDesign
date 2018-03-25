@@ -150,13 +150,16 @@ public class UserService extends BaseService {
         userObj.put("userName", params.get("accName"));
         userObj.put("password", new BCryptPasswordEncoder().encode("abc.2018"));
         userObj.put("status", 0);
+        userObj.put("registered", 1);
         userObj.put("role", StringUtil.convertToInt(params.get("role")));
         List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
-        for (Map<String, Object> item : roleList) {
-            item.put("dbId", StringUtil.convertToLong(item.get("dbId")));
-            item.put("role", StringUtil.convertToInt(item.get("role")));
-            item.remove("dbName");
-            item.remove("default");
+        if (roleList != null) {
+            for (Map<String, Object> item : roleList) {
+                item.put("dbId", StringUtil.convertToLong(item.get("dbId")));
+                item.put("role", StringUtil.convertToInt(item.get("role")));
+                item.remove("dbName");
+                item.remove("default");
+            }
         }
         userObj.put("roleList", roleList);
 
@@ -173,14 +176,32 @@ public class UserService extends BaseService {
         userObj.put("status", StringUtil.convertToInt(params.get("status")));
         userObj.put("role", StringUtil.convertToInt(params.get("role")));
         List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
-        for (Map<String, Object> item : roleList) {
-            item.put("dbId", StringUtil.convertToLong(item.get("dbId")));
-            item.put("role", StringUtil.convertToInt(item.get("role")));
-            item.remove("dbName");
-            item.remove("default");
+        if (roleList != null) {
+            for (Map<String, Object> item : roleList) {
+                item.put("dbId", StringUtil.convertToLong(item.get("dbId")));
+                item.put("role", StringUtil.convertToInt(item.get("role")));
+                item.remove("dbName");
+                item.remove("default");
+            }
         }
         userObj.put("roleList", roleList);
 
         userDao.saveObject(iid, userObj, false);
     }
+
+    /**
+     * 添加用户
+     */
+    public void addUserByTrdLogin(String userName) {
+        long iid = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);
+        Map<String, Object> userObj = new HashMap<>();
+        userObj.put("_id", iid);
+        userObj.put("userId", userName);
+        userObj.put("userName", userName);
+        userObj.put("password", "");
+        userObj.put("status", 1);
+        userObj.put("registered", 0);
+        userDao.saveObject(iid, userObj, true);
+    }
+
 }

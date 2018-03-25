@@ -58,6 +58,9 @@ public final class ApiResponseUtil {
 
     // 这里直接引用slf4j的代码
     private static String arrayFormat(String messagePattern, Object[] argArray) {
+        if (messagePattern == null) {
+            return null;
+        }
         FormattingTuple ft = MessageFormatter.arrayFormat(messagePattern, argArray);
         return ft.getMessage();
     }

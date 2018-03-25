@@ -3,7 +3,6 @@ package org.vog.dbd.web.controller;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -210,15 +209,97 @@ public class TableListController extends BaseController {
             return ApiResponseUtil.error(ErrorCode.W1001, "错误操作,未选择指定的表.(缺少参数 tblId)");
         }
 
-        BaseMongoMap dbMap = tableService.getTableById(tblId);
-        if (dbMap == null || dbMap.isEmpty()) {
+        BaseMongoMap tblMap = tableService.getTableById(tblId);
+        if (tblMap == null || tblMap.isEmpty()) {
             // 表不存在
             logger.warn("getColumnList 表不存在 tblId={}, userId={}", tblId, userId);
             return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
         }
 
         tableService.delTableById(userId, tblId);
-        updateHisService.saveUpdateHis(userObj, dbMap.getLongAttribute("dbId"), dbMap, null);
+        updateHisService.saveUpdateHis(userObj, tblMap.getLongAttribute("dbId"), tblMap, null);
         return ApiResponseUtil.success();
     }
+
+    /**
+     * 检查指定表是否已在被编辑
+     */
+    @ResponseBody
+    @RequestMapping(value = "/ajax/chkTblEditable", method = RequestMethod.POST)
+    public Map<String, Object> chkTblEditable(@RequestParam Map<String, String> params) {
+        Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+        if (userId == null || userId == 0) {
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
+        }
+
+        long tblId = StringUtil.convertToLong(params.get("tableId"));
+        if (tblId == 0) {
+            logger.warn("chkTblEditable 缺少参数tableId");
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数tableId");
+        }
+
+        if (tblId < 1000) {
+            logger.warn("chkTblEditable 新建表不需要检查编辑冲突");
+            return ApiResponseUtil.success();
+        }
+        BaseMongoMap tblMap = tableService.getTableById(tblId);
+        if (tblMap == null || tblMap.isEmpty()) {
+            // 表不存在
+            logger.warn("chkTblEditable 表不存在 tblId={}, userId={}", tblId, userId);
+            return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
+        }
+        Long currEditorId = tblMap.getLongAttribute("currEditorId");
+        if (currEditorId == 0 || currEditorId.equals(userId)) {
+            tableService.startEditTable(userId, tblId);
+            return ApiResponseUtil.success();
+        }
+
+        BaseMongoMap userMap = userService.getUserById(currEditorId);
+        if (userMap == null) {
+            logger.warn("chkTblEditable 用户不存在 currEditorId={}", currEditorId);
+            return ApiResponseUtil.error(ErrorCode.E5011, null);
+        }
+        if (userMap.getIntAttribute("status") != 1) {
+            logger.warn("chkTblEditable 用户状态异常 currEditorId={}, status={}", currEditorId, userMap.getIntAttribute("status"));
+            return ApiResponseUtil.error(ErrorCode.E5012, userMap.getStringAttribute("userName") + "(" + userMap.getStringAttribute("userId") + ")");
+        }
+
+        // 已在编辑状态
+        return ApiResponseUtil.error(1, userMap.getStringAttribute("userName") + "(" + userMap.getStringAttribute("userId") + ") 正在编辑该表，去催催吧。" );
+    }
+
+    /**
+     * 强制开始编辑指定表, 覆盖现有数据
+     */
+    @ResponseBody
+    @RequestMapping(value = "/ajax/forceTblEditable", method = RequestMethod.POST)
+    public Map<String, Object> forceTblEditable(@RequestParam Map<String, String> params) {
+        Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+        if (userId == null || userId == 0) {
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
+        }
+
+        long tblId = StringUtil.convertToLong(params.get("tableId"));
+        if (tblId == 0) {
+            logger.warn("forceTblEditable 缺少参数tableId");
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数tableId");
+        }
+
+        if (tblId < 1000) {
+            logger.warn("forceTblEditable 新建表不需要检查编辑冲突");
+            return ApiResponseUtil.success();
+        }
+        BaseMongoMap tblMap = tableService.getTableById(tblId);
+        if (tblMap == null || tblMap.isEmpty()) {
+            // 表不存在
+            logger.warn("chkTblEditable 表不存在 tblId={}, userId={}", tblId, userId);
+            return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
+        }
+
+        tableService.startEditTable(userId, tblId);
+        return ApiResponseUtil.success();
+    }
+
 }

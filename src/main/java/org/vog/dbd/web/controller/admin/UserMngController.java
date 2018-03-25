@@ -109,10 +109,10 @@ public class UserMngController extends BaseController {
             logger.warn("saveUserInfo 缺少参数 accNo");
             return ApiResponseUtil.error(ErrorCode.W1001, "缺少登录帐号");
         }
-        if (roleList == null || roleList.isEmpty()) {
-            logger.warn("saveUserInfo 缺少参数 roleList");
-            return ApiResponseUtil.error(ErrorCode.W1001, "没有设置访问权限");
-        }
+//        if (roleList == null || roleList.isEmpty()) {
+//            logger.warn("saveUserInfo 缺少参数 roleList");
+//            return ApiResponseUtil.error(ErrorCode.W1001, "没有设置访问权限");
+//        }
 
         if (optType == 1) {
             params.put("creator", adminId);
