@@ -53,7 +53,7 @@ public class UpdateHisService extends BaseService {
         data.put("type", hisType);
         data.put("userId", userObj.getId());
         data.put("userName", userObj.getUsername());
-        data.put("modifiedTime", DateTimeUtil.getDate());
+        data.put("modifiedTime", DateTimeUtil.getNowTime());
         updateHisDao.saveUpdateHis(data);
     }
 

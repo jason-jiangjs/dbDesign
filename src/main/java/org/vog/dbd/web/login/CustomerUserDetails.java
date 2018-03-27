@@ -36,6 +36,8 @@ public class CustomerUserDetails extends User {
     private String account;
     private int status;
     private Long favorite;
+    private String fromSrc;
+    private boolean registered;
     private Map<String, Object> context = new HashMap<>();
 
     public CustomerUserDetails(String username, String password, Collection<? extends GrantedAuthority> authorities) {
@@ -72,6 +74,20 @@ public class CustomerUserDetails extends User {
     }
     public void setFavorite(Long favorite) {
         this.favorite = favorite;
+    }
+
+    public String getFromSrc() {
+        return fromSrc;
+    }
+    public void setFromSrc(String fromSrc) {
+        this.fromSrc = fromSrc;
+    }
+
+    public boolean isRegistered() {
+        return registered;
+    }
+    public void setRegistered(boolean registered) {
+        this.registered = registered;
     }
 
     public void putContext(String key, Object val) {

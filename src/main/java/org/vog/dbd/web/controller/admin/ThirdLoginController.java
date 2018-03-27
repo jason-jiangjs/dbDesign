@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,10 +44,10 @@ public class ThirdLoginController extends BaseController {
     private String clientId;
     @Value("${security.oauth2.client.clientSecret}")
     private String clientSecret;
-    @Value("${myapp.gitlab.callback_url}")
-    private String callbackUrl;
     @Value("${security.oauth2.resource.userInfoUri}")
     private String userInfoUrl;
+    @Value("${myapp.gitlab.callback_url}")
+    private String callbackUrl;
 
     @Resource
     private UserDetailsServiceImpl loginService;
@@ -117,13 +116,23 @@ public class ThirdLoginController extends BaseController {
                     return "redirect:/sys_error?msg=" + StringUtil.encode("从gitlab取用户信息时出错,请联系系统管理员。<br/>") + errMsg + "<br/>" + retObj.getBody().toString();
                 }
                 Map user = retObj.getBody();
-                UserDetails userObj = loginService.loadUserByUsernameWithChkReg((String) user.get("username"), false);
+                String userName = (String) user.get("username");
+                CustomerUserDetails userObj = (CustomerUserDetails) loginService.loadUserByUsernameWithChkReg(userName, false, Constants.ThirdLogin.GITLAB.getValue());
                 if (userObj == null) {
                     // 客户未保存过，则创建
-                    userService.addUserByTrdLogin((String) user.get("username"));
-                    userObj = loginService.loadUserByUsernameWithChkReg((String) user.get("username"), false);
+                    userService.addUserByTrdLogin(userName, userName);
+                    userObj = (CustomerUserDetails) loginService.loadUserByUsernameWithChkReg(userName, false, Constants.ThirdLogin.GITLAB.getValue());
                     if (userObj == null) {
                         return "redirect:/sys_error?msg=" + StringUtil.encode("从gitlab认证完成，保存用户时出错,请联系系统管理员。");
+                    }
+                } else {
+                    // 已存在，必须验证是否用户名冲突
+                    if (!"GitLab".equals(userObj.getFromSrc()) || userObj.isRegistered()) {
+                        userService.addUserByTrdLogin(userName, userName + "_GitLab");
+                        userObj = (CustomerUserDetails) loginService.loadUserByUsernameWithChkReg(userName, false, Constants.ThirdLogin.GITLAB.getValue());
+                        if (userObj == null) {
+                            return "redirect:/sys_error?msg=" + StringUtil.encode("从gitlab认证完成，保存用户时出错,请联系系统管理员。");
+                        }
                     }
                 }
                 req.getSession().setAttribute(Constants.KEY_USER_ID, ((CustomerUserDetails) userObj).getId());

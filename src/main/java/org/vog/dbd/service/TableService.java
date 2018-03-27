@@ -63,7 +63,7 @@ public class TableService extends BaseService {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("deleteFlg", true);
         infoMap.put("modifier", userId);
-        infoMap.put("modifiedTime", DateTimeUtil.getDate());
+        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
         tableDao.saveObject(tblId, infoMap, false);
     }
 
@@ -91,7 +91,7 @@ public class TableService extends BaseService {
     public void startEditTable(long userId, long tblId) {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("currEditorId", userId);
-        infoMap.put("startEditTime", DateTimeUtil.getDate());
+        infoMap.put("startEditTime", DateTimeUtil.getNowTime());
 
         Query query = new Query(where("_id").is(tblId));
 

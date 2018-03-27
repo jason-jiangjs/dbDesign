@@ -21,4 +21,18 @@ public class Constants {
 
 
 
+    /**
+     * 第三方登录定义
+     */
+    public enum ThirdLogin {
+        GITLAB("GitLab");
+
+        private ThirdLogin(String idVal) {
+            this.userId = idVal;
+        }
+        public String getValue() {
+            return userId;
+        }
+        private String userId;
+    }
 }

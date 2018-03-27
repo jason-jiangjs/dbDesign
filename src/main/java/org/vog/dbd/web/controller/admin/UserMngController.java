@@ -116,7 +116,7 @@ public class UserMngController extends BaseController {
 
         if (optType == 1) {
             params.put("creator", adminId);
-            params.put("createdTime", DateTimeUtil.getDate());
+            params.put("createdTime", DateTimeUtil.getNowTime());
             userService.addUser(params);
         } else {
             BaseMongoMap userObj = userService.getUserById(tiid);
@@ -125,7 +125,7 @@ public class UserMngController extends BaseController {
                 return ApiResponseUtil.error(ErrorCode.E5011, "该用户不存在/已删除 userId={}", tiid);
             }
             params.put("modifier", adminId);
-            params.put("modifiedTime", DateTimeUtil.getDate());
+            params.put("modifiedTime", DateTimeUtil.getNowTime());
             userService.updateUser(userObj, params);
         }
         return ApiResponseUtil.success();

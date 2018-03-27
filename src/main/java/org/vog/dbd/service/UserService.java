@@ -135,7 +135,7 @@ public class UserService extends BaseService {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("status", 4);
         infoMap.put("modifier", adminId);
-        infoMap.put("modifiedTime", DateTimeUtil.getDate());
+        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
         userDao.saveObject(userId, infoMap, false);
     }
 
@@ -150,7 +150,7 @@ public class UserService extends BaseService {
         userObj.put("userName", params.get("accName"));
         userObj.put("password", new BCryptPasswordEncoder().encode("abc.2018"));
         userObj.put("status", 0);
-        userObj.put("registered", 1);
+        userObj.put("registered", true);
         userObj.put("role", StringUtil.convertToInt(params.get("role")));
         List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
         if (roleList != null) {
@@ -192,15 +192,15 @@ public class UserService extends BaseService {
     /**
      * 添加用户
      */
-    public void addUserByTrdLogin(String userName) {
+    public void addUserByTrdLogin(String userId, String userName) {
         long iid = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);
         Map<String, Object> userObj = new HashMap<>();
         userObj.put("_id", iid);
-        userObj.put("userId", userName);
+        userObj.put("userId", userId);
         userObj.put("userName", userName);
         userObj.put("password", "");
         userObj.put("status", 1);
-        userObj.put("registered", 0);
+        userObj.put("registered", false);
         userDao.saveObject(iid, userObj, true);
     }
 

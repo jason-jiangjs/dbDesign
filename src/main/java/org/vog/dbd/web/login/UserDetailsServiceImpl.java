@@ -34,11 +34,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     // 这里必须是注册用户
     @Override
     public UserDetails loadUserByUsername(String userId) {
-        return loadUserByUsernameWithChkReg(userId, true);
+        return loadUserByUsernameWithChkReg(userId, true, null);
     }
 
-    public UserDetails loadUserByUsernameWithChkReg(String userId, boolean chkReg) {
-        BaseMongoMap employee = userDao.getUserByAccount(userId, chkReg);
+    public UserDetails loadUserByUsernameWithChkReg(String userId, boolean chkReg, String fromSrc) {
+        BaseMongoMap employee = userDao.getUserByAccount(userId, chkReg, fromSrc);
         if (employee == null) {
             return null;
         }
@@ -48,7 +48,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         userObj.setAccount(userId);
         userObj.setId(employee.getLongAttribute("_id"));
         userObj.setFavorite(employee.getLongAttribute("favorite"));
-        userObj.setStatus(0);
+        userObj.setStatus(employee.getIntAttribute("status"));
+        userObj.setRegistered(employee.getBooleanAttribute("registered"));
+        userObj.setFromSrc(employee.getStringAttribute("from"));
         return userObj;
     }
 

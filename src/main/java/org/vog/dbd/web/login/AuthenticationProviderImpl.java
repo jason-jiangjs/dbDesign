@@ -52,11 +52,11 @@ public class AuthenticationProviderImpl implements AuthenticationProvider {
 
         // 再判断用户状态
         int userSts = user.getStatus();
-        if (userSts == 0) {
+        if (userSts == 1) {
             // 正常情况
             return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
-        } else if (userSts == 1) {
-            throw new AccountExpiredException(null);
+        } else if (userSts == 0) {
+            throw new AccountExpiredException("user.needChangePwd");
         } else if (userSts == 2) {
             throw new LockedException("user.islocked");
         } else if (userSts == 4) {

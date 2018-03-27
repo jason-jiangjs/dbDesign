@@ -65,6 +65,7 @@ public class TableDao extends BaseMongoDao {
         queryObj.fields().include("dbId");
         queryObj.fields().include("modifiedTime");
         queryObj.fields().include("currEditorId");
+        queryObj.fields().include("startEditTime");
 
         return mongoTemplate.findOne(queryObj, BaseMongoMap.class, COLL_NAME);
     }

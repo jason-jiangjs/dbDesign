@@ -258,7 +258,7 @@ function _openNewTab(tblId, tabTitle) {
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0 && data.data) {
-                _createTblHeadDiv(tblId, data.data.tblName, data.data.tblNameCn, data.data.tblDesc);
+                _createTblHeadDiv(tblId, data.data.tblName, data.data.tblNameCn, data.data.tblDesc, data.data.lastUpd);
                 _createTblGrid(tblId, data.data.columns);
             } else {
                 layer.msg(data.msg + ' (code=' + data.code + ")");
@@ -296,7 +296,7 @@ function convertType(value) {
 }
 
 // 创建表头说明
-function _createTblHeadDiv(tblId, tblName, tblNameCn, tblDesc) {
+function _createTblHeadDiv(tblId, tblName, tblNameCn, tblDesc, lastUpd) {
     var isCreated = false;
     if (tblName == '' || tblName == null || tblName == undefined) {
         isCreated = true;
@@ -365,8 +365,7 @@ function _createTblHeadDiv(tblId, tblName, tblNameCn, tblDesc) {
         $(prefixId + ' input._tbl_desc_p').val(tblDesc);
     }
 
-    var now = new Date();
-    $(prefixId + ' input._tbl_last_updtime').val(now.getTime());
+    $(prefixId + ' input._tbl_last_updtime').val(lastUpd);
 }
 
 // 创建表的定义一览
@@ -404,15 +403,15 @@ function _createTblGrid(tblId, colHeader) {
             $(this).datagrid('enableDnd');
         };
         options.onBeforeDrag = function(row) {
-            if (editable === false) {
+            if (editableMap[_curTblId] === false) {
                 return false;
             }
-            if (editIndex !== null) {
+            if (editIndexMap[_curTblId] !== null) {
                 return false;
             }
         };
         options.onDrop = function (targetRow, sourceRow, point) {
-            isRowEdited = true;
+            isRowEditedMap[_curTblId] = true;
         };
     }
 
@@ -573,17 +572,20 @@ function setDevEnv(devType) {
 // 当前所查看的表id（点击左边表一栏时会刷新，tab切换时会刷新）
 var _curTblId = null;
 
-var editIndex = null;
-var isRowEdited = false;
+// 用来标识当前表是否正在编辑的变量必须是独立的，也就是要定义为map类型，key的值为_curTblId
+var editIndexMap = [];
+var isRowEditedMap = [];
+var editableMap = [];
+
 // 双击表格行，开始编辑，只允许一行一行编辑
 function onClickRowBegEdit(index, field, value) {
-    if (editable === false) {
+    if (editableMap[_curTblId] == undefined || editableMap[_curTblId] === false) {
         return false;
     }
     if (_curTblId == undefined || _curTblId == null || _curTblId == '') {
         return false;
     }
-    isRowEdited = true;
+    isRowEditedMap[_curTblId] = true;
 
     if (endEditing()) {
         $('#col_grid_' + _curTblId).datagrid('selectRow', index).datagrid('editCell', { index: index, field: field });
@@ -598,28 +600,44 @@ function onClickRowBegEdit(index, field, value) {
             }
         }
         //$(ed.target).focus();
-        editIndex = index;
+        editIndexMap[_curTblId] = index;
     }
 }
 
-var editable = false;
 // 开始编辑，要先去后台确认该表是否有其他人正在编辑
-function startEditing() {
+function chkForEditing() {
+    _startEditing();
+}
+
+function _startEditing(func) {
     var loadLy = layer.load(1);
+    var last_upd = $.trim($('#' + _curTblId + ' input._tbl_last_updtime').val());
     $.ajax({
         type: 'post',
-        url: Ap_servletContext + '/ajax/chkTblEditable?tableId=' + _curTblId,
+        url: Ap_servletContext + '/ajax/chkTblEditable?tableId=' + _curTblId + '&lastUpd=' + last_upd,
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0) {
                 // 可以开始编辑
-                editable = true;
+                editableMap[_curTblId] = true;
                 $('#' + _curTblId + ' input._tbl_name').textbox('readonly', false);
                 $('#' + _curTblId + ' input._tbl_name_cn').textbox('readonly', false);
                 $('#' + _curTblId + ' input._tbl_desc').textbox('readonly', false);
 
+                if (func) {
+                    func();
+                }
+
             } else if (data.code == 1) {
                 layer.msg(data.msg);
+            } else if (data.code == 2) {
+                // 已经被修改过了
+                layer.msg(data.msg);
+                // 刷新定义数据
+
+                // 提示重新操作
+
+
             } else if (data.code == 5011 || data.code == 5012) {
                 $.messager.confirm({
                     title: '提示信息',
@@ -636,7 +654,7 @@ function startEditing() {
                                     layer.close(loadLy);
                                     if (data.code == 0) {
                                         // 可以开始编辑
-                                        editable = true;
+                                        editableMap[_curTblId] = true;
                                         $('#' + _curTblId + ' input._tbl_name').textbox('readonly', false);
                                         $('#' + _curTblId + ' input._tbl_name_cn').textbox('readonly', false);
                                         $('#' + _curTblId + ' input._tbl_desc').textbox('readonly', false);
@@ -658,12 +676,12 @@ function startEditing() {
 
 // 结束编辑状态
 function endEditing() {
-    if (editIndex == null) {
+    if (editIndexMap[_curTblId] == null) {
         return true
     }
-    if ($('#col_grid_' + _curTblId).datagrid('validateRow', editIndex)) {
-        $('#col_grid_' + _curTblId).datagrid('endEdit', editIndex);
-        editIndex = null;
+    if ($('#col_grid_' + _curTblId).datagrid('validateRow', editIndexMap[_curTblId])) {
+        $('#col_grid_' + _curTblId).datagrid('endEdit', editIndexMap[_curTblId]);
+        editIndexMap[_curTblId] = null;
         return true;
     } else {
         return false;
@@ -671,13 +689,16 @@ function endEditing() {
 }
 
 // 添加栏位
-function addColumn() {
+function _addColumn() {
     var prefixId = '#col_grid_' + _curTblId;
     $(prefixId).datagrid('appendRow', { default: "" });
 }
+function addColumn() {
+    _startEditing(_addColumn);
+}
 
 // 插入栏位
-function insertColumn() {
+function _insertColumn() {
     var prefixId = '#col_grid_' + _curTblId;
     var s1 = $(prefixId).datagrid('getSelected');
     var s2 = $(prefixId).datagrid('getRowIndex', s1.columnId);
@@ -691,10 +712,12 @@ function insertColumn() {
         });
     }
 }
+function insertColumn() {
+    _startEditing(_insertColumn);
+}
 
 // 删除栏位
-function delColumn() {
-    // 先去后台验证删除权限码
+function _delColumn() {
     layer.confirm('确定要删除选定列？该操作不可恢复，是否确认删除？', { icon: 7,
         btn: ['确定','取消'] //按钮
     }, function(index) {
@@ -706,10 +729,13 @@ function delColumn() {
             $(prefixId).datagrid('deleteRow', s2);
             $(prefixId).datagrid('unselectAll');
         }
-        isRowEdited = true;
+        isRowEditedMap[_curTblId] = true;
     }, function() {
         // 无操作
     });
+}
+function delColumn() {
+    _startEditing(_delColumn);
 }
 
 // 保存所有修改内容
@@ -723,7 +749,7 @@ function saveAll() {
     var tNamep = $.trim($(prefixId + ' input._tbl_name_p').val());
     var tNameCnp = $.trim($(prefixId + ' input._tbl_name_cn_p').val());
     var tDescp = $.trim($(prefixId + ' input._tbl_desc_p').val());
-    if (!isRowEdited && tName == tNamep && tNameCn == tNameCnp && tDesc == tDescp) {
+    if (!isRowEditedMap[_curTblId] && tName == tNamep && tNameCn == tNameCnp && tDesc == tDescp) {
         layer.msg("没有修改，不需要保存。");
         return false;
     }
@@ -779,7 +805,7 @@ function saveAll() {
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0) {
-                editIndex = null;
+                editIndexMap[_curTblId] = null;
                 // 保存成功后关闭表格的编辑状态，如果是新建表还要刷新tab
                 if (_curTblId < 100) {
                     loadLy = layer.load(1);

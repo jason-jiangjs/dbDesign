@@ -94,7 +94,7 @@ public class DbMngController extends BaseController {
         if (dbId == 0) {
             // 新增
             params.put("creator", adminId);
-            params.put("createdTime", DateTimeUtil.getDate());
+            params.put("createdTime", DateTimeUtil.getNowTime());
             dbService.saveDb(dbId, params);
         } else {
             // 修改
@@ -104,7 +104,7 @@ public class DbMngController extends BaseController {
                 return ApiResponseUtil.error(ErrorCode.E5001, "该数据库不存在/已删除 dbId={}", dbId);
             }
             params.put("modifier", adminId);
-            params.put("modifiedTime", DateTimeUtil.getDate());
+            params.put("modifiedTime", DateTimeUtil.getNowTime());
             dbService.saveDb(dbId, params);
         }
         return ApiResponseUtil.success();

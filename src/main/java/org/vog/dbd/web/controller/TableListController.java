@@ -167,6 +167,7 @@ public class TableListController extends BaseController {
         data.put("tblName", tblName);
         data.put("tblNameCn", dbMap.getStringAttribute("tableNameCN"));
         data.put("tblDesc", dbMap.getStringAttribute("desc"));
+        data.put("lastUpd", dbMap.getLongAttribute("modifiedTime"));
 
         // 列的表头定义
         List<List<Map<String, Object>>> columnsList = new ArrayList<>(1);
@@ -222,7 +223,8 @@ public class TableListController extends BaseController {
     }
 
     /**
-     * 检查指定表是否已在被编辑
+     * 检查指定表是否已在被编辑，或者自从上次查看后被人编辑保存过了
+     * 返回code:  1表示有人正在编辑　2表示已被保存过，需要刷新
      */
     @ResponseBody
     @RequestMapping(value = "/ajax/chkTblEditable", method = RequestMethod.POST)

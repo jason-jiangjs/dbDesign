@@ -1,12 +1,16 @@
+说明  
+1、时间值都定义为long型，格式为：yyyyMMddHHmmssSSS，使用北京时间
+
+
 ###### db_list
 | 列名 | 类型 | 说明 | 备注
 |-----|------|------|------
 |_id           | long      | 数据库ID | 系统内部ID，自增
 |deleteFlg     | bool      | 数据是否有效 | 缺省为"false", "true"表示该条数据已被删除
 |creator       | long      | 创建者ID 
-|createdTime   | date | 创建时间
+|createdTime   | long | 创建时间
 |modifier      | long      | 更新者ID
-|modifiedTime  | date | 更新时间
+|modifiedTime  | long | 更新时间
 |dbName        | string    | 数据库名称
 |dbNameCN      | string    | 数据库名称（中文）
 |desc          | string    | 描述
@@ -22,21 +26,21 @@
 |dbId | long | 数据库ID
 |deleteFlg | bool | 数据是否有效 | 缺省为"false", "true"表示该条数据已被删除
 |creator | long | 创建者ID
-|createdTime | date | 创建时间
+|createdTime | long | 创建时间
 |modifier | long | 更新者ID
-|modifiedTime | date | 更新时间
+|modifiedTime | long | 更新时间
 |tableName | string | 表名
 |tableNameCN | string | 表名（中文） 
 |type | int | 类型 | 1:表　2:视图
 |desc | string | 描述
 |currEditorId | long | 当前编辑者ID，不编辑时值为0
-|startEditTime | date | 开始编辑的时间
+|startEditTime | long | 开始编辑的时间
 |+ column_list | map[] | 列定义一览
 |\\- columnId | long | 列ID | 系统内部ID，自增
 |\\- creator | long | 创建者ID
-|\\- createdTime | date | 创建时间
+|\\- createdTime | long | 创建时间
 |\\- modifier | long | 更新者ID
-|\\- modifiedTime | date | 更新时间
+|\\- modifiedTime | long | 更新时间
 |\\- columnName | string | 列名
 |\\- columnNameCN | string | 列名（中文） | 对该列的说明
 |\\- desc | string | 备注
@@ -64,7 +68,7 @@
 |columnId | long | 列ID | 没有值时表示修改的表本身的属性，而不是列
 |userId | long | 修改者ID
 |userName | string | 修改者姓名
-|modifiedTime | date | 修改时间
+|modifiedTime | long | 修改时间
 |type | int | 类型 | 1:新增　2:修改　3:删除
 |contentBef | string | 修改前的内容 | 所修改的数据，json格式保存
 |contentAft | string | 修改后的内容 | 所修改的数据，json格式保存
@@ -75,12 +79,12 @@
 |-----|------|------|------
 |_id       | long | 用户ID | 系统内部ID，自增
 |status    | int | 用户状态 | 0:用户刚创建(初次登录需要修改密码)　1:正常状态　2:表示该用户已被锁定　4:表示该用户已被删除
-|registered | int | 是否是注册用户 | 即是否是在管理界面创建的用户 1:表示是　0:表示第三方登录用户
-|from | string | 用户来源 | 用于第三方登录的用户　gitlab/jira/mantis...
+|registered | boolean | 是否是注册用户 | 即是否是在管理界面创建的用户 true:表示是　false:表示第三方登录用户
+|from | string | 用户来源 | 用于第三方登录的用户　GitLab/jira/mantis...
 |creator   | long | 创建者ID
-|createdTime  | date | 创建时间
+|createdTime  | long | 创建时间
 |modifier     | long | 更新者ID
-|modifiedTime | date | 更新时间
+|modifiedTime | long | 更新时间
 |userId   | string | 用户登录帐号 | 登录用
 |userName | string | 用户姓名 | 显示用
 |password | string | 登录密码 | 使用BCrypt加密

@@ -20,7 +20,8 @@
     <div data-options="region:'center',border:false">
         <div id="tbl-tabs" class="easyui-tabs" data-options="tools:'#tab-tools',fit:true,border:false">
             <div title="主页" style="padding:10px" data-options="id:0,closable: true">
-                <p style="font-size:14px">该内容暂为空。</p>
+                <p style="font-size:14px">该内容暂为空。<br/>
+                以后考虑显示该数据库的业务介绍，表定义变更历史，登录用户的代办事项(比如未完成的编辑等)</p>
             </div>
         </div>
     </div>
@@ -30,7 +31,7 @@
     </div>
     <div id="tab-tools_menu" class="easyui-menu" style="width:120px;">
         <th:block dbd:authorize="${dbId}">
-            <div data-options="iconCls:'icon-save'" onclick="javascript:startEditing()">开始编辑</div>
+            <div data-options="iconCls:'icon-save'" onclick="javascript:chkForEditing()">开始编辑</div>
             <div class="menu-sep"></div>
             <div data-options="iconCls:'icon-save'" onclick="javascript:endEditing()">结束编辑状态</div>
             <div class="menu-sep"></div>

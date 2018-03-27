@@ -60,7 +60,7 @@ public class DbService extends BaseService {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("deleteFlg", true);
         infoMap.put("modifier", userId);
-        infoMap.put("modifiedTime", DateTimeUtil.getDate());
+        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
         dbDao.saveObject(dbId, infoMap, false);
     }
 
