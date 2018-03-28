@@ -598,8 +598,9 @@ function onClickRowBegEdit(index, field, value) {
     isRowEditedMap[_curTblId] = true;
 
     if (_endEditing()) {
-        $('#col_grid_' + _curTblId).datagrid('selectRow', index).datagrid('editCell', { index: index, field: field });
-        var ed = $('#col_grid_' + _curTblId).datagrid('getEditor', { index: index, field: field });
+        var gridObj = _getGrid();
+        gridObj.datagrid('selectRow', index).datagrid('editCell', { index: index, field: field });
+        var ed = gridObj.datagrid('getEditor', { index: index, field: field });
         if (ed && ed.target) {
             if (field == 'desc') {
                 $(ed.target).focus();
@@ -618,7 +619,7 @@ function onClickRowBegEdit(index, field, value) {
 function _displayEditToolbar(dspFlg) {
     var layoutH = '';
     if (dspFlg) {
-        layoutH = '112px';
+        layoutH = '112px';  // 这里的高度暂时直接固定，因为画面项目不会增减
         $('#' + _curTblId + ' div._tbl_edit_toolbar').show();
     } else {
         layoutH = '72px';
@@ -718,8 +719,9 @@ function _endEditing() {
     if (editIndexMap[_curTblId] == null) {
         return true
     }
-    if ($('#col_grid_' + _curTblId).datagrid('validateRow', editIndexMap[_curTblId])) {
-        $('#col_grid_' + _curTblId).datagrid('endEdit', editIndexMap[_curTblId]);
+    var gridObj = _getGrid();
+    if (gridObj.datagrid('validateRow', editIndexMap[_curTblId])) {
+        gridObj.datagrid('endEdit', editIndexMap[_curTblId]);
         editIndexMap[_curTblId] = null;
         return true;
     } else {
@@ -745,31 +747,39 @@ function endEditing() {
     });
 }
 
+// 取得当前grid中当前选中行的索引
+function _getGrid() {
+    var prefixId = '#col_grid_' + _curTblId;
+    return $(prefixId);
+}
+function _getGridRowIdx() {
+    var gridObj = _getGrid();
+    var s1 = gridObj.datagrid('getSelected');
+    if (s1 == null || s1 == undefined) {
+        return -1;
+    }
+    var s2 = -2;
+    if (s1.columnId) {
+        s2 = gridObj.datagrid('getRowIndex', s1.columnId);
+    } else {
+        s2 = gridObj.datagrid('getRowIndex', s1);
+    }
+    return s2;
+}
+
 // 添加栏位
 function addColumn() {
-    var prefixId = '#col_grid_' + _curTblId;
-    $(prefixId).datagrid('appendRow', { default: "" });
+    _getGrid().datagrid('appendRow', { default: "" });
 }
 
 // 插入栏位
 function insertColumn() {
-    var prefixId = '#col_grid_' + _curTblId;
-    var s1 = $(prefixId).datagrid('getSelected');
-    if (s1 == null || s1 == undefined) {
-        layer.msg("必须确定插入项目的位置．");
-        return;
-    }
-    var s2 = -2;
-    if (s1.columnId) {
-        s2 = $(prefixId).datagrid('getRowIndex', s1.columnId);
-    } else {
-        s2 = $(prefixId).datagrid('getRowIndex', s1);
-    }
-    if (s2 == -1) {
+    var s2 = _getGridRowIdx();
+    if (s2 < 0) {
         // 没有选中行，新增
-        $(prefixId).datagrid('appendRow', { default: "" });
+        layer.msg("必须确定插入项目的位置．");
     } else {
-        $(prefixId).datagrid('insertRow',{
+        _getGrid().datagrid('insertRow',{
             index: s2,
             row: { default: "" }
         });
@@ -778,16 +788,19 @@ function insertColumn() {
 
 // 删除栏位
 function delColumn() {
-    layer.confirm('确定要删除选定列？该操作不可恢复，是否确认删除？', { icon: 7,
+    var s2 = _getGridRowIdx();
+    if (s2 < 0) {
+        layer.msg("必须选择项目后才能删除．");
+    }
+
+    layer.confirm('确定要删除选定项目？<br/>该操作不可恢复，是否确认删除？', { icon: 7,
         btn: ['确定','取消'] //按钮
     }, function(index) {
         layer.close(index);
-        var prefixId = '#col_grid_' + _curTblId;
-        var s1 = $(prefixId).datagrid('getSelected');
-        var s2 = $(prefixId).datagrid('getRowIndex', s1.columnId);
         if (s2 >= 0) {
-            $(prefixId).datagrid('deleteRow', s2);
-            $(prefixId).datagrid('unselectAll');
+            var gridObj = _getGrid();
+            gridObj.datagrid('deleteRow', s2);
+            gridObj.datagrid('unselectAll');
         }
         isRowEditedMap[_curTblId] = true;
     }, function() {
