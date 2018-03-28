@@ -148,26 +148,21 @@ public class TableListController extends BaseController {
             logger.warn("getColumnList 缺少tblId userId={}", userId);
             return ApiResponseUtil.error(ErrorCode.W1001, "错误操作,未选择指定的表.(缺少参数 tblId)");
         }
-        String tblName = StringUtils.trimToNull(params.get("tblName"));
-        if (tblName == null) {
-            logger.warn("getColumnList 缺少tblName tblId={}, userId={}", tblId, userId);
-            return ApiResponseUtil.error(ErrorCode.W1001, "错误操作,未选择指定的表.(缺少参数 tblName) (tblId={})", tblId);
-        }
 
         BaseMongoMap dbMap = tableService.getTableById(tblId);
         if (dbMap == null || dbMap.isEmpty()) {
             // 表不存在
             logger.warn("getColumnList 表不存在 tblId={}, userId={}", tblId, userId);
-            return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={} tblName={}", tblId, tblName);
+            return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
         }
         Long dbId = dbMap.getLongAttribute("dbId");
 
         Map<String, Object> data = new HashMap<>();
         data.put("tblId", tblId);
-        data.put("tblName", tblName);
+        data.put("tblName", dbMap.getStringAttribute("tableName"));
         data.put("tblNameCn", dbMap.getStringAttribute("tableNameCN"));
         data.put("tblDesc", dbMap.getStringAttribute("desc"));
-        data.put("lastUpd", dbMap.getLongAttribute("modifiedTime"));
+        data.put("lastUpd", dbMap.getLongAttribute("modifiedTime").toString()); // 这里必须转换为字符串，传long型会丢失精度
 
         // 列的表头定义
         List<List<Map<String, Object>>> columnsList = new ArrayList<>(1);
@@ -251,8 +246,28 @@ public class TableListController extends BaseController {
             logger.warn("chkTblEditable 表不存在 tblId={}, userId={}", tblId, userId);
             return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
         }
+
         Long currEditorId = tblMap.getLongAttribute("currEditorId");
         if (currEditorId == 0 || currEditorId.equals(userId)) {
+            // 没人在编辑／或是自己在编辑(这种情况应该是出错了)
+            // 再判断自从打开后是否被修改过
+            long lastUpd = StringUtil.convertToLong(params.get("lastUpd"));
+            long newUpd = tblMap.getLongAttribute("modifiedTime");
+            if ((lastUpd == 0 && newUpd > 0) || (lastUpd > 0 && newUpd > 0 && lastUpd < newUpd)) {
+                // 已经被编辑过了
+                long modifier = tblMap.getLongAttribute("modifier");
+                if (modifier == 0) {
+                    return ApiResponseUtil.error(2, "该表定义已经被修改过了，需要重新加载。" );
+                }
+                BaseMongoMap userMap = userService.getUserById(modifier);
+                if (userMap == null) {
+                    logger.warn("chkTblEditable 用户不存在 modifier={}", modifier);
+                    return ApiResponseUtil.error(2, "该表定义已经被用户(id={})修改过了，需要重新加载。", modifier);
+                } else  {
+                    return ApiResponseUtil.error(2, "该表定义已经被{}(id={})修改过了，需要重新加载。", userMap.getStringAttribute("userName"), modifier);
+                }
+            }
+
             tableService.startEditTable(userId, tblId);
             return ApiResponseUtil.success();
         }
@@ -268,7 +283,7 @@ public class TableListController extends BaseController {
         }
 
         // 已在编辑状态
-        return ApiResponseUtil.error(1, userMap.getStringAttribute("userName") + "(" + userMap.getStringAttribute("userId") + ") 正在编辑该表，去催催吧。" );
+        return ApiResponseUtil.error(1, userMap.getStringAttribute("userName") + "(" + userMap.getStringAttribute("userId") + ") 正在编辑该表，<br/>去催催吧。" );
     }
 
     /**
@@ -301,6 +316,39 @@ public class TableListController extends BaseController {
         }
 
         tableService.startEditTable(userId, tblId);
+        return ApiResponseUtil.success();
+    }
+
+    /**
+     * 结束编辑状态, 不保存数据！！！
+     */
+    @ResponseBody
+    @RequestMapping(value = "/ajax/endEditable", method = RequestMethod.POST)
+    public Map<String, Object> endEditable(@RequestParam Map<String, String> params) {
+        Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+        if (userId == null || userId == 0) {
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
+        }
+
+//        long tblId = StringUtil.convertToLong(params.get("tableId"));
+//        if (tblId == 0) {
+//            logger.warn("forceTblEditable 缺少参数tableId");
+//            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数tableId");
+//        }
+//
+//        if (tblId < 1000) {
+//            logger.warn("forceTblEditable 新建表不需要检查编辑冲突");
+//            return ApiResponseUtil.success();
+//        }
+//        BaseMongoMap tblMap = tableService.getTableById(tblId);
+//        if (tblMap == null || tblMap.isEmpty()) {
+//            // 表不存在
+//            logger.warn("chkTblEditable 表不存在 tblId={}, userId={}", tblId, userId);
+//            return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
+//        }
+//
+//        tableService.startEditTable(userId, tblId);
         return ApiResponseUtil.success();
     }
 

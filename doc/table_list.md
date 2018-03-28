@@ -1,5 +1,6 @@
 说明  
-1、时间值都定义为long型，格式为：yyyyMMddHHmmssSSS，使用北京时间
+1、时间值都定义为long型(两个原因：方便比较大小；mongodb里保存date类型是GMT时间，直接查看数据时不直观)，  
+格式为：yyyyMMddHHmmssSSS，使用北京时间
 
 
 ###### db_list

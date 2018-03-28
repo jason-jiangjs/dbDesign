@@ -20,8 +20,8 @@
     <div data-options="region:'center',border:false">
         <div id="tbl-tabs" class="easyui-tabs" data-options="tools:'#tab-tools',fit:true,border:false">
             <div title="主页" style="padding:10px" data-options="id:0,closable: true">
-                <p style="font-size:14px">该内容暂为空。<br/>
-                以后考虑显示该数据库的业务介绍，表定义变更历史，登录用户的代办事项(比如未完成的编辑等)</p>
+                <p style="font-size:14px">该内容暂为空。<br/><br/>
+                以后考虑显示该数据库的业务介绍，表定义变更历史，登录用户的代办事项(比如未完成的编辑等)，维护通知等</p>
             </div>
         </div>
     </div>
@@ -33,7 +33,7 @@
         <th:block dbd:authorize="${dbId}">
             <div data-options="iconCls:'icon-save'" onclick="javascript:chkForEditing()">开始编辑</div>
             <div class="menu-sep"></div>
-            <div data-options="iconCls:'icon-save'" onclick="javascript:endEditing()">结束编辑状态</div>
+            <div data-options="iconCls:'icon-save'" onclick="javascript:endEditing()" title="退出编辑状态，不保存当前修改!!!">退出编辑状态</div>
             <div class="menu-sep"></div>
             <div data-options="iconCls:'icon-save'" onclick="javascript:delCurrTable()">删除当前项目</div>
             <div class="menu-sep"></div>
@@ -75,7 +75,7 @@
         </table>
         <input type="hidden" class="_tbl_name_p"><input type="hidden" class="_tbl_desc_p"><input type="hidden" class="_tbl_name_cn_p">
         <input type="hidden" class="_tbl_last_updtime">
-        <div style="padding:7px 0px 7px 12px;border-top:1px solid #e0e0e0" dbd:authorize="${dbId}">
+        <div class="_tbl_edit_toolbar" style="padding:7px 0px 7px 12px;border-top:1px solid #e0e0e0;display:none" dbd:authorize="${dbId}">
             <a href="#" class="_linkbtn_add" onclick="javascript:addColumn()" style="width:90px">添加栏位</a>
             <a href="#" class="_linkbtn_edit" onclick="javascript:insertColumn()" style="width:90px;margin-left:10px">插入栏位</a>
             <a href="#" class="_linkbtn_remove" onclick="javascript:delColumn()" style="width:90px;margin-left:10px">删除栏位</a>

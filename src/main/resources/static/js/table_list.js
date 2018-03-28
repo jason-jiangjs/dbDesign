@@ -4,7 +4,7 @@
 
 // 画面项目初始化
 $(function () {
-    var curDbId = $.trim($('#dbId').val());
+    var curDbId = $.trim($('#dbId').val()); // 异常情况下，这里使用了dbId作为error code
     if (curDbId == 0 || curDbId == 1) {
         $.messager.alert({
             iconCls: 'icon-no',
@@ -89,6 +89,27 @@ $(function () {
             } else {
                 $('#tblList').datalist('unselectAll');
             }
+        },
+        onBeforeClose: function(title, index) {
+            if (index == 0) {
+                // 主页
+                return true;
+            }
+            if (editableMap[_curTblId] == undefined || editableMap[_curTblId] === false) {
+                return true;
+            }
+            var target = this;
+            // 要判断是否有未保存的编辑，如果有，让用户确认是否要关闭该tab
+            $.messager.confirm('Confirm', 'Are you sure you want to close ' + title, function(r) {
+                if (r) {
+                    var opts = $(target).tabs('options');
+                    var bc = opts.onBeforeClose;
+                    opts.onBeforeClose = function(){};  // allowed to close now
+                    $(target).tabs('close', index);
+                    opts.onBeforeClose = bc;  // restore the event function
+                }
+            });
+            return false;	// prevent from closing
         }
     });
 
@@ -154,11 +175,11 @@ $(function () {
                 _curTblId = tblId;
                 // 先查看是否已存在，若已存在则切换tab
                 if ($('#tbl-tabs').tabs('exists', row.tableName)) {
-                    $('#tbl-tabs').tabs('select', row.tableName); // TODO-- 这里可能需要刷新数据，再议
+                    $('#tbl-tabs').tabs('select', row.tableName); // 这里不刷新数据，编辑时再确认是否有修改
                     return;
                 }
 
-                _openNewTab(tblId, row.tableName);
+                _openNewTab(tblId);
             } else {
                 $.messager.alert('发生错误', '可能是数据加载错误．', 'error');
             }
@@ -248,13 +269,12 @@ $(function () {
     });
 });
 
-function _openNewTab(tblId, tabTitle) {
+function _openNewTab(tblId) {
     var loadLy = layer.load(1);
     // 查询表定义信息，动态加载列定义
-    var tblName = encodeURIComponent(tabTitle);
     $.ajax({
         type: 'get',
-        url: Ap_servletContext + '/ajax/getTable?tblId=' + tblId + '&tblName=' + tblName + '&_t=' + new Date().getTime(),
+        url: Ap_servletContext + '/ajax/getTable?tblId=' + tblId + '&_t=' + new Date().getTime(),
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0 && data.data) {
@@ -324,17 +344,7 @@ function _createTblHeadDiv(tblId, tblName, tblNameCn, tblDesc, lastUpd) {
     });
 
     // 只读权限的用户不显示操作按钮
-    var p = $('#tabDiv_' + tblId).layout('panel', 'north');	// get the north panel
-    var oldHeight = p.panel('panel').outerHeight();
-    if (oldHeight < 100) { // 这里暂时使用这种方法来自适应高度，期待更好的方案
-        p.panel('resize', {height: '72px'});
-    } else {
-        p.panel('resize', {height: '112px'});
-    }
-    var newHeight = p.panel('panel').outerHeight();
-    $('#tabDiv_' + tblId).layout('resize', {
-        height: ($('#tabDiv_' + tblId).height() + newHeight - oldHeight)
-    });
+    _displayEditToolbar(false);
 
     // 然后加载操作按钮
     var prefixId = "#" + tblId;
@@ -587,7 +597,7 @@ function onClickRowBegEdit(index, field, value) {
     }
     isRowEditedMap[_curTblId] = true;
 
-    if (endEditing()) {
+    if (_endEditing()) {
         $('#col_grid_' + _curTblId).datagrid('selectRow', index).datagrid('editCell', { index: index, field: field });
         var ed = $('#col_grid_' + _curTblId).datagrid('getEditor', { index: index, field: field });
         if (ed && ed.target) {
@@ -604,12 +614,29 @@ function onClickRowBegEdit(index, field, value) {
     }
 }
 
-// 开始编辑，要先去后台确认该表是否有其他人正在编辑
-function chkForEditing() {
-    _startEditing();
+// 显示编辑工具栏
+function _displayEditToolbar(dspFlg) {
+    var layoutH = '';
+    if (dspFlg) {
+        layoutH = '112px';
+        $('#' + _curTblId + ' div._tbl_edit_toolbar').show();
+    } else {
+        layoutH = '72px';
+        $('#' + _curTblId + ' div._tbl_edit_toolbar').hide();
+    }
+
+    // 要重新计算layout高度
+    var p = $('#tabDiv_' + _curTblId).layout('panel', 'north');	// get the north panel
+    var oldHeight = p.panel('panel').outerHeight();
+    p.panel('resize', {height: layoutH});
+    var newHeight = p.panel('panel').outerHeight();
+    $('#tabDiv_' + _curTblId).layout('resize', {
+        height: ($('#tabDiv_' + _curTblId).height() + newHeight - oldHeight)
+    });
 }
 
-function _startEditing(func) {
+// 开始编辑，要先去后台确认该表是否有其他人正在编辑
+function chkForEditing() {
     var loadLy = layer.load(1);
     var last_upd = $.trim($('#' + _curTblId + ' input._tbl_last_updtime').val());
     $.ajax({
@@ -624,19 +651,31 @@ function _startEditing(func) {
                 $('#' + _curTblId + ' input._tbl_name_cn').textbox('readonly', false);
                 $('#' + _curTblId + ' input._tbl_desc').textbox('readonly', false);
 
-                if (func) {
-                    func();
-                }
+                // 显示编辑工具栏
+                _displayEditToolbar(true);
 
             } else if (data.code == 1) {
                 layer.msg(data.msg);
             } else if (data.code == 2) {
                 // 已经被修改过了
                 layer.msg(data.msg);
-                // 刷新定义数据
+                // 刷新定义数据(先关闭当前tab，再重新打开)
+                loadLy = layer.load(1);
+                var nowTblId = _curTblId;
+                var tabIdx = $('#tbl-tabs').tabs('getTabIndex', $('#tbl-tabs').tabs('getSelected'));
+                $('#tbl-tabs').tabs('close', tabIdx);
+                _openNewTab(nowTblId);
 
+                // 可以开始编辑
+                editableMap[_curTblId] = true;
+                $('#' + _curTblId + ' input._tbl_name').textbox('readonly', false);
+                $('#' + _curTblId + ' input._tbl_name_cn').textbox('readonly', false);
+                $('#' + _curTblId + ' input._tbl_desc').textbox('readonly', false);
+                // 显示编辑工具栏
+                _displayEditToolbar(true);
+                layer.close(loadLy);
                 // 提示重新操作
-
+                layer.msg("刷新数据成功，请重新操作．");
 
             } else if (data.code == 5011 || data.code == 5012) {
                 $.messager.confirm({
@@ -675,7 +714,7 @@ function _startEditing(func) {
 }
 
 // 结束编辑状态
-function endEditing() {
+function _endEditing() {
     if (editIndexMap[_curTblId] == null) {
         return true
     }
@@ -687,21 +726,45 @@ function endEditing() {
         return false;
     }
 }
+function endEditing() {
+    editableMap[_curTblId] = false;
+    _endEditing();
+    var loadLy = layer.load(1);
+    $.ajax({
+        type: 'post',
+        url: Ap_servletContext + '/ajax/endEditable?tableId=' + _curTblId,
+        success: function (data) {
+            layer.close(loadLy);
+            if (data.code == 0) {
+                // 隐藏编辑工具栏
+                _displayEditToolbar(false);
+            } else {
+                layer.msg(data.msg + ' code=' + data.code);
+            }
+        }
+    });
+}
 
 // 添加栏位
-function _addColumn() {
+function addColumn() {
     var prefixId = '#col_grid_' + _curTblId;
     $(prefixId).datagrid('appendRow', { default: "" });
 }
-function addColumn() {
-    _startEditing(_addColumn);
-}
 
 // 插入栏位
-function _insertColumn() {
+function insertColumn() {
     var prefixId = '#col_grid_' + _curTblId;
     var s1 = $(prefixId).datagrid('getSelected');
-    var s2 = $(prefixId).datagrid('getRowIndex', s1.columnId);
+    if (s1 == null || s1 == undefined) {
+        layer.msg("必须确定插入项目的位置．");
+        return;
+    }
+    var s2 = -2;
+    if (s1.columnId) {
+        s2 = $(prefixId).datagrid('getRowIndex', s1.columnId);
+    } else {
+        s2 = $(prefixId).datagrid('getRowIndex', s1);
+    }
     if (s2 == -1) {
         // 没有选中行，新增
         $(prefixId).datagrid('appendRow', { default: "" });
@@ -712,12 +775,9 @@ function _insertColumn() {
         });
     }
 }
-function insertColumn() {
-    _startEditing(_insertColumn);
-}
 
 // 删除栏位
-function _delColumn() {
+function delColumn() {
     layer.confirm('确定要删除选定列？该操作不可恢复，是否确认删除？', { icon: 7,
         btn: ['确定','取消'] //按钮
     }, function(index) {
@@ -733,9 +793,6 @@ function _delColumn() {
     }, function() {
         // 无操作
     });
-}
-function delColumn() {
-    _startEditing(_delColumn);
 }
 
 // 保存所有修改内容
@@ -806,6 +863,7 @@ function saveAll() {
             layer.close(loadLy);
             if (data.code == 0) {
                 editIndexMap[_curTblId] = null;
+                editableMap[_curTblId] = false;
                 // 保存成功后关闭表格的编辑状态，如果是新建表还要刷新tab
                 if (_curTblId < 100) {
                     loadLy = layer.load(1);
@@ -813,7 +871,7 @@ function saveAll() {
                     var _newTblId = data.data._newTblId;
                     var tabIdx = $('#tbl-tabs').tabs('getTabIndex', $('#tbl-tabs').tabs('getSelected'));
                     $('#tbl-tabs').tabs('close', tabIdx);
-                    _openNewTab(_newTblId, tName);
+                    _openNewTab(_newTblId);
 
                     $('#tblList').datalist({
                         onLoadSuccess: function(data) {
@@ -823,6 +881,8 @@ function saveAll() {
                     $('#tblList').datalist("load", {});
                     layer.close(loadLy);
                 }
+                endEditing();
+                $(prefixId + ' input._tbl_last_updtime').val(data.data.lastUpd);
             } else {
                 layer.msg(data.msg + ' code=' + data.code);
             }

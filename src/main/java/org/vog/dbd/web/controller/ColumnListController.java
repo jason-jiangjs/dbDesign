@@ -124,14 +124,15 @@ public class ColumnListController extends BaseController {
             // 判断上次更新时间
             Long nowDate = StringUtil.convertToLong(params.get("_tbl_last_upd"));
             Long lastUpd = dbMap.getLongAttribute("modifiedTime");
-            if (lastUpd > 0 && nowDate > 0 && nowDate <= lastUpd) {
-                logger.warn("saveColDefine 已经有人更新过了 tblId={}, userId={}，date1={},date2={}", tblId, userId, new Date(nowDate).toString(), lastUpd.toString());
+            if (lastUpd > 0 && nowDate > 0 && nowDate < lastUpd) {
+                logger.warn("saveColDefine 已经有人更新过了 tblId={}, userId={}，date1={},date2={}", tblId, userId, nowDate.toString(), lastUpd.toString());
                 return ApiResponseUtil.error(ErrorCode.E5102, "已经有人更新过了 tblId={}", tblId);
             }
         }
 
         long nowTime = DateTimeUtil.getNowTime();
         Map<String, Object> retData = new HashMap<>();
+        retData.put("lastUpd", Long.toString(nowTime));
         Map<String, Object> tblData = new HashMap<>();
         tblData.put("tableName", params.get("_tbl_name"));
         tblData.put("tableNameCN", params.get("_tbl_name_cn"));
