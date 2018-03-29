@@ -8,7 +8,8 @@ import org.springframework.web.client.DefaultResponseErrorHandler;
 import java.io.IOException;
 
 /**
- * Created by dell on 2018/3/24.
+ * 向第三方发送HTTP请求时的异常处理Handler
+ * 不具通用性，关联与具体业务(第三方平台)
  */
 public class HttpResponseErrorHandler extends DefaultResponseErrorHandler {
 
