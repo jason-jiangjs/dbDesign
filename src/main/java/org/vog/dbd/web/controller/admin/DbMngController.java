@@ -61,7 +61,7 @@ public class DbMngController extends BaseController {
     public Map<String, Object> getDbList(@RequestParam Map<String, String> params) {
         int page = StringUtil.convertToInt(params.get("page"));
         int rows = StringUtil.convertToInt(params.get("rows"));
-        List<BaseMongoMap> dbList = dbService.findDbList(page, rows);
+        List<BaseMongoMap> dbList = dbService.findDbList(page, rows, false);
 
         Map<String, Object> model = new HashMap<>();
         model.put("rows", dbList);

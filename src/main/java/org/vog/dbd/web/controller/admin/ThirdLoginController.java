@@ -52,9 +52,9 @@ public class ThirdLoginController extends BaseController {
     public String index(HttpServletRequest req, HttpServletResponse response) throws Throwable {
         logger.info("first login, build oauth request >..");
         OAuthClientRequest request = OAuthClientRequest
-                .authorizationLocation(SystemProperty.resolveProperty("gitlab_oauth2_client_userAuthorizationUri"))
-                .setClientId(SystemProperty.resolveProperty("gitlab_oauth2_client_clientId"))
-                .setRedirectURI(SystemProperty.resolveProperty("myapp_gitlab_callback_url"))
+                .authorizationLocation(SystemProperty.resolveStringProperty("gitlab_oauth2_client_userAuthorizationUri"))
+                .setClientId(SystemProperty.resolveStringProperty("gitlab_oauth2_client_clientId"))
+                .setRedirectURI(SystemProperty.resolveStringProperty("myapp_gitlab_callback_url"))
                 .setResponseType("code")
                 .buildQueryMessage();
 
@@ -80,11 +80,11 @@ public class ThirdLoginController extends BaseController {
         String errMsg = null;
         try {
             OAuthClientRequest request = OAuthClientRequest
-                    .tokenLocation(SystemProperty.resolveProperty("gitlab_oauth2_client_accessTokenUri"))
+                    .tokenLocation(SystemProperty.resolveStringProperty("gitlab_oauth2_client_accessTokenUri"))
                     .setGrantType(GrantType.AUTHORIZATION_CODE)
-                    .setClientId(SystemProperty.resolveProperty("gitlab_oauth2_client_clientId"))
-                    .setClientSecret(SystemProperty.resolveProperty("gitlab_oauth2_client_clientSecret"))
-                    .setRedirectURI(SystemProperty.resolveProperty("myapp_gitlab_callback_url"))
+                    .setClientId(SystemProperty.resolveStringProperty("gitlab_oauth2_client_clientId"))
+                    .setClientSecret(SystemProperty.resolveStringProperty("gitlab_oauth2_client_clientSecret"))
+                    .setRedirectURI(SystemProperty.resolveStringProperty("myapp_gitlab_callback_url"))
                     .setCode(code)
                     .buildQueryMessage();
 
@@ -104,7 +104,7 @@ public class ThirdLoginController extends BaseController {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new HttpResponseErrorHandler());
         try {
-            ResponseEntity<Map> retObj = restTemplate.getForEntity(SystemProperty.resolveProperty("gitlab_oauth2_resource_userInfoUri"), Map.class, accessToken);
+            ResponseEntity<Map> retObj = restTemplate.getForEntity(SystemProperty.resolveStringProperty("gitlab_oauth2_resource_userInfoUri"), Map.class, accessToken);
             errMsg = retObj.getHeaders().getFirst("_innerError"); /** 这个变量名"_innerError"要参照 {@link HttpResponseErrorHandler.handleError()} */
             if (errMsg != null) {
                 return "redirect:/sys_error?msg=" + StringUtil.encode("从gitlab取用户信息时出错,请联系系统管理员。<br/>") + errMsg + "<br/>" + retObj.getBody().toString();

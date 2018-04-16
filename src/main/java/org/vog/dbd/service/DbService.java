@@ -1,6 +1,7 @@
 package org.vog.dbd.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.base.service.BaseService;
@@ -10,6 +11,8 @@ import org.vog.dbd.dao.DbDao;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 @Service
 public class DbService extends BaseService {
@@ -24,14 +27,15 @@ public class DbService extends BaseService {
      * 查询指定数据库
      */
     public BaseMongoMap findDbById(long dbId) {
-        return dbDao.findDbById(dbId);
+        Query queryObj = new Query(where("_id").is(dbId));
+        return dbDao.getMongoMap(queryObj);
     }
 
     /**
      * 查询指定数据库类型
      */
     public int getDbTypeById(long dbId) {
-        BaseMongoMap dbObj = dbDao.findDbById(dbId);
+        BaseMongoMap dbObj = findDbById(dbId);
         int dbType = dbObj.getIntAttribute("type");
         if (dbType == 0) {
             logger.warn("未设置数据库类型 id={}", dbId);
@@ -42,15 +46,23 @@ public class DbService extends BaseService {
     /**
      * 查询数据库一览
      */
-    public List<BaseMongoMap> findDbList(int page, int limit) {
-        return dbDao.findDbList(page, limit, false);
+    public List<BaseMongoMap> findDbList(int page, int limit, boolean checked) {
+        Query queryObj = new Query();
+        if (checked) {
+            queryObj.addCriteria(where("deleteFlg").is(false));
+        }
+        if (limit > 0) {
+            queryObj.skip((page - 1) * limit);
+            queryObj.limit(limit);
+        }
+        return dbDao.getMongoMapList(queryObj);
     }
 
     /**
-     * 统计用户个数
+     * 统计数据库个数(全部)
      */
     public long countDbList() {
-        return dbDao.countDbList();
+        return dbDao.countList(null);
     }
 
     /**
@@ -61,7 +73,7 @@ public class DbService extends BaseService {
         infoMap.put("deleteFlg", true);
         infoMap.put("modifier", userId);
         infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
-        dbDao.saveObject(dbId, infoMap, false);
+        dbDao.updateObject(dbId, infoMap, false);
     }
 
     /**
@@ -71,6 +83,6 @@ public class DbService extends BaseService {
         if (dbId == null || dbId == 0) {
             dbId = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);
         }
-        dbDao.saveObject(dbId, params, true);
+        dbDao.updateObject(dbId, params, true);
     }
 }

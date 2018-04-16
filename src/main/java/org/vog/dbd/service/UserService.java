@@ -2,6 +2,7 @@ package org.vog.dbd.service;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
@@ -18,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+
 @Service
 public class UserService extends BaseService {
 
@@ -30,11 +33,15 @@ public class UserService extends BaseService {
     @Autowired
     private ComSequenceService sequenceService;
 
+    @Autowired
+    private DbService dbService;
+
     /**
      * 根据id查询用户
      */
     public BaseMongoMap getUserById(long iid) {
-        return userDao.getUserById(iid);
+        Query queryObj = new Query(where("_id").is(iid));
+        return userDao.getMongoMap(queryObj);
     }
 
     /**
@@ -43,28 +50,41 @@ public class UserService extends BaseService {
     public void setUserFavorite(long userId, long dbId) {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("favorite", dbId);
-        userDao.saveObject(userId, infoMap, false);
+        userDao.updateObject(userId, infoMap, false);
     }
 
     /**
      * 查询用户一览
      */
     public List<BaseMongoMap> findUserList(int page, int limit) {
-        return userDao.getUserList(page, limit);
+        Query queryObj = new Query();
+        queryObj.fields().include("userId");
+        queryObj.fields().include("userName");
+        queryObj.fields().include("role");
+        queryObj.fields().include("status");
+        queryObj.fields().include("from");
+        if (limit > 0) {
+            queryObj.skip((page - 1) * limit);
+            queryObj.limit(limit);
+        }
+        return userDao.getMongoMapList(queryObj);
     }
 
     /**
      * 统计用户个数
      */
     public long countUserList() {
-        return userDao.countUserList();
+        return userDao.countList(null);
     }
 
     /**
-     * 查询用户一览
+     * 查询用户权限信息
      */
     public List<Map<String, Object>> findUserDbList(long userId, boolean needCrpId) {
-        BaseMongoMap userMap = userDao.getUserRoleInfo(userId);
+        Query queryObj = new Query(where("_id").is(userId));
+        queryObj.fields().include("role");
+        queryObj.fields().include("roleList");
+        BaseMongoMap userMap = userDao.getMongoMap(queryObj);
         if (userMap == null) {
             return Collections.EMPTY_LIST;
         }
@@ -72,7 +92,7 @@ public class UserService extends BaseService {
         List<Map<String, Object>> roleList = null;
         // 如果该用户是系统管理员，则返回所有的数据库一览
         if (userMap.getIntAttribute("role") == 9) {
-            List<BaseMongoMap> dDbList = dbDao.findDbList(0, 0, true);
+            List<BaseMongoMap> dDbList = dbService.findDbList(0, 0, true);
             if (dDbList == null || dDbList.isEmpty()) {
                 logger.error("getUserRoleList 无数据库 iid={}", userId);
                 return Collections.EMPTY_LIST;
@@ -101,7 +121,7 @@ public class UserService extends BaseService {
             return Collections.EMPTY_LIST;
         }
         for (Map<String, Object> roleMap : roleList) {
-            BaseMongoMap dbMap = dbDao.findDbById(StringUtil.convertToLong(roleMap.get("dbId")));
+            BaseMongoMap dbMap = dbService.findDbById(StringUtil.convertToLong(roleMap.get("dbId")));
             if (dbMap == null) {
                 continue;
             }
@@ -136,7 +156,7 @@ public class UserService extends BaseService {
         infoMap.put("status", 4);
         infoMap.put("modifier", adminId);
         infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
-        userDao.saveObject(userId, infoMap, false);
+        userDao.updateObject(userId, infoMap, false);
     }
 
     /**
@@ -163,7 +183,7 @@ public class UserService extends BaseService {
         }
         userObj.put("roleList", roleList);
 
-        userDao.saveObject(iid, userObj, true);
+        userDao.updateObject(iid, userObj, true);
     }
 
     /**
@@ -186,7 +206,7 @@ public class UserService extends BaseService {
         }
         userObj.put("roleList", roleList);
 
-        userDao.saveObject(iid, userObj, false);
+        userDao.updateObject(iid, userObj, false);
     }
 
     /**
@@ -201,7 +221,7 @@ public class UserService extends BaseService {
         userObj.put("password", "");
         userObj.put("status", 1);
         userObj.put("registered", false);
-        userDao.saveObject(iid, userObj, true);
+        userDao.updateObject(iid, userObj, true);
     }
 
 }

@@ -2,6 +2,7 @@ package org.vog.dbd.service;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.base.service.BaseService;
@@ -15,6 +16,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 @Service
 public class UpdateHisService extends BaseService {
@@ -54,14 +57,19 @@ public class UpdateHisService extends BaseService {
         data.put("userId", userObj.getId());
         data.put("userName", userObj.getUsername());
         data.put("modifiedTime", DateTimeUtil.getNowTime());
-        updateHisDao.saveUpdateHis(data);
+        updateHisDao.updateObject(999, data, true);
     }
 
     /**
      * 查询操作历史一览
      */
     public List<Map<String, Object>> getUpdHisList(Long dbId, int page, int limit) {
-        List<BaseMongoMap> hisList = updateHisDao.findUpdHisList(dbId, page, limit);
+        Query queryObj = new Query(where("dbId").is(dbId));
+        if (limit > 0) {
+            queryObj.skip((page - 1) * limit);
+            queryObj.limit(limit);
+        }
+        List<BaseMongoMap> hisList = updateHisDao.getMongoMapList(queryObj);
         if (hisList == null || hisList.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
@@ -99,7 +107,8 @@ public class UpdateHisService extends BaseService {
      * 统计操作历史一览个数
      */
     public long countUpdHisList(Long dbId) {
-        return updateHisDao.countUpdHisList(dbId);
+        Query queryObj = new Query(where("dbId").is(dbId));
+        return updateHisDao.countList(queryObj);
     }
 
 }

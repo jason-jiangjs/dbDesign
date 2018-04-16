@@ -1,6 +1,7 @@
 package org.vog.base.dao.mongo;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.vog.base.model.mongo.BaseMongoMap;
@@ -31,14 +32,6 @@ public abstract class BaseMongoDao {
     }
 
     /**
-     * 添加记录
-     * 子类要使用此方法必须覆盖getTableName()方法
-     */
-    public void addData(Map<String, Object> dataObj) {
-        mongoTemplate.save(dataObj, getTableName());
-    }
-
-    /**
      * 根据指定条件查询数据
      * 子类要使用此方法必须覆盖getTableName()方法
      */
@@ -63,16 +56,16 @@ public abstract class BaseMongoDao {
     }
 
     /**
-     * (单条)更新
+     * 插入数据，指定表
      */
-    public WriteResult update(Query query, Update update) {
-        return mongoTemplate.updateFirst(query, update, getTableName());
+    public void insertObject(List<DBObject> dataObj, String tblName) {
+        mongoTemplate.insert(dataObj, tblName);
     }
 
     /**
      * 保存数据(查询关键字为"_id")
      */
-    public WriteResult saveObject(long id, Map<String, Object> infoMap, boolean upsert) {
+    public WriteResult updateObject(long id, Map<String, Object> infoMap, boolean upsert) {
         Query query = new Query(where("_id").is(id));
 
         BasicDBObject basicDBObject = new BasicDBObject();
@@ -84,13 +77,6 @@ public abstract class BaseMongoDao {
         } else {
             return mongoTemplate.updateFirst(query, update, getTableName());
         }
-    }
-
-    /**
-     * 删除记录
-     */
-    public WriteResult remove(Query queryObj) {
-        return mongoTemplate.remove(queryObj, getTableName());
     }
 
 }

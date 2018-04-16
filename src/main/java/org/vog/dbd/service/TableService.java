@@ -1,10 +1,8 @@
 package org.vog.dbd.service;
 
-import com.mongodb.BasicDBObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.BasicUpdate;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.base.service.BaseService;
@@ -35,7 +33,17 @@ public class TableService extends BaseService {
         if (dbId == 0 && tblName == null) {
             return Collections.EMPTY_LIST;
         }
-        return tableDao.findTableList(dbId, tblName, type);
+
+        Query queryObj = new Query(where("dbId").is(dbId));
+        if (tblName != null) {
+            queryObj.addCriteria(where("tableName").regex(tblName, "i"));
+        }
+        queryObj.addCriteria(where("type").is(type));
+        queryObj.addCriteria(where("deleteFlg").is(false));
+        queryObj.fields().include("tableName");
+
+        queryObj.with(new Sort(Sort.Direction.ASC, "tableName"));
+        return tableDao.getMongoMapList(queryObj);
     }
 
     /**
@@ -46,14 +54,28 @@ public class TableService extends BaseService {
         if (dbId == 0 && tblName == null) {
             return Collections.EMPTY_LIST;
         }
-        return tableDao.findTableByName(dbId, tblName);
+
+        Query queryObj = new Query(where("dbId").is(dbId));
+        queryObj.addCriteria(where("tableName").is(tblName));
+        queryObj.addCriteria(where("deleteFlg").is(false));
+        return tableDao.getMongoMapList(queryObj);
     }
 
     /**
      * 查询指定的表
      */
     public BaseMongoMap getTableById(long tblId) {
-        return tableDao.findTableById(tblId);
+        Query queryObj = new Query(where("_id").is(tblId));
+        queryObj.addCriteria(where("deleteFlg").is(false));
+        queryObj.fields().include("tableName");
+        queryObj.fields().include("tableNameCN");
+        queryObj.fields().include("desc");
+        queryObj.fields().include("column_list");
+        queryObj.fields().include("dbId");
+        queryObj.fields().include("modifiedTime");
+        queryObj.fields().include("currEditorId");
+        queryObj.fields().include("startEditTime");
+        return tableDao.getMongoMap(queryObj);
     }
 
     /**
@@ -64,14 +86,17 @@ public class TableService extends BaseService {
         infoMap.put("deleteFlg", true);
         infoMap.put("modifier", userId);
         infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
-        tableDao.saveObject(tblId, infoMap, false);
+        tableDao.updateObject(tblId, infoMap, false);
     }
 
     /**
      * 查询表定义
      */
     public List<Map<String, Object>> getColDefineByType(int type) {
-        BaseMongoMap colMap = columnDefineDao.getColDefineByType(type);
+        Query queryObj = new Query(where("type").is(type));
+        queryObj.fields().exclude("_id");
+        queryObj.fields().include("head_define");
+        BaseMongoMap colMap = columnDefineDao.getMongoMap(queryObj);
         if (colMap == null) {
             return null;
         }
@@ -82,7 +107,7 @@ public class TableService extends BaseService {
      * 修改(保存)指定表的定义
      */
     public void saveTblDefInfo(Long tblId, Map infoMap) {
-        tableDao.saveObject(tblId, infoMap, true);
+        tableDao.updateObject(tblId, infoMap, true);
     }
 
     /**
@@ -93,11 +118,6 @@ public class TableService extends BaseService {
         infoMap.put("currEditorId", userId);
         infoMap.put("startEditTime", DateTimeUtil.getNowTime());
 
-        Query query = new Query(where("_id").is(tblId));
-
-        BasicDBObject basicDBObject = new BasicDBObject();
-        basicDBObject.put("$set", infoMap);
-        Update update = new BasicUpdate(basicDBObject);
-        tableDao.update(query, update);
+        tableDao.updateObject(tblId, infoMap, false);
     }
 }

@@ -1,6 +1,5 @@
 package org.vog.dbd.dao;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import org.vog.base.dao.mongo.BaseMongoDao;
@@ -32,7 +31,7 @@ public class ComConfigDao extends BaseMongoDao {
     /**
      * 取得配置属性值
      */
-    public String getProperty(String key) {
+    public Object getProperty(String key) {
         Query query = new Query(where("propName").is(key));
         query.fields().exclude("_id");
         query.fields().include("propValue");
@@ -40,6 +39,6 @@ public class ComConfigDao extends BaseMongoDao {
         if (rst == null) {
             return null;
         }
-        return StringUtils.trimToNull((String) rst.get("propValue"));
+        return rst.get("propValue");
     }
 }

@@ -23,7 +23,7 @@ public class SystemProperty {
 
     private static Environment _environment;
 
-    private static Map<String, String> propertyMap = new HashMap<>();
+    private static Map<String, Object> propertyMap = new HashMap<>();
 
     public static void initComConfig(ApplicationContext applicationContext) {
         _applicationContext = applicationContext;
@@ -37,8 +37,8 @@ public class SystemProperty {
         return _applicationContext.getBean(ComConfigDao.class);
     }
 
-    public static String resolveProperty(String name) {
-        String rst = propertyMap.get(name);
+    public static <T> T resolveProperty(String name, Object defaultVal, Class<T> clz) {
+        Object rst = propertyMap.get(name);
         if (rst == null) {
             if (_environment.acceptsProfiles("dev")) {
                 rst = StringUtils.trimToNull(_environment.getProperty(name));
@@ -55,11 +55,32 @@ public class SystemProperty {
                 propertyMap.put(name, rst);
             }
         }
-        return rst;
+        return (T) rst;
     }
 
-    public static String resolveProperty(String name, String defaultValue) {
-        String rst = resolveProperty(name);
+    public static String resolveStringProperty(String name) {
+        Object rst = propertyMap.get(name);
+        if (rst == null) {
+            if (_environment.acceptsProfiles("dev")) {
+                rst = StringUtils.trimToNull(_environment.getProperty(name));
+                if (rst == null) {
+                    rst = getComConfigDao().getProperty(name);
+                }
+            } else {
+                rst = getComConfigDao().getProperty(name);
+                if (rst == null) {
+                    rst = StringUtils.trimToNull(_environment.getProperty(name));
+                }
+            }
+            if (rst != null) {
+                propertyMap.put(name, rst);
+            }
+        }
+        return (String) rst;
+    }
+
+    public static String resolveStringProperty(String name, String defaultValue) {
+        String rst = resolveStringProperty(name);
         if (rst == null || rst.trim().length() == 0) {
             return defaultValue;
         }
@@ -67,24 +88,24 @@ public class SystemProperty {
     }
 
     public static int resolveIntProperty(String name) {
-        return NumberUtils.toInt(resolveProperty(name));
+        return NumberUtils.toInt(resolveStringProperty(name));
     }
     public static int resolveIntProperty(String name, int defaultValue) {
-        return NumberUtils.toInt(resolveProperty(name), defaultValue);
+        return NumberUtils.toInt(resolveStringProperty(name), defaultValue);
     }
 
     public static boolean resolveBooleanProperty(String name) {
-        return BooleanUtils.toBoolean(resolveProperty(name));
+        return BooleanUtils.toBoolean(resolveStringProperty(name));
     }
     public static boolean resolveBooleanProperty(String name, boolean defaultValue) {
-        return BooleanUtils.toBoolean(resolveProperty(name));
+        return BooleanUtils.toBoolean(resolveStringProperty(name));
     }
 
     public static long resolveLongProperty(String name) {
-        return NumberUtils.toLong(resolveProperty(name));
+        return NumberUtils.toLong(resolveStringProperty(name));
     }
     public static long resolveLongProperty(String name, long defaultValue) {
-        return NumberUtils.toLong(resolveProperty(name), defaultValue);
+        return NumberUtils.toLong(resolveStringProperty(name), defaultValue);
     }
 
 }

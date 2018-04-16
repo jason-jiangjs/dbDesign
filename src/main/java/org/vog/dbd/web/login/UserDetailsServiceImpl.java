@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,6 +15,8 @@ import org.vog.dbd.dao.UserDao;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 /**
  * This class is being un-deprecated because we want the query for the customer to happen through Hibernate instead of
@@ -37,8 +40,25 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return loadUserByUsernameWithChkReg(userId, true, null);
     }
 
+    /**
+     * 根据登录帐号（已注册的）查询用户
+     */
     public UserDetails loadUserByUsernameWithChkReg(String userId, boolean chkReg, String fromSrc) {
-        BaseMongoMap employee = userDao.getUserByAccount(userId, chkReg, fromSrc);
+        Query queryObj = new Query(where("userId").is(userId));
+        queryObj.addCriteria(where("registered").is(chkReg));
+        if (fromSrc != null) {
+            queryObj.addCriteria(where("from").is(fromSrc));
+        }
+
+        queryObj.fields().include("userId");
+        queryObj.fields().include("userName");
+        queryObj.fields().include("password");
+        queryObj.fields().include("favorite");
+        queryObj.fields().include("role");
+        queryObj.fields().include("status");
+        queryObj.fields().include("registered");
+        queryObj.fields().include("from");
+        BaseMongoMap employee = userDao.getMongoMap(queryObj);
         if (employee == null) {
             return null;
         }
