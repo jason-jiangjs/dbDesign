@@ -82,6 +82,7 @@ public class DbService extends BaseService {
     public void saveDb(Long dbId, Map<String, Object> params) {
         if (dbId == null || dbId == 0) {
             dbId = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);
+            params.put("_id", dbId);
         }
         dbDao.updateObject(dbId, params, true);
     }

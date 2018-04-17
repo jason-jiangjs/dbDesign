@@ -1,8 +1,10 @@
 package org.vog.dbd.web.controller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -75,6 +77,49 @@ public class LoginController extends BaseController {
             model.addObject("dbList", userService.findUserDbList(userObj.getId(), true));
         }
         return model;
+    }
+
+    /**
+     * 去修改密码画面
+     */
+    @RequestMapping(value = "/changePasswd", method = RequestMethod.GET)
+    public ModelAndView changePasswd() {
+        ModelAndView model = new ModelAndView();
+        model.setViewName("changePassword");
+        return model;
+    }
+
+    /**
+     * 保存新密码(session中必须已有user_id)
+     */
+    @ResponseBody
+    @RequestMapping(value = "/ajax/savePasswd", method = RequestMethod.POST)
+    public Map<String, Object> savePasswd(@RequestBody Map<String, Object> params) {
+        Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+        if (userId == null || userId == 0) {
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
+        }
+
+        String oldPasswd = StringUtils.trimToNull((String) params.get("oldPasswd"));
+        String newPasswd = StringUtils.trimToNull((String) params.get("newPasswd"));
+        String newPasswdCfm = StringUtils.trimToNull((String) params.get("newPasswdCfm"));
+        if (oldPasswd == null || newPasswd == null || newPasswdCfm == null) {
+            logger.warn("savePasswd 缺少参数 params={}", params.toString());
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少必须值.");
+        }
+
+        BaseMongoMap userObj = userService.getUserById(userId);
+
+        // 先密码匹配验证
+        BCryptPasswordEncoder cryptEncoder = new BCryptPasswordEncoder();
+        if (!cryptEncoder.matches(oldPasswd, userObj.getStringAttribute("password"))) {
+            logger.warn("savePasswd 旧密码错误");
+            return ApiResponseUtil.error(ErrorCode.E5010, "旧密码错误.");
+        }
+
+        userService.savePassword(userId, cryptEncoder.encode(newPasswd));
+        return ApiResponseUtil.success();
     }
 
     /**

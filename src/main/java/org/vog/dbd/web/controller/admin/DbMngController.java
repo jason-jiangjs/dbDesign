@@ -93,6 +93,7 @@ public class DbMngController extends BaseController {
 
         if (dbId == 0) {
             // 新增
+            params.put("deleteFlg", false);
             params.put("creator", adminId);
             params.put("createdTime", DateTimeUtil.getNowTime());
             dbService.saveDb(dbId, params);

@@ -56,7 +56,7 @@ public class AuthenticationProviderImpl implements AuthenticationProvider {
             // 正常情况
             return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
         } else if (userSts == 0) {
-            throw new AccountExpiredException("user.needChangePwd");
+            throw new AccountExpiredException("user.needChangePwd," + user.getId());
         } else if (userSts == 2) {
             throw new LockedException("user.islocked");
         } else if (userSts == 4) {

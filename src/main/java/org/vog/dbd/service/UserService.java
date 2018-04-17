@@ -28,9 +28,6 @@ public class UserService extends BaseService {
     private UserDao userDao;
 
     @Autowired
-    private DbDao dbDao;
-
-    @Autowired
     private ComSequenceService sequenceService;
 
     @Autowired
@@ -47,10 +44,12 @@ public class UserService extends BaseService {
     /**
      * 保存用户的默认工作数据库
      */
-    public void setUserFavorite(long userId, long dbId) {
+    public void setUserFavorite(long userIId, long dbId) {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("favorite", dbId);
-        userDao.updateObject(userId, infoMap, false);
+        infoMap.put("modifier", userIId);
+        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
+        userDao.updateObject(userIId, infoMap, false);
     }
 
     /**
@@ -182,7 +181,6 @@ public class UserService extends BaseService {
             }
         }
         userObj.put("roleList", roleList);
-
         userDao.updateObject(iid, userObj, true);
     }
 
@@ -205,8 +203,19 @@ public class UserService extends BaseService {
             }
         }
         userObj.put("roleList", roleList);
-
         userDao.updateObject(iid, userObj, false);
+    }
+
+    /**
+     * 修改用户密码
+     */
+    public void savePassword(long userIId, String passwd) {
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("password", passwd);
+        infoMap.put("status", 1);
+        infoMap.put("modifier", userIId);
+        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
+        userDao.updateObject(userIId, infoMap, false);
     }
 
     /**
@@ -221,6 +230,8 @@ public class UserService extends BaseService {
         userObj.put("password", "");
         userObj.put("status", 1);
         userObj.put("registered", false);
+        userObj.put("creator", iid);
+        userObj.put("createdTime", DateTimeUtil.getNowTime());
         userDao.updateObject(iid, userObj, true);
     }
 

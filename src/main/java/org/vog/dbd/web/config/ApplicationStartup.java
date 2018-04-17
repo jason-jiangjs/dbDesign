@@ -63,6 +63,7 @@ public class ApplicationStartup implements ApplicationListener<ContextRefreshedE
                 DBObject bson = (DBObject) JSON.parse(val);
                 objList.add(bson);
             }
+            input.close();
             if (objList.size() > 0) {
                 configDao.insertObject(objList, tblName);
             }

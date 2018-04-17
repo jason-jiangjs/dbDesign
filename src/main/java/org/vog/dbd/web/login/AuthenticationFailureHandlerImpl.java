@@ -1,6 +1,7 @@
 package org.vog.dbd.web.login;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AccountExpiredException;
@@ -8,10 +9,12 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import org.vog.common.Constants;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
@@ -30,10 +33,15 @@ public class AuthenticationFailureHandlerImpl implements AuthenticationFailureHa
         if (authenticationException instanceof InternalAuthenticationServiceException) {
             if (authenticationException.getCause() instanceof AccountExpiredException) {
                 // 初次登录或密码过期，去重置密码画面
-                response.sendRedirect(request.getContextPath() + "/changePasswd");
+                procAccountExpired(request, response, (AccountExpiredException) authenticationException.getCause());
                 return;
             }
             errCode = StringUtils.trimToEmpty(authenticationException.getCause().getMessage());
+        } else if (authenticationException instanceof AccountExpiredException) {
+            // 初次登录或密码过期，去重置密码画面
+            procAccountExpired(request, response, (AccountExpiredException) authenticationException);
+            return;
+
         } else {
             errCode = StringUtils.trimToEmpty(authenticationException.getMessage());
         }
@@ -43,4 +51,16 @@ public class AuthenticationFailureHandlerImpl implements AuthenticationFailureHa
         response.sendRedirect(request.getContextPath() + "/index" + paramsStr);
     }
 
+    // 这里是用户初次登录需要修改密码
+    private void procAccountExpired(HttpServletRequest request, HttpServletResponse response, AccountExpiredException expiredException) throws IOException, ServletException {
+        String msg = expiredException.getMessage();
+        if (!msg.startsWith("user.needChangePwd")) {
+            return;
+        }
+        String[] msgArr = msg.split(",");
+        HttpSession session = request.getSession();
+        session.setAttribute(Constants.KEY_USER_ID, NumberUtils.toLong(msgArr[1]));
+        // 初次登录或密码过期，去重置密码画面
+        response.sendRedirect(request.getContextPath() + "/changePasswd");
+    }
 }
