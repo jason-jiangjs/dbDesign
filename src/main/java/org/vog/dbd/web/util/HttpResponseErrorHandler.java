@@ -1,4 +1,4 @@
-package org.vog.common;
+package org.vog.dbd.web.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;

@@ -1,6 +1,5 @@
 package org.vog.dbd.web.config;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import org.apache.commons.io.FileUtils;
@@ -9,22 +8,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.data.mongodb.core.query.BasicUpdate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.vog.common.SystemProperty;
-import org.vog.common.util.DateTimeUtil;
-import org.vog.common.util.JacksonUtil;
+import org.vog.dbd.web.util.SystemProperty;
 import org.vog.dbd.dao.ComConfigDao;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 /**
  * Created by dell on 2017/4/19.
