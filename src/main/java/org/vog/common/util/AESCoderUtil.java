@@ -1,6 +1,5 @@
 package org.vog.common.util;
 
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +9,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 /**
  * AES加密解密 帮助类
@@ -111,7 +111,7 @@ public class AESCoderUtil {
                 _initkey = initkey();
             }
             byte[] data = AESCoderUtil.encrypt(args.getBytes("UTF-8"), _initkey);
-            return Base64.encodeBase64String(data);
+            return Base64.getEncoder().encodeToString(data);
         } catch (Exception e) {
             logger.error("加密时出错", e);
             return "";
@@ -126,7 +126,7 @@ public class AESCoderUtil {
             if (_initkey == null) {
                 _initkey = initkey();
             }
-            byte[] data = AESCoderUtil.decrypt(Base64.decodeBase64(args), _initkey);
+            byte[] data = AESCoderUtil.decrypt(Base64.getDecoder().decode(args), _initkey);
             return new String(data, "UTF-8");
         } catch (Exception e) {
             logger.error("解密时出错", e);
