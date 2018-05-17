@@ -29,7 +29,7 @@
     <div id="tab-tools"><!--/* 表定义区域的工具栏和弹出菜单 */-->
         <a href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,iconCls:'icon-more'" onclick="javascript:popmenu(event,'tab-tools_menu')"></a>
     </div>
-    <div id="tab-tools_menu" class="easyui-menu" style="width:120px;">
+    <div id="tab-tools_menu" class="easyui-menu">
         <th:block dbd:authorize="${dbId}">
             <div data-options="iconCls:'fa fa-lock'" onclick="javascript:chkForEditing()">开始编辑</div>
             <div class="menu-sep"></div>
@@ -44,7 +44,7 @@
     <div id="db-tools"><!--/* 表一览区域的工具栏和弹出菜单 */-->
         <a href="javascript:void(0)" class="fa fa-gear" style="width:20px;height:20px" onclick="javascript:popmenu(event,'db-tools_menu')"></a>
     </div>
-    <div id="db-tools_menu" class="easyui-menu" style="width:150px;">
+    <div id="db-tools_menu" class="easyui-menu" style="width:160px;">
         <div onclick="javascript:convertType(1)" th:if="${dbType==1}">切换到表一览</div>
         <div onclick="javascript:convertType(2)" th:if="${dbType==1}">切换到视图一览</div>
         <div class="menu-sep" th:if="${dbType==1}"></div>
