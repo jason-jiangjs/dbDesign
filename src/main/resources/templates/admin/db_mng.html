@@ -5,14 +5,14 @@
     <script th:src="@{/js/db_mng.js}"></script>
 </head>
 <body>
-<div style="padding:4px;width:80px">
-    <div class="easyui-panel" style="padding:4px">
-        <a href="#" class="easyui-menubutton" data-options="menu:'#mm1',iconCls:'icon-more'">菜单</a>
+<div style="padding:4px;width:100px">
+    <div class="easyui-panel">
+        <a href="#" class="easyui-menubutton" data-options="menu:'#mm1',iconCls:'icon-more',width:'100%'">菜单</a>
     </div>
     <div id="mm1" style="width:150px;">
-        <div data-options="iconCls:'icon-back'" th:href="@{/home}">返回</div>
+        <div data-options="iconCls:'fa fa-home'" th:href="@{/home}">返回</div>
         <div class="menu-sep"></div>
-        <div th:href="@{/logout}">退出</div>
+        <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
     </div>
 </div>
 <div style="margin:0 auto;width:1000px">
