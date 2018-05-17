@@ -5,18 +5,18 @@
 </head>
 
 <body>
-<div style="padding:4px;width:80px">
-    <div class="easyui-panel" style="padding:4px">
-        <a href="#" class="easyui-menubutton" data-options="menu:'#mm1',iconCls:'icon-more'">菜单</a>
+<div style="padding:4px;width:100px">
+    <div class="easyui-panel">
+        <a href="#" class="easyui-menubutton" data-options="menu:'#mm1',iconCls:'fa fa-bars',width:'100%'">菜单</a>
     </div>
     <div id="mm1" style="width:150px;">
         <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')">
-            <div th:href="@{/mng/db_mng}">数据库管理</div>
+            <div data-options="iconCls:'fa fa-database'" th:href="@{/mng/db_mng}">数据库管理</div>
             <div class="menu-sep"></div>
-            <div data-options="iconCls:'icon-man'" th:href="@{/mng/user_mng}">用户管理</div>
+            <div data-options="iconCls:'fa fa-user'" th:href="@{/mng/user_mng}">用户管理</div>
             <div class="menu-sep"></div>
         </th:block>
-        <div data-options="href:'logout'">退出</div>
+        <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
     </div>
 </div>
 <section style="position: absolute; left: 50%; top: 25%;width:500px;height:300px;margin-left:-250px;">

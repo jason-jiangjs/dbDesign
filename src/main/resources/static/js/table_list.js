@@ -619,10 +619,10 @@ function onClickRowBegEdit(index, field, value) {
 function _displayEditToolbar(dspFlg) {
     var layoutH = '';
     if (dspFlg) {
-        layoutH = '112px';  // 这里的高度暂时直接固定，因为画面项目不会增减
+        layoutH = '125px';  // 这里的高度暂时直接固定，因为画面项目不会增减
         $('#' + _curTblId + ' div._tbl_edit_toolbar').show();
     } else {
-        layoutH = '72px';
+        layoutH = '80px';
         $('#' + _curTblId + ' div._tbl_edit_toolbar').hide();
     }
 
