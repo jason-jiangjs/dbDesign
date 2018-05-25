@@ -107,6 +107,7 @@ public class ThirdLoginController extends BaseController {
             ResponseEntity<Map> retObj = restTemplate.getForEntity(SystemProperty.resolveStringProperty("gitlab_oauth2_resource_userInfoUri"), Map.class, accessToken);
             errMsg = retObj.getHeaders().getFirst("_innerError"); /** 这个变量名"_innerError"要参照 {@link HttpResponseErrorHandler.handleError()} */
             if (errMsg != null) {
+                logger.warn("gitlab_callback _innerError={}", errMsg);
                 return "redirect:/sys_error?msg=" + StringUtil.encode("从gitlab取用户信息时出错,请联系系统管理员。<br/>") + errMsg + "<br/>" + retObj.getBody().toString();
             }
             Map user = retObj.getBody();
@@ -117,7 +118,7 @@ public class ThirdLoginController extends BaseController {
                 userService.addUserByTrdLogin(userName, userName);
                 userObj = (CustomerUserDetails) loginService.loadUserByUsernameWithChkReg(userName, false, Constants.ThirdLogin.GITLAB.getValue());
                 if (userObj == null) {
-                    return "redirect:/sys_error?msg=" + StringUtil.encode("从gitlab认证完成，保存用户时出错,请联系系统管理员。");
+                    return "redirect:/sys_error?msg=" + StringUtil.encode("从gitlab认证完成，创建用户时出错,请联系系统管理员。");
                 }
             } else {
                 // 已存在，必须验证是否用户名冲突
