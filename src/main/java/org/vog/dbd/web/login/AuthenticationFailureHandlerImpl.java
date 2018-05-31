@@ -25,6 +25,7 @@ public class AuthenticationFailureHandlerImpl implements AuthenticationFailureHa
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException authenticationException)
             throws IOException, ServletException {
         // 验证失败，回到登陆画面
