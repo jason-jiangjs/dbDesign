@@ -115,7 +115,7 @@ public class ThirdLoginController extends BaseController {
             CustomerUserDetails userObj = (CustomerUserDetails) loginService.loadUserByUsernameWithChkReg(userName, false, Constants.ThirdLogin.GITLAB.getValue());
             if (userObj == null) {
                 // 客户未保存过，则创建
-                userService.addUserByTrdLogin(userName, userName);
+                userService.addUserByTrdLogin(userName, userName, Constants.ThirdLogin.GITLAB.getValue());
                 userObj = (CustomerUserDetails) loginService.loadUserByUsernameWithChkReg(userName, false, Constants.ThirdLogin.GITLAB.getValue());
                 if (userObj == null) {
                     return "redirect:/sys_error?msg=" + StringUtil.encode("从gitlab认证完成，创建用户时出错,请联系系统管理员。");
@@ -123,7 +123,7 @@ public class ThirdLoginController extends BaseController {
             } else {
                 // 已存在，必须验证是否用户名冲突
                 if (!"GitLab".equals(userObj.getFromSrc()) || userObj.isRegistered()) {
-                    userService.addUserByTrdLogin(userName, userName + "_GitLab");
+                    userService.addUserByTrdLogin(userName, userName + "_GitLab", Constants.ThirdLogin.GITLAB.getValue());
                     userObj = (CustomerUserDetails) loginService.loadUserByUsernameWithChkReg(userName, false, Constants.ThirdLogin.GITLAB.getValue());
                     if (userObj == null) {
                         return "redirect:/sys_error?msg=" + StringUtil.encode("从gitlab认证完成，保存用户时出错,请联系系统管理员。");

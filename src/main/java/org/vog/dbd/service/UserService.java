@@ -220,7 +220,7 @@ public class UserService extends BaseService {
     /**
      * 添加用户
      */
-    public void addUserByTrdLogin(String userId, String userName) {
+    public void addUserByTrdLogin(String userId, String userName, String fromSrc) {
         long iid = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);
         Map<String, Object> userObj = new HashMap<>();
         userObj.put("_id", iid);
@@ -229,6 +229,7 @@ public class UserService extends BaseService {
         userObj.put("password", "");
         userObj.put("status", 1);
         userObj.put("registered", false);
+        userObj.put("from", fromSrc);
         userObj.put("creator", iid);
         userObj.put("createdTime", DateTimeUtil.getNowTime());
         userDao.updateObject(iid, userObj, true);

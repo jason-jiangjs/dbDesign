@@ -122,7 +122,12 @@ public class TableListController extends BaseController {
     @ResponseBody
     @RequestMapping(value = "/ajax/getTableList", method = RequestMethod.GET)
     public List<BaseMongoMap> getTableListByDbId(@RequestParam Map<String, Object> params) {
-        long dbId = StringUtil.convertToLong(params.get("dbId"));
+        String dbIdStr = (String) params.get("dbId");
+        long dbId = StringUtil.convertToLong(dbIdStr);
+        if (dbId == 0) {
+            dbIdStr = AESCoderUtil.decode(dbIdStr);
+            dbId = StringUtil.convertToLong(dbIdStr);
+        }
         int targetType = StringUtil.convertToInt(params.get("targetType"));
         if (targetType == 0) {
             targetType = 1;
