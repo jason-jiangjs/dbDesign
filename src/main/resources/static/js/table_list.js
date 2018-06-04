@@ -908,7 +908,7 @@ function descformatter(value, row, index) {
     if (value) {
         var reg = new RegExp("\n", "g");
         var str = value.replace(reg, "<br/>");
-        return '<div style="width:100%;display:block;word-break: break-all;word-wrap: break-word">' + str + '</div>';
+        return '<div style="width:100%;display:block;word-break: break-all;word-wrap: break-word;margin-top:3px;margin-bottom:3px">' + str + '</div>';
     }
     return '';
 }
