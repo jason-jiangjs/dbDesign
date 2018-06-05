@@ -3,6 +3,8 @@
  */
 
 // 画面项目初始化
+var myUm = null;
+
 $(function () {
     var curDbId = $.trim($('#dbId').val()); // 异常情况下，这里使用了dbId作为error code
     if (curDbId == 0 || curDbId == 1) {
@@ -31,14 +33,14 @@ $(function () {
         return;
     }
 
-    var um = UM.getEditor('myEditor', {
+    myUm = UM.getEditor('myEditor', {
         /* 传入配置参数,可配参数列表看umeditor.config.js */
         toolbar: ['source | undo redo | bold italic underline strikethrough | superscript subscript | forecolor backcolor | removeformat |',
             'insertorderedlist insertunorderedlist | selectall cleardoc paragraph | fontfamily fontsize' ,
             '| justifyleft justifycenter justifyright justifyjustify |',
             '| horizontal preview']
     });
-    um.setDisabled();
+    myUm.setDisabled();
 
     // 设置当前编辑的数据库名
     $('#cc').panel({title: $('#dbn').val()});
@@ -650,7 +652,9 @@ function _displayEditToolbar(dspFlg) {
 function chkForEditing() {
     if (_curTblId == null || _curTblId == undefined || _curTblId == 0) {
         // 首页
-        UM.getEditor('myEditor').setEnabled();
+        if (myUm) {
+            myUm.setEnabled();
+        }
         return;
     }
     var loadLy = layer.load(1);
@@ -746,7 +750,9 @@ function _endEditing() {
 function endEditing() {
     if (_curTblId == null || _curTblId == undefined || _curTblId == 0) {
         // 首页
-        UM.getEditor('myEditor').setDisabled();
+        if (myUm) {
+            myUm.setDisabled();
+        }
         return;
     }
     editableMap[_curTblId] = false;
