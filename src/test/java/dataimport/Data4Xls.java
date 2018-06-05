@@ -30,7 +30,7 @@ import java.util.Map;
 public class Data4Xls {
 
     private static String _dirName = "";
-    private static String[] _FileNames = { "数据库表设计_product.xlsx" };
+    private static String[] _FileNames = { "e:\\数据库表设计_admin.xlsx" };
 //    private static String[] _FileNames = { "数据库表设计.xlsx", "数据库表设计_admin.xlsx",
 //            "数据库表设计_order.xlsx", "数据库表设计_product.xlsx" };
 
@@ -81,13 +81,18 @@ public class Data4Xls {
         Long tblId = 0L;
         BaseMongoMap tblObj = null;
         // 根据表名查询
-        List<BaseMongoMap> mapList = tableService.findTableByName(1001, tblName);
+        List<BaseMongoMap> mapList = tableService.findTableByName(1042, tblName);
         if (mapList == null || mapList.isEmpty()) {
             // 要新建该表
             tblObj = new BaseMongoMap();
+            tblId = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_TABLE_ID);
+            tblObj.put("tableName", tblName);
             tblObj.put("tableNameCN", tblNameCn);
             tblObj.put("desc", tblDesc);
-            tblObj.put("dbId", 1001L);
+            tblObj.put("dbId", 1042L);
+            tblObj.put("deleteFlg", false);
+            tblObj.put("type", 1);
+
         } else if (mapList.size() > 1) {
             System.out.println("重复定义表: " + tblName);
             return;
