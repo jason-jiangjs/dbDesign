@@ -12,11 +12,7 @@ import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.dao.UserDao;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
@@ -171,14 +167,6 @@ public class UserService extends BaseService {
         userObj.put("registered", true);
         userObj.put("role", StringUtil.convertToInt(params.get("role")));
         List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
-        if (roleList != null) {
-            for (Map<String, Object> item : roleList) {
-                item.put("dbId", StringUtil.convertToLong(item.get("dbId")));
-                item.put("role", StringUtil.convertToInt(item.get("role")));
-                item.remove("dbName");
-                item.remove("default");
-            }
-        }
         userObj.put("roleList", roleList);
         userDao.updateObject(iid, userObj, true);
     }
@@ -193,14 +181,6 @@ public class UserService extends BaseService {
         userObj.put("status", StringUtil.convertToInt(params.get("status")));
         userObj.put("role", StringUtil.convertToInt(params.get("role")));
         List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
-        if (roleList != null) {
-            for (Map<String, Object> item : roleList) {
-                item.put("dbId", StringUtil.convertToLong(item.get("dbId")));
-                item.put("role", StringUtil.convertToInt(item.get("role")));
-                item.remove("dbName");
-                item.remove("default");
-            }
-        }
         userObj.put("roleList", roleList);
         userDao.updateObject(iid, userObj, false);
     }

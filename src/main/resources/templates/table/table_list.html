@@ -2,6 +2,10 @@
 <html>
 <head>
     <th:block th:replace="/layout/head"></th:block>
+    <link th:href="@{/js/lib/umeditor/themes/default/css/umeditor.css}" rel="stylesheet">
+    <script th:src="@{/js/umeditor.config.js}"></script>
+    <script th:src="@{/js/lib/umeditor/umeditor.min.js}"></script>
+    <script th:src="@{/js/lib/umeditor/lang/zh-cn/zh-cn.js}"></script>
     <script th:src="@{/js/lib/datagrid-dnd.js}"></script>
     <script th:src="@{/js/table_list.js}"></script>
 </head>
@@ -22,6 +26,7 @@
             <div title="主页" style="padding:10px" data-options="id:0,closable: true">
                 <p style="font-size:14px">该内容暂为空。<br/><br/>
                 以后考虑显示该数据库的业务介绍，表定义变更历史，登录用户的代办事项(比如未完成的编辑等)，维护通知等</p>
+                <script type="text/plain" id="myEditor" style="width:1000px;height:590px;"></script>
             </div>
         </div>
     </div>

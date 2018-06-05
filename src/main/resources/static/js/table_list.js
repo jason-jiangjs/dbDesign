@@ -31,6 +31,15 @@ $(function () {
         return;
     }
 
+    var um = UM.getEditor('myEditor', {
+        /* 传入配置参数,可配参数列表看umeditor.config.js */
+        toolbar: ['source | undo redo | bold italic underline strikethrough | superscript subscript | forecolor backcolor | removeformat |',
+            'insertorderedlist insertunorderedlist | selectall cleardoc paragraph | fontfamily fontsize' ,
+            '| justifyleft justifycenter justifyright justifyjustify |',
+            '| horizontal preview']
+    });
+    um.setDisabled();
+
     // 设置当前编辑的数据库名
     $('#cc').panel({title: $('#dbn').val()});
 
@@ -71,8 +80,9 @@ $(function () {
 
     $('#tbl-tabs').tabs({
         onSelect: function(title, index) {
-            _curTblId == null;
+            _curTblId = null;
             if (index == 0) {
+                _curTblId = 0;
                 $('#tblList').datalist("unselectAll");
                 return;
             }
@@ -638,6 +648,11 @@ function _displayEditToolbar(dspFlg) {
 
 // 开始编辑，要先去后台确认该表是否有其他人正在编辑
 function chkForEditing() {
+    if (_curTblId == null || _curTblId == undefined || _curTblId == 0) {
+        // 首页
+        UM.getEditor('myEditor').setEnabled();
+        return;
+    }
     var loadLy = layer.load(1);
     var last_upd = $.trim($('#' + _curTblId + ' input._tbl_last_updtime').val());
     $.ajax({
@@ -729,6 +744,11 @@ function _endEditing() {
     }
 }
 function endEditing() {
+    if (_curTblId == null || _curTblId == undefined || _curTblId == 0) {
+        // 首页
+        UM.getEditor('myEditor').setDisabled();
+        return;
+    }
     editableMap[_curTblId] = false;
     _endEditing();
     var loadLy = layer.load(1);

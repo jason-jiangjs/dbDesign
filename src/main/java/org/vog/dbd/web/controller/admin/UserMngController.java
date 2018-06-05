@@ -18,10 +18,7 @@ import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.service.UserService;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 用户管理（添加／删除／修改权限等）
@@ -96,7 +93,6 @@ public class UserMngController extends BaseController {
         String accNo = StringUtils.trimToNull((String) params.get("accNo")); // 登录帐号
         int optType = StringUtil.convertToInt(params.get("optType")); // 业务类型，为１时表示新增用户
         int accStatus = StringUtil.convertToInt(params.get("status"));
-        List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
         if (optType == 0 && tiid == 0) {
             logger.warn("saveUserInfo 缺少参数 tiid");
             return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数 tiid");
@@ -109,10 +105,23 @@ public class UserMngController extends BaseController {
             logger.warn("saveUserInfo 缺少参数 accNo");
             return ApiResponseUtil.error(ErrorCode.W1001, "缺少登录帐号");
         }
-//        if (roleList == null || roleList.isEmpty()) {
-//            logger.warn("saveUserInfo 缺少参数 roleList");
-//            return ApiResponseUtil.error(ErrorCode.W1001, "没有设置访问权限");
-//        }
+
+        List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
+        if (roleList != null) {
+            Iterator<Map<String, Object>> iter = roleList.iterator();
+            while (iter.hasNext()) {
+                Map<String, Object> item = iter.next();
+                long dbId = StringUtil.convertToLong(item.get("dbId"));
+                if (dbId == 0) {
+                    iter.remove();
+                    continue;
+                }
+                item.put("dbId", dbId);
+                item.put("role", StringUtil.convertToInt(item.get("role")));
+                item.remove("dbName");
+                item.remove("default");
+            }
+        }
 
         if (optType == 1) {
             params.put("creator", adminId);
