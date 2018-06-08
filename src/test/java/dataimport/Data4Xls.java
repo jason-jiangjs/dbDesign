@@ -30,7 +30,7 @@ import java.util.Map;
 public class Data4Xls {
 
     private static String _dirName = "";
-    private static String[] _FileNames = { "e:\\数据库表设计_admin.xlsx" };
+    private static String[] _FileNames = { "e:\\数据库表设计_prod.xlsx" };
 //    private static String[] _FileNames = { "数据库表设计.xlsx", "数据库表设计_admin.xlsx",
 //            "数据库表设计_order.xlsx", "数据库表设计_product.xlsx" };
 

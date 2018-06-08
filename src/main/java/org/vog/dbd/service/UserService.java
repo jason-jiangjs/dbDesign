@@ -73,6 +73,7 @@ public class UserService extends BaseService {
 
     /**
      * 查询用户权限信息
+     * 参数needCrpId表示是否加密输出dbId
      */
     public List<Map<String, Object>> findUserDbList(long userId, boolean needCrpId) {
         Query queryObj = new Query(where("_id").is(userId));
