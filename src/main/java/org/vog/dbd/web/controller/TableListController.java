@@ -16,6 +16,7 @@ import org.vog.common.Constants;
 import org.vog.common.ErrorCode;
 import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
+import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.service.DbService;
 import org.vog.dbd.service.TableService;
@@ -23,6 +24,9 @@ import org.vog.dbd.service.UpdateHisService;
 import org.vog.dbd.service.UserService;
 import org.vog.dbd.web.login.CustomerUserDetails;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -133,7 +137,7 @@ public class TableListController extends BaseController {
             targetType = 1;
         }
         String tblName = StringUtils.trimToNull((String) params.get("tblName"));
-        return tableService.getTableList(tblName, dbId, targetType);
+        return tableService.getTableNameList(tblName, dbId, targetType);
     }
 
     /**
@@ -357,4 +361,126 @@ public class TableListController extends BaseController {
         return ApiResponseUtil.success();
     }
 
+    /**
+     * 导出SQL文
+     */
+    @ResponseBody
+    @RequestMapping(value = "/ajax/exportSql", method = RequestMethod.POST)
+    public String exportSql(HttpServletRequest req, HttpServletResponse resp) {
+        Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+        if (userId == null || userId == 0) {
+            logger.error("用户未登录 sessionid={}", request.getSession().getId());
+            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录").toString();
+        }
+
+        List<String> outputStr = new ArrayList<>();
+        outputStr.add("/*\n");
+        outputStr.add("Navicat MySQL Data Transfer\n");
+        outputStr.add("\n");
+        outputStr.add("Source Server         : 192.168.10.129_3306\n");
+        outputStr.add("Source Server Version : 50722\n");
+        outputStr.add("Source Host           : 192.168.10.129:3306\n");
+        outputStr.add("Source Database       : guoyie_ca_dev\n");
+        outputStr.add("\n");
+        outputStr.add("Target Server Type    : MYSQL\n");
+        outputStr.add("Target Server Version : 50722\n");
+        outputStr.add("File Encoding         : 65001\n");
+        outputStr.add("\n");
+        outputStr.add("Date: 2018-06-05 17:11:46\n");
+        outputStr.add("*/\n");
+        outputStr.add("\n");
+        outputStr.add("SET FOREIGN_KEY_CHECKS=0;\n");
+        outputStr.add("\n");
+
+        List<BaseMongoMap> tblList = tableService.getTableList(1042,1);
+        for (BaseMongoMap tblMap :tblList) {
+            // 针对每个表
+            String tblName = tblMap.getStringAttribute("tableName");
+            outputStr.add("-- ----------------------------\n");
+            outputStr.add("-- Table structure for " + tblName + "\n");
+            outputStr.add("-- ----------------------------\n");
+            outputStr.add("DROP TABLE IF EXISTS `" + tblName + "`;\n");
+            outputStr.add("CREATE TABLE `" + tblName + "` (\n");
+
+            // 针对表中的所有项目
+            List<Map<String, Object>> colList = (List<Map<String, Object>>) tblMap.get("column_list");
+            if (colList != null && colList.size() > 0) {
+                int size = colList.size() - 1;
+                int idx = 0;
+                List<String> primKey = new ArrayList<>();
+                for (Map<String, Object> colItem : colList) {
+                    String line = "  `" + colItem.get("columnName") + "` " + colItem.get("type");
+                    if (StringUtils.isNotBlank((String) colItem.get("columnLens"))) {
+                        line += "(" + colItem.get("columnLens") + ")";
+                    }
+
+                    if ("Y".equalsIgnoreCase((String) colItem.get("primary"))) {
+                        primKey.add((String) colItem.get("columnName"));
+                    }
+                    if ("Y".equalsIgnoreCase((String) colItem.get("notnull"))) {
+                        line += " NOT NULL ";
+                    }
+
+                    if (StringUtils.isNotBlank((String) colItem.get("default"))) {
+                        line += " DEFAULT '" + colItem.get("default") + "'";
+                    }
+                    if (StringUtils.isNotBlank((String) colItem.get("columnNameCN"))) {
+                        line += " COMMENT '" + colItem.get("columnNameCN") + "'";
+                    }
+
+                    if (idx == size) {
+                        // 最后一条了，如果没有主键或索引，则行尾没有","
+                        if (primKey.size() > 0) {
+                            line += ",\n";
+                        } else {
+                            line += "\n";
+                        }
+                    } else {
+                        line += ",\n";
+                    }
+
+                    outputStr.add(line);
+                    idx ++;
+                }
+                // 主键/索引/..等等
+                if (primKey.size() > 0) {
+                    idx = 0;
+                    String line = "  PRIMARY KEY (";
+                    for (String key : primKey) {
+                        if (idx == 0) {
+                            line += "`" + key + "`";
+                            idx ++;
+                        } else {
+                            line += ",`" + key + "`";
+                        }
+                    }
+                    line += ")\n";
+                    outputStr.add(line);
+                }
+            }
+
+            outputStr.add(") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n");
+            outputStr.add("\n");
+        }
+
+        resp.setContentType("application/octet-stream");
+        resp.setHeader("Content-Disposition","attachment;filename=sql_" + DateTimeUtil.getNow(DateTimeUtil.COMPRESS_DATETIME_FORMAT) + ".sql");
+//        resp.setContentLength((int) file.length());
+
+        try {
+            for (String line : outputStr) {
+                resp.getOutputStream().write(line.getBytes("UTF-8"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                resp.getOutputStream().flush();
+                resp.getOutputStream().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
+    }
 }

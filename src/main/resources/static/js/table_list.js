@@ -963,3 +963,10 @@ function nameDspformatter(value, row, index) {
     }
     return '';
 }
+
+// 导出SQL文
+function exportSql() {
+    var url = Ap_servletContext + '/ajax/exportSql';
+    var form = $("<form></form>").attr("action", url).attr("method", "post");
+    form.appendTo('body').submit().remove();
+}

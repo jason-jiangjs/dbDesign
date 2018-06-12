@@ -29,7 +29,7 @@ public class TableService extends BaseService {
     /**
      * 查询指定数据库的表一览, 优先使用名称查询
      */
-    public List<BaseMongoMap> getTableList(String tblName, long dbId, int type) {
+    public List<BaseMongoMap> getTableNameList(String tblName, long dbId, int type) {
         if (dbId == 0 && tblName == null) {
             return Collections.EMPTY_LIST;
         }
@@ -41,6 +41,20 @@ public class TableService extends BaseService {
         queryObj.addCriteria(where("type").is(type));
         queryObj.addCriteria(where("deleteFlg").is(false));
         queryObj.fields().include("tableName");
+
+        queryObj.with(new Sort(Sort.Direction.ASC, "tableName"));
+        return tableDao.getMongoMapList(queryObj);
+    }
+
+    /**
+     * 查询指定数据库的表一览, 优先使用名称查询
+     */
+    public List<BaseMongoMap> getTableList(long dbId, int type) {
+        Query queryObj = new Query(where("dbId").is(dbId));
+        queryObj.addCriteria(where("type").is(type));
+        queryObj.addCriteria(where("deleteFlg").is(false));
+        queryObj.fields().include("tableName");
+        queryObj.fields().include("column_list");
 
         queryObj.with(new Sort(Sort.Direction.ASC, "tableName"));
         return tableDao.getMongoMapList(queryObj);
