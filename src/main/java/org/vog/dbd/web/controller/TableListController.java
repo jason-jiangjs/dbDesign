@@ -409,7 +409,14 @@ public class TableListController extends BaseController {
                 int idx = 0;
                 List<String> primKey = new ArrayList<>();
                 for (Map<String, Object> colItem : colList) {
-                    String line = "  `" + colItem.get("columnName") + "` " + colItem.get("type");
+                    String line = "  `" + colItem.get("columnName") + "` ";
+                    String colType = (String) colItem.get("type");
+                    if ("timestamp".equalsIgnoreCase(colType)) {
+                        line += colType + " NULL";
+                    } else {
+                        line += colType;
+                    }
+
                     if (StringUtils.isNotBlank((String) colItem.get("columnLens"))) {
                         line += "(" + colItem.get("columnLens") + ")";
                     }
