@@ -31,7 +31,7 @@
     <a href="#" class="easyui-linkbutton" iconCls="icon-add" onclick="addUserRole()" plain="true">添加</a>
     <a href="#" class="easyui-linkbutton" iconCls="icon-remove" onclick="deleteUserRole()" plain="true" style="margin-left:15px">删除</a>
 </div>
-<div id="user_dlg" class="easyui-dialog" title="Basic Dialog" data-options="iconCls:'icon-man',modal:true,closed:true,border:'thin',width:650,height:500">
+<div id="user_dlg" class="easyui-dialog" title="Basic Dialog" data-options="iconCls:'icon-man',modal:true,closed:true,border:'thin',width:650">
     <div style="padding:10px 20px 0px 20px">
         <form id="ff" method="post">
             <input type="hidden" id="userId">
@@ -59,10 +59,10 @@
             <table id="role_grid" class="easyui-datagrid" title="数据库及访问权限一览"
                 data-options="singleSelect:true,striped:true,fit:true,rownumbers:true,method:'get',idField:'dbId',toolbar:'#role_grid_toolbar'"></table>
         </div>
-        <div style="text-align:center;margin-top:10px">
-            <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitForm()">保存</a>
-            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelForm()">取消</a>
-        </div>
+    </div>
+    <div style="text-align:center;margin-top:15px;margin-bottom:15px">
+        <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitForm()">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelForm()">取消</a>
     </div>
 </div>
 <input type="hidden" id="adminId" th:value="${adminId}">
