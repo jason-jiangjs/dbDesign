@@ -33,6 +33,7 @@ $(function () {
         return;
     }
 
+    $('#main_page').append("<script type=\"text/plain\" id=\"myEditor\" style=\"width:1000px;height:590px;\"></script>");
     myUm = UM.getEditor('myEditor', {
         /* 传入配置参数,可配参数列表看umeditor.config.js */
         toolbar: ['source | undo redo | bold italic underline strikethrough | superscript subscript | forecolor backcolor | removeformat |',
@@ -969,4 +970,12 @@ function exportSql() {
     var url = Ap_servletContext + '/ajax/exportSql';
     var form = $("<form></form>").attr("action", url).attr("method", "post");
     form.appendTo('body').submit().remove();
+}
+
+// 创建索引
+function editIndex() {
+    if (_curTblId == 0 || _curTblId == undefined || _curTblId == '') {
+        return;
+    }
+    alert("f");
 }

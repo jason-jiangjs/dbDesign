@@ -253,7 +253,7 @@ function addUser() {
 
     // 加载权限信息
     $('#role_grid').datagrid({
-
+        //data: [{}],
         columns: role_grid_cols,
         onDblClickCell: onClickRowBegEdit
     });
