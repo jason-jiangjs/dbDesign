@@ -18,11 +18,13 @@ import org.vog.common.Constants;
 import org.vog.common.ErrorCode;
 import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
+import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.service.DbService;
 import org.vog.dbd.service.UserService;
 import org.vog.dbd.web.login.CustomerUserDetails;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -76,6 +78,12 @@ public class LoginController extends BaseController {
             model.setViewName("db_list");
             model.addObject("dbList", userService.findUserDbList(userObj.getId(), true));
         }
+
+        // 标记当前用户为已登录
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("inLogin", 1);
+        infoMap.put("loginTime", DateTimeUtil.getNowTime());
+        userService.updateUserInfo(userObj.getId(), infoMap);
         return model;
     }
 
@@ -118,7 +126,12 @@ public class LoginController extends BaseController {
             return ApiResponseUtil.error(ErrorCode.E5010, "旧密码错误.");
         }
 
-        userService.savePassword(userId, cryptEncoder.encode(newPasswd));
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("password", cryptEncoder.encode(newPasswd));
+        infoMap.put("status", 1);
+        infoMap.put("modifier", userId);
+        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
+        userService.updateUserInfo(userId, infoMap);
         return ApiResponseUtil.success();
     }
 

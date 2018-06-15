@@ -133,9 +133,16 @@ public class UserMngController extends BaseController {
                 logger.warn("deleteUser 用户不存在/已删除 userId={}", tiid);
                 return ApiResponseUtil.error(ErrorCode.E5011, "该用户不存在/已删除 userId={}", tiid);
             }
-            params.put("modifier", adminId);
-            params.put("modifiedTime", DateTimeUtil.getNowTime());
-            userService.updateUser(userObj, params);
+
+            Map<String, Object> valMap = new HashMap<>();
+            valMap.put("userId", params.get("accNo"));
+            valMap.put("userName", params.get("accName"));
+            valMap.put("status", StringUtil.convertToInt(params.get("status")));
+            valMap.put("role", StringUtil.convertToInt(params.get("role")));
+            valMap.put("roleList", (List<Map<String, Object>>) params.get("roleList"));
+            valMap.put("modifier", adminId);
+            valMap.put("modifiedTime", DateTimeUtil.getNowTime());
+            userService.updateUserInfo(userObj.getLongAttribute("_id"), valMap);
         }
         return ApiResponseUtil.success();
     }

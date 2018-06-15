@@ -173,33 +173,14 @@ public class UserService extends BaseService {
     }
 
     /**
-     * 修改用户信息
+     * 保存用户信息
      */
-    public void updateUser(BaseMongoMap userObj, Map<String, Object> params) {
-        long iid = userObj.getLongAttribute("_id");
-        userObj.put("userId", params.get("accNo"));
-        userObj.put("userName", params.get("accName"));
-        userObj.put("status", StringUtil.convertToInt(params.get("status")));
-        userObj.put("role", StringUtil.convertToInt(params.get("role")));
-        List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
-        userObj.put("roleList", roleList);
-        userDao.updateObject(iid, userObj, false);
+    public void updateUserInfo(Long iid, Map<String, Object> params) {
+        userDao.updateObject(iid, params, false);
     }
 
     /**
-     * 修改用户密码
-     */
-    public void savePassword(long userIId, String passwd) {
-        Map<String, Object> infoMap = new HashMap<>();
-        infoMap.put("password", passwd);
-        infoMap.put("status", 1);
-        infoMap.put("modifier", userIId);
-        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
-        userDao.updateObject(userIId, infoMap, false);
-    }
-
-    /**
-     * 添加用户
+     * 添加用户(第三方)
      */
     public void addUserByTrdLogin(String userId, String userName, String fromSrc) {
         long iid = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);

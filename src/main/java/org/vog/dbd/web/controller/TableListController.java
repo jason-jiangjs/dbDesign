@@ -428,6 +428,9 @@ public class TableListController extends BaseController {
                         line += " NOT NULL ";
                     }
 
+                    if ("Y".equalsIgnoreCase((String) colItem.get("increment"))) {
+                        line += " AUTO_INCREMENT";
+                    }
                     if (StringUtils.isNotBlank((String) colItem.get("default"))) {
                         line += " DEFAULT '" + colItem.get("default") + "'";
                     }
