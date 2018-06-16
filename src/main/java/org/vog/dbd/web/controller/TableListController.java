@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 查询表及列的一览
+ * 表管理
  */
 @Controller
 public class TableListController extends BaseController {
@@ -51,7 +51,7 @@ public class TableListController extends BaseController {
     private DbService dbService;
 
     /**
-     * 查询表的一览
+     * 跳转到表一览画面
      */
     @RequestMapping(value = "/table_list", method = RequestMethod.GET)
     public ModelAndView getTableList(@RequestParam Map<String, String> params) {
@@ -75,6 +75,7 @@ public class TableListController extends BaseController {
             // 保存默认工作环境
             userService.setUserFavorite(userObj.getId(), dbId);
         }
+        request.getSession().setAttribute("_dbId", dbId);
 
         BaseMongoMap dbMap = dbService.findDbById(dbId);
         if (dbMap == null || dbMap.isEmpty()) {
@@ -181,7 +182,7 @@ public class TableListController extends BaseController {
     }
 
     /**
-     * 查询指定表的定义
+     * 查询指定表的列定义数据
      */
     @ResponseBody
     @RequestMapping(value = "/ajax/getColDef", method = RequestMethod.GET)

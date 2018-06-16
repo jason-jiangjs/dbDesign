@@ -54,6 +54,17 @@
 |\\- foreign | string | 外键定义
 |\\- increment | string | 是否自增长，'Y'表示是
 |\\- default | string | 缺省值
+|+ index_list | map[] | 索引定义一览
+|\\- idxId | long | 索引ID | 系统内部ID，自增
+|\\- creator | long | 创建者ID
+|\\- createdTime | long | 创建时间
+|\\- modifier | long | 更新者ID
+|\\- modifiedTime | long | 更新时间
+|\\- idxName | string | 索引名称
+|\\- idxCol | string | 栏位 (多个时逗号分隔)
+|\\- idxType | int | 索引类型 (0:'', 1:'Normal', 2:'Unique', 3:'Full Text')
+|\\- idxMethod | int | 索引方法 (0:'', 1:'BTREE', 2:'HASH')
+|\\- remarks | string | 备注
 
 索引  
 ① { dbId : 1 }  

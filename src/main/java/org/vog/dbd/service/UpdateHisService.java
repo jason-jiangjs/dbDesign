@@ -28,7 +28,7 @@ public class UpdateHisService extends BaseService {
     /**
      * 保存操作历史
      */
-    public void saveUpdateHis(CustomerUserDetails userObj, long dbId, BaseMongoMap infoMap, Map<String, Object> params) {
+    public void saveUpdateHis(CustomerUserDetails userObj, Long dbId, BaseMongoMap infoMap, Map<String, Object> params) {
         Map<String, Object> data = new HashMap<>();
         data.put("dbId", dbId);
         int hisType = 0;

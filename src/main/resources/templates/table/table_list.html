@@ -90,7 +90,23 @@
             <a href="#" class="_linkbtn_save" onclick="javascript:saveAll()" style="width:80px;margin-left:10px">保存</a>
         </div>
     </div>
-    <div id="popDlg">Dialog Content.</div>
+
+    <div id="tblidx_dlg" class="easyui-dialog" title="创建索引" data-options="iconCls:'fa fa-list',modal:true,closed:true,border:'thin'">
+        <div class="_idx_edit_toolbar" style="padding:10px 0px 0px 15px;border-top:1px solid #e0e0e0" dbd:authorize="${dbId}">
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add',width:90" onclick="javascript:addTblIndex()">添加索引</a>
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove',width:90" onclick="javascript:delTblIndex()" style="margin-left:20px">删除索引</a>
+        </div>
+        <div style="width:1215px;height:320px;margin:0 auto;margin-top:12px">
+            <table id="tblidx_grid" class="easyui-datagrid"
+                   data-options="singleSelect:true,striped:true,fit:true,rownumbers:true,method:'get',idField:'dbId',toolbar:'#_idx_edit_toolbar'"></table>
+        </div>
+
+        <div style="text-align:center;margin-top:15px;margin-bottom:15px">
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitTblIdx()">保存</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelTblIdx()">取消</a>
+        </div>
+    </div>
+
     <input type="hidden" id="favDb" th:value="${#authentication.principal.favorite}" />
     <input type="hidden" id="readAttr" th:value="${userReadonly}" />
     <input type="hidden" id="dbn" th:value="${dbName}" />

@@ -85,6 +85,7 @@ public class TableService extends BaseService {
         queryObj.fields().include("tableNameCN");
         queryObj.fields().include("desc");
         queryObj.fields().include("column_list");
+        queryObj.fields().include("index_list");
         queryObj.fields().include("dbId");
         queryObj.fields().include("modifiedTime");
         queryObj.fields().include("currEditorId");

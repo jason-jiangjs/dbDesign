@@ -21,14 +21,10 @@ import org.vog.dbd.service.TableService;
 import org.vog.dbd.service.UpdateHisService;
 import org.vog.dbd.web.login.CustomerUserDetails;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
+import java.util.*;
 
 /**
- * 查询表及列的一览
+ * 列定义（包括索引）管理
  */
 @Controller
 public class ColumnListController extends BaseController {
@@ -178,6 +174,89 @@ public class ColumnListController extends BaseController {
         tableService.saveTblDefInfo(tblId, tblData);
         updateHisService.saveUpdateHis(userObj, dbId, dbMap, params);
         return ApiResponseUtil.success(retData);
+    }
+
+
+    /**
+     * 查询指定表的索引定义
+     */
+    @ResponseBody
+    @RequestMapping(value = "/ajax/getTblIdxList", method = RequestMethod.GET)
+    public List<Map> getTblIdxList(@RequestParam Map<String, String> params) {
+        Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+
+        long tblId = StringUtil.convertToLong(params.get("tblId"));
+        if (tblId == 0) {
+            logger.warn("getTblIdxList 缺少tblId userId={}", userId);
+            return Collections.EMPTY_LIST;
+        }
+
+        BaseMongoMap dbMap = tableService.getTableById(tblId);
+        if (dbMap == null || dbMap.isEmpty()) {
+            // 表不存在
+            logger.warn("getTblIdxList 表不存在 tblId={}, userId={}", tblId, userId);
+            return Collections.EMPTY_LIST;
+        }
+        List<Map> colList = (List<Map>) dbMap.get("index_list");
+        if (colList == null) {
+            colList = Collections.EMPTY_LIST;
+        }
+        return colList;
+    }
+
+    /**
+     * 保存指定表的索引定义
+     * TODO-- 这里目前还是采用完全覆盖的办法，直接保存数据，先不考虑保存修改历史
+     * 上传的数据必须是完整的，因为没有临时保存的概念
+     */
+    @ResponseBody
+    @RequestMapping(value = "/ajax/saveTblIdxDefine", method = RequestMethod.POST)
+    public Map<String, Object> saveTblIdxDefine(@RequestBody Map<String, Object> params) {
+        Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
+        CustomerUserDetails userObj = (CustomerUserDetails) ((Authentication) request.getUserPrincipal()).getPrincipal();
+
+        Long tblId = StringUtil.convertToLong(params.get("tblId")); // tblId < 100视为新增表定义
+        if (tblId == 0 || tblId < 100) {
+            logger.warn("saveTblIdxDefine 缺少参数_tbl_id");
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数_tbl_id");
+        }
+        BaseMongoMap dbMap = tableService.getTableById(tblId);
+        if (dbMap == null || dbMap.isEmpty()) {
+            // 表不存在
+            logger.warn("saveColDefine 表不存在 tblId={}, userId={}", tblId, userId);
+            return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
+        }
+
+        List<Map<String, Object>> colDataList = (List<Map<String, Object>>) params.get("idxList");
+        if (colDataList == null || colDataList.isEmpty()) {
+            logger.warn("saveColDefine 缺少参数idxList tblId={}, userId={}", tblId, userId);
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数idxList，不能保存空的索引定义");
+        }
+        for (Map<String, Object> idxData : colDataList) {
+            Long idxId = StringUtil.convertToLong(idxData.get("idxId"));
+            if (idxId < 100) {
+                idxData.put("idxId", sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_COLUMN_ID));
+            }
+
+            int idxType = StringUtil.convertToInt(idxData.get("idxType"));
+            if (idxType == 0) {
+                idxData.put("idxType", 1);
+            }
+            int idxMethod = StringUtil.convertToInt(idxData.get("idxMethod"));
+            if (idxMethod == 0) {
+                idxData.put("idxMethod", 1);
+            }
+        }
+
+        Map<String, Object> tblData = new HashMap<>();
+        tblData.put("modifier", userId);
+        tblData.put("modifiedTime", DateTimeUtil.getNowTime());
+        tblData.put("index_list", colDataList);
+        tableService.saveTblDefInfo(tblId, tblData);
+
+        Long dbId = (Long) request.getSession().getAttribute("_dbId");
+        updateHisService.saveUpdateHis(userObj, dbId, dbMap, params);
+        return ApiResponseUtil.success();
     }
 
 }

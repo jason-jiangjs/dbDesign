@@ -58,6 +58,7 @@ public class LoginController extends BaseController {
                 // 数据库不存在
                 model.addObject("dbId", 0);
             } else {
+                request.getSession().setAttribute("_dbId", dbId);
                 model.addObject("dbId", AESCoderUtil.encode(dbId.toString()));
                 int dbType = dbMap.getIntAttribute("type");
                 if (dbType == 0) {
