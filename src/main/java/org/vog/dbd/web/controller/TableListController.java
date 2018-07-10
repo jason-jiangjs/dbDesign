@@ -4,17 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.vog.base.controller.BaseController;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.common.Constants;
 import org.vog.common.ErrorCode;
-import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
 import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
@@ -26,7 +21,7 @@ import org.vog.dbd.web.login.CustomerUserDetails;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +64,7 @@ public class TableListController extends BaseController {
             return model;
         }
 
-        Long dbId = StringUtil.convertToLong(AESCoderUtil.decode(dbIdStr));
+        Long dbId = StringUtil.convertToLong(dbIdStr);
         int checkFlg = StringUtil.convertToInt(params.get("checkFlg"));
         if (checkFlg == 1) {
             // 保存默认工作环境
@@ -129,10 +124,6 @@ public class TableListController extends BaseController {
     public List<BaseMongoMap> getTableListByDbId(@RequestParam Map<String, Object> params) {
         String dbIdStr = (String) params.get("dbId");
         long dbId = StringUtil.convertToLong(dbIdStr);
-        if (dbId == 0) {
-            dbIdStr = AESCoderUtil.decode(dbIdStr);
-            dbId = StringUtil.convertToLong(dbIdStr);
-        }
         int targetType = StringUtil.convertToInt(params.get("targetType"));
         if (targetType == 0) {
             targetType = 1;
@@ -336,29 +327,41 @@ public class TableListController extends BaseController {
     @RequestMapping(value = "/ajax/endEditable", method = RequestMethod.POST)
     public Map<String, Object> endEditable(@RequestParam Map<String, String> params) {
         Long userId = (Long) request.getSession().getAttribute(Constants.KEY_USER_ID);
-        if (userId == null || userId == 0) {
-            logger.error("用户未登录 sessionid={}", request.getSession().getId());
-            return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录");
+
+        long tblId = StringUtil.convertToLong(params.get("tableId"));
+        if (tblId == 0) {
+            logger.warn("endEditable 缺少参数tableId");
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数tableId");
         }
 
-//        long tblId = StringUtil.convertToLong(params.get("tableId"));
-//        if (tblId == 0) {
-//            logger.warn("forceTblEditable 缺少参数tableId");
-//            return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数tableId");
-//        }
-//
-//        if (tblId < 1000) {
-//            logger.warn("forceTblEditable 新建表不需要检查编辑冲突");
-//            return ApiResponseUtil.success();
-//        }
-//        BaseMongoMap tblMap = tableService.getTableById(tblId);
-//        if (tblMap == null || tblMap.isEmpty()) {
-//            // 表不存在
-//            logger.warn("chkTblEditable 表不存在 tblId={}, userId={}", tblId, userId);
-//            return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
-//        }
-//
-//        tableService.startEditTable(userId, tblId);
+        if (tblId < 1000) {
+            logger.warn("endEditable 新建表不需要检查编辑冲突");
+            return ApiResponseUtil.success();
+        }
+        BaseMongoMap tblMap = tableService.getTableById(tblId);
+        if (tblMap == null || tblMap.isEmpty()) {
+            // 表不存在
+            logger.warn("endEditable 表不存在 tblId={}, userId={}", tblId, userId);
+            return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
+        }
+
+        Long curEditorId = tblMap.getLongAttribute("currEditorId");
+        if (curEditorId == 0) {
+            logger.info("endEditable 当前表没有人在编辑 tblId={}, userId={}", tblId, userId);
+            return ApiResponseUtil.success();
+        }
+        if (!curEditorId.equals(userId)) {
+            BaseMongoMap userMap = userService.getUserById(curEditorId);
+            if (userMap == null) {
+                logger.info("endEditable 当前表由无效用户在编辑 tblId={}, curEditorId={}，userId={}", tblId, curEditorId, userId);
+                return ApiResponseUtil.error(ErrorCode.E5101, "当前表是其他人在编辑，请联系管理员。");
+            } else {
+                logger.info("endEditable 当前表是其他人在编辑 tblId={}, curEditorId={}，userId={}", tblId, curEditorId, userId);
+                return ApiResponseUtil.error(ErrorCode.E5101, "{}正在编辑该表，不能取消", userMap.getStringAttribute("userName"));
+            }
+        }
+
+        tableService.endEditTable(tblId);
         return ApiResponseUtil.success();
     }
 
@@ -372,6 +375,18 @@ public class TableListController extends BaseController {
         if (userId == null || userId == 0) {
             logger.error("用户未登录 sessionid={}", request.getSession().getId());
             return ApiResponseUtil.error(ErrorCode.S9004, "用户未登录").toString();
+        }
+
+        Long dbId = (Long) request.getSession().getAttribute("_dbId");
+        if (dbId == null || dbId == 0) {
+            logger.warn("exportSql 缺少dbId");
+            return ApiResponseUtil.error(ErrorCode.W1001, null).toString();
+        }
+        BaseMongoMap dbMap = dbService.findDbById(dbId);
+        int dbType = dbMap.getIntAttribute("type");
+        if (dbType != 1) {
+            logger.warn("exportSql 暂不支持 dbid={}", dbId);
+            return ApiResponseUtil.error(ErrorCode.E5001, "暂不支持输出脚本").toString();
         }
 
         List<String> outputStr = new ArrayList<>();
@@ -393,10 +408,11 @@ public class TableListController extends BaseController {
         outputStr.add("SET FOREIGN_KEY_CHECKS=0;\n");
         outputStr.add("\n");
 
-        List<BaseMongoMap> tblList = tableService.getTableList(1042,1);
+        String tblName = StringUtils.trimToNull(request.getParameter("tblName"));
+        List<BaseMongoMap> tblList = tableService.getTableList(dbId, dbType, tblName);
         for (BaseMongoMap tblMap :tblList) {
             // 针对每个表
-            String tblName = tblMap.getStringAttribute("tableName");
+            tblName = tblMap.getStringAttribute("tableName");
             outputStr.add("-- ----------------------------\n");
             outputStr.add("-- Table structure for " + tblName + "\n");
             outputStr.add("-- ----------------------------\n");

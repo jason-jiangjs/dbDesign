@@ -21,6 +21,12 @@ var tblidx_grid_cols = [[
         }
     },
     { field:'idxType', title:'索引类型', width:100,
+        formatter: function(value, row, index) {
+            if (value) {
+                return $translate('index_type_val_' + value);
+            }
+            return '';
+        },
         editor : {
             "type" : "combobox",
             "options" : {
@@ -40,6 +46,12 @@ var tblidx_grid_cols = [[
         }
     },
     { field:'idxMethod', title:'索引方法', width:90,
+        formatter: function(value, row, index) {
+            if (value) {
+                return $translate('index_method_val_' + value);
+            }
+            return '';
+        },
         editor : {
             "type" : "combobox",
             "options" : {
@@ -335,6 +347,9 @@ $(function () {
     $('body').on('mouseleave', 'span.tree-hit.tree-collapsed', function() {
         $(this).removeClass('tree-collapsed-hover')
     });
+
+    // easyui的textbox未提供onclick事件，只能采用下面方法解决
+    $('body').on('click', 'input._tbl_desc + span :first-child', unselectGridItem);
 });
 
 function _openNewTab(tblId) {
@@ -442,6 +457,10 @@ function _createTblHeadDiv(tblId, tblName, tblNameCn, tblDesc, lastUpd) {
         $(prefixId + ' input._tbl_name_cn_p').val(tblNameCn);
         $(prefixId + ' input._tbl_desc_p').val(tblDesc);
     }
+    // $("input", $(prefixId + ' input._tbl_desc').next("span textarea")).click(function() {
+    //     alert("ok"); //unselectGridItem
+    // });
+
 
     $(prefixId + ' input._tbl_last_updtime').val(lastUpd);
 }
@@ -484,9 +503,10 @@ function _createTblGrid(tblId, colHeader) {
             if (editableMap[_curTblId] === false) {
                 return false;
             }
-            if (editIndexMap[_curTblId] !== null) {
-                return false;
+            if (editIndexMap[_curTblId] === true) {
+                return true;
             }
+            return false;
         };
         options.onDrop = function (targetRow, sourceRow, point) {
             isRowEditedMap[_curTblId] = true;
@@ -829,11 +849,12 @@ function endEditing() {
     });
 }
 
-// 取得当前grid中当前选中行的索引
+// 取得当前页的grid
 function _getGrid() {
     var prefixId = '#col_grid_' + _curTblId;
     return $(prefixId);
 }
+// 取得当前grid中当前选中行的索引
 function _getGridRowIdx() {
     var gridObj = _getGrid();
     var s1 = gridObj.datagrid('getSelected');
@@ -847,6 +868,12 @@ function _getGridRowIdx() {
         s2 = gridObj.datagrid('getRowIndex', s1);
     }
     return s2;
+}
+
+// 点击"表说明"输入框时，取消当前grid的行选择
+function unselectGridItem() {
+    var gridObj = _getGrid();
+    gridObj.datagrid('unselectAll');
 }
 
 // 添加栏位
@@ -1021,8 +1048,22 @@ function nameDspformatter(value, row, index) {
 }
 
 // 导出SQL文
-function exportSql() {
+function exportSql(opType) {
+    if (_curTblId == 0 || _curTblId == undefined || _curTblId == '') {
+        return;
+    }
+    if (_curTblId < 100) {
+        layer.msg("创建表时不可直接导出表定义，必须先保存．");
+        return;
+    }
+    var prefixId = '#' + _curTblId;
     var url = Ap_servletContext + '/ajax/exportSql';
+    if (opType == 1) {
+        // 导出当前打开的表
+        var tName = $.trim($(prefixId + ' input._tbl_name').textbox('getValue'));
+        url += "?tblName=" + tName;
+    }
+
     var form = $("<form></form>").attr("action", url).attr("method", "post");
     form.appendTo('body').submit().remove();
 }
@@ -1078,6 +1119,7 @@ function editIndex() {
         columns: tblidx_grid_cols,
         onDblClickCell: onIdxClickCell
     });
+    $('#tblidx_grid').datagrid('reload');
 
     $('#tblidx_dlg').dialog('open');
 }
@@ -1140,6 +1182,7 @@ function submitTblIdx() {
                 // 保存成功
                 layer.msg("保存成功。");
                 $('#tblidx_dlg').dialog('close');
+                _getGrid().datagrid('reload')
             } else {
                 layer.msg(data.msg + ' code=' + data.code);
             }
@@ -1194,4 +1237,100 @@ function onIdxClickCell(index, field) {
         }
         idxEditIndex = index;
     }
+}
+
+// 查看附件
+function attMng() {
+    if (_curTblId == 0 || _curTblId == undefined || _curTblId == null) {
+        return false;
+    }
+    var gridObj = $('#tblidx_grid');
+    var s1 = gridObj.datagrid('getSelected');
+    if (s1 == null || s1 == undefined) {
+        // 没有选择时，表示是整个表的附件
+
+
+    } else {
+        // 表示是当前行的附件
+
+
+    }
+
+    // 弹出对话框
+    $('#tblatt_dlg').dialog('open');
+
+}
+
+
+// 保存索引的修改
+function submitTblIdx() {
+    $('#tblidx_grid').datagrid('acceptChanges');
+    var rowsData = $('#tblidx_grid').datagrid('getRows');
+    if (rowsData.length == 0) {
+        return;
+    }
+    var postData = {};
+    postData.tblId = _curTblId;
+    postData.idxList = rowsData;
+
+    var loadLy = layer.load(1);
+    $.ajax({
+        type: 'post',
+        url: Ap_servletContext + '/ajax/saveTblIdxDefine',
+        data: JSON.stringify(postData),
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            layer.close(loadLy);
+            if (data.code == 0) {
+                // 保存成功
+                layer.msg("保存成功。");
+                $('#tblidx_dlg').dialog('close');
+                _getGrid().datagrid('reload')
+            } else {
+                layer.msg(data.msg + ' code=' + data.code);
+            }
+        }
+    });
+}
+
+// 取消修改(不保存)
+function cancelTblIdx() {
+    var rowsData = $('#tblidx_grid').datagrid('getRows');
+    if (rowsData.length == 0) {
+        $('#tblidx_dlg').dialog('close');
+        return;
+    }
+    layer.confirm('确定要取消修改？<br/>该操作不可恢复，是否确认删除？', { icon: 7,
+        btn: ['确定','取消'] //按钮
+    }, function(index) {
+        layer.close(index);
+        $('#tblidx_dlg').dialog('close');
+    }, function() {
+        // 无操作
+    });
+}
+
+// 使用预定义模板-弹出对话框
+function useTemplate() {
+    if (_curTblId == 0 || _curTblId == undefined || _curTblId == null) {
+        return false;
+    }
+    // 弹出对话框
+    $('#template_dlg').dialog('open');
+}
+
+// 使用预定义模板1
+function useTemplate1() {
+    _getGrid().datagrid('appendRow', { columnName: "valid", type: "tinyint", columnLens: "4", default: "1", columnNameCN: "数据是否有效", desc: "0:无效 1:有效" });
+    _getGrid().datagrid('appendRow', { columnName: "created_by", type: "bigint", columnLens: "20", columnNameCN: "创建者ID" });
+    _getGrid().datagrid('appendRow', { columnName: "created_date", type: "timestamp", columnNameCN: "创建时间" });
+    _getGrid().datagrid('appendRow', { columnName: "updated_by", type: "bigint", columnLens: "20", columnNameCN: "更新者ID" });
+    _getGrid().datagrid('appendRow', { columnName: "updated_date", type: "timestamp", columnNameCN: "创建时间" });
+    $('#template_dlg').dialog('close');
+}
+// 使用预定义模板2
+function useTemplate2() {
+    _getGrid().datagrid('appendRow', { columnName: "created_by", type: "bigint", columnLens: "20", columnNameCN: "创建者ID" });
+    _getGrid().datagrid('appendRow', { columnName: "created_date", type: "timestamp", columnNameCN: "创建时间" });
+    $('#template_dlg').dialog('close');
 }

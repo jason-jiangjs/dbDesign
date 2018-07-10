@@ -79,4 +79,20 @@ public abstract class BaseMongoDao {
         }
     }
 
+    public WriteResult updateObject(Query query, Map<String, Object> infoMap, boolean upsert, boolean multi) {
+        BasicDBObject basicDBObject = new BasicDBObject();
+        basicDBObject.put("$set", infoMap);
+        Update update = new BasicUpdate(basicDBObject);
+
+        if (upsert) {
+            return mongoTemplate.upsert(query, update, getTableName());
+        } else {
+            if (multi) {
+                return mongoTemplate.updateMulti(query, update, getTableName());
+            } else {
+                return mongoTemplate.updateFirst(query, update, getTableName());
+            }
+        }
+    }
+
 }

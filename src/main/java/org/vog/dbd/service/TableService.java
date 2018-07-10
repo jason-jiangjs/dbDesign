@@ -49,10 +49,13 @@ public class TableService extends BaseService {
     /**
      * 查询指定数据库的表一览, 优先使用名称查询
      */
-    public List<BaseMongoMap> getTableList(long dbId, int type) {
+    public List<BaseMongoMap> getTableList(long dbId, int type, String tblName) {
         Query queryObj = new Query(where("dbId").is(dbId));
         queryObj.addCriteria(where("type").is(type));
         queryObj.addCriteria(where("deleteFlg").is(false));
+        if (tblName != null) {
+            queryObj.addCriteria(where("tableName").regex(tblName, "i"));
+        }
         queryObj.fields().include("tableName");
         queryObj.fields().include("column_list");
 
@@ -135,4 +138,28 @@ public class TableService extends BaseService {
 
         tableDao.updateObject(tblId, infoMap, false);
     }
+
+    /**
+     * 结束编辑表
+     */
+    public void endEditTable(long tblId) {
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("currEditorId", null);
+        infoMap.put("startEditTime", null);
+
+        tableDao.updateObject(tblId, infoMap, false);
+    }
+
+    /**
+     * 结束编辑表
+     */
+    public void endEditTable4User(long userId) {
+        Map<String, Object> infoMap = new HashMap<>();
+        infoMap.put("currEditorId", null);
+        infoMap.put("startEditTime", null);
+
+        Query query = new Query(where("currEditorId").is(userId));
+        tableDao.updateObject(query, infoMap, false, true);
+    }
+
 }

@@ -3,17 +3,12 @@ package org.vog.dbd.web.controller.admin;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.vog.base.controller.BaseController;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.common.Constants;
 import org.vog.common.ErrorCode;
-import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
 import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
@@ -161,7 +156,7 @@ public class DbMngController extends BaseController {
             return model;
         }
 
-        Long dbId = StringUtil.convertToLong(AESCoderUtil.decode(dbIdStr));
+        Long dbId = StringUtil.convertToLong(dbIdStr);
         model.put("rows", updateHisService.getUpdHisList(dbId, page, rows));
         model.put("total", updateHisService.countUpdHisList(dbId));
         return model;

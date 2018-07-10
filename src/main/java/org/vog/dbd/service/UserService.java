@@ -7,7 +7,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.base.service.BaseService;
-import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
 import org.vog.dbd.dao.UserDao;
@@ -97,7 +96,7 @@ public class UserService extends BaseService {
                 Map<String, Object> item = new HashMap<>();
                 Long dbId = dbMap.getLongAttribute("_id");
                 if (needCrpId) {
-                    item.put("id", AESCoderUtil.encode(dbId.toString()));
+                    item.put("id", dbId.toString());
                 } else {
                     item.put("dbId", dbId);
                 }
@@ -122,7 +121,7 @@ public class UserService extends BaseService {
             }
             if (needCrpId) {
                 Long dbId = dbMap.getLongAttribute("_id");
-                roleMap.put("id", AESCoderUtil.encode(dbId.toString()));
+                roleMap.put("id", dbId.toString());
                 roleMap.remove("dbId");
             }
             roleMap.put("dbNameTxt", getDbNameTxt(dbMap));

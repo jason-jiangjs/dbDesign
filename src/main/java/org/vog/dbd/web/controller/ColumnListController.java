@@ -38,6 +38,8 @@ public class ColumnListController extends BaseController {
     @Autowired
     private UpdateHisService updateHisService;
 
+    private static final String[] _idxSign = new String[] { "", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩", "⑪", "⑫", "⑬", "⑭", "⑮", "⑯", "⑰", "⑱", "⑲", "⑳" };
+
     /**
      * 查询指定表的所有列一览
      */
@@ -176,7 +178,6 @@ public class ColumnListController extends BaseController {
         return ApiResponseUtil.success(retData);
     }
 
-
     /**
      * 查询指定表的索引定义
      */
@@ -220,24 +221,38 @@ public class ColumnListController extends BaseController {
             logger.warn("saveTblIdxDefine 缺少参数_tbl_id");
             return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数_tbl_id");
         }
-        BaseMongoMap dbMap = tableService.getTableById(tblId);
-        if (dbMap == null || dbMap.isEmpty()) {
+        BaseMongoMap tdlMap = tableService.getTableById(tblId);
+        if (tdlMap == null || tdlMap.isEmpty()) {
             // 表不存在
             logger.warn("saveColDefine 表不存在 tblId={}, userId={}", tblId, userId);
             return ApiResponseUtil.error(ErrorCode.E5101, "指定的表不存在 tblId={}", tblId);
         }
+        List<Map> colList = (List<Map>) tdlMap.get("column_list");
+        if (colList == null || colList.isEmpty()) {
+            logger.warn("saveColDefine 该表定义为空 tblId={}, userId={}", tblId, userId);
+            return ApiResponseUtil.error(ErrorCode.W1001, "该表定义为空，不能定义索引");
+        }
 
-        List<Map<String, Object>> colDataList = (List<Map<String, Object>>) params.get("idxList");
-        if (colDataList == null || colDataList.isEmpty()) {
+        List<Map<String, Object>> idxDataList = (List<Map<String, Object>>) params.get("idxList");
+        if (idxDataList == null || idxDataList.isEmpty()) {
             logger.warn("saveColDefine 缺少参数idxList tblId={}, userId={}", tblId, userId);
             return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数idxList，不能保存空的索引定义");
         }
-        for (Map<String, Object> idxData : colDataList) {
+
+        // 先清空旧索引定义
+        for (Map<String, Object> colData : colList) {
+            colData.put("indexDef", "");
+        }
+
+        int colIdx = 0;
+        for (Map<String, Object> idxData : idxDataList) {
+            colIdx ++;
             Long idxId = StringUtil.convertToLong(idxData.get("idxId"));
             if (idxId < 100) {
                 idxData.put("idxId", sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_COLUMN_ID));
             }
 
+            // 设置缺省值
             int idxType = StringUtil.convertToInt(idxData.get("idxType"));
             if (idxType == 0) {
                 idxData.put("idxType", 1);
@@ -246,16 +261,34 @@ public class ColumnListController extends BaseController {
             if (idxMethod == 0) {
                 idxData.put("idxMethod", 1);
             }
+
+            // 过滤出索引标记 ①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳
+            String[] idxCols = StringUtils.trimToEmpty((String) idxData.get("idxCol")).split(",");
+            for (String idxCol : idxCols) {
+                for (Map<String, Object> colData : colList) {
+                    if (idxCol.equals(colData.get("columnName"))) {
+                        String indexDef = StringUtils.trimToEmpty((String) colData.get("indexDef"));
+                        if ("".equals(indexDef)) {
+                            indexDef = _idxSign[colIdx];
+                        } else {
+                            indexDef += "," + _idxSign[colIdx];
+                        }
+                        colData.put("indexDef", indexDef);
+                    }
+                }
+            }
         }
 
         Map<String, Object> tblData = new HashMap<>();
         tblData.put("modifier", userId);
         tblData.put("modifiedTime", DateTimeUtil.getNowTime());
-        tblData.put("index_list", colDataList);
+        // 注意这里是完全覆盖现有定义，不考虑合并值
+        tblData.put("index_list", idxDataList);
+        tblData.put("column_list", colList);
         tableService.saveTblDefInfo(tblId, tblData);
 
         Long dbId = (Long) request.getSession().getAttribute("_dbId");
-        updateHisService.saveUpdateHis(userObj, dbId, dbMap, params);
+        updateHisService.saveUpdateHis(userObj, dbId, tdlMap, params);
         return ApiResponseUtil.success();
     }
 

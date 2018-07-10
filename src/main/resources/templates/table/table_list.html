@@ -41,9 +41,15 @@
             <div class="menu-sep"></div>
             <div data-options="iconCls:'fa fa-remove'" onclick="javascript:delCurrTable()">删除当前项目</div>
             <div class="menu-sep"></div>
-            <div data-options="iconCls:'fa fa-remove'" onclick="javascript:editIndex()">创建索引</div>
+            <div data-options="iconCls:'fa fa-edit'" onclick="javascript:editIndex()">编辑索引</div>
+            <div class="menu-sep"></div>
+            <div data-options="iconCls:'fa fa-edit'" onclick="javascript:useTemplate()">使用预定义模板</div>
             <div class="menu-sep"></div>
         </th:block>
+        <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql(1)">导出当前SQL文</div>
+        <div class="menu-sep"></div>
         <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
     </div>
 
@@ -63,7 +69,7 @@
         </th:block>
         <div data-options="iconCls:'fa fa-refresh'" onclick="javascript:doSearch('',1)">刷新</div>
         <div class="menu-sep"></div>
-        <div data-options="iconCls:'fa fa-refresh'" onclick="javascript:exportSql()">导出SQL文</div>
+        <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql(0)">导出所有SQL文</div>
         <div class="menu-sep"></div>
         <div data-options="iconCls:'fa fa-home'" th:href="@{/home?type=1}">返回选择数据库</div>
         <div class="menu-sep"></div>
@@ -91,20 +97,44 @@
         </div>
     </div>
 
-    <div id="tblidx_dlg" class="easyui-dialog" title="创建索引" data-options="iconCls:'fa fa-list',modal:true,closed:true,border:'thin'">
+    <div id="tblidx_dlg" class="easyui-dialog" title="编辑索引" data-options="iconCls:'fa fa-list',modal:true,closed:true,border:'thin'">
         <div class="_idx_edit_toolbar" style="padding:10px 0px 0px 15px;border-top:1px solid #e0e0e0" dbd:authorize="${dbId}">
             <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add',width:90" onclick="javascript:addTblIndex()">添加索引</a>
             <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove',width:90" onclick="javascript:delTblIndex()" style="margin-left:20px">删除索引</a>
         </div>
         <div style="width:1215px;height:320px;margin:0 auto;margin-top:12px">
             <table id="tblidx_grid" class="easyui-datagrid"
-                   data-options="singleSelect:true,striped:true,fit:true,rownumbers:true,method:'get',idField:'dbId',toolbar:'#_idx_edit_toolbar'"></table>
+                   data-options="singleSelect:true,striped:true,fit:true,rownumbers:true,method:'get',idField:'idxId',toolbar:'#_idx_edit_toolbar'"></table>
         </div>
 
         <div style="text-align:center;margin-top:15px;margin-bottom:15px">
             <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitTblIdx()">保存</a>
             <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelTblIdx()">取消</a>
         </div>
+    </div>
+
+    <div id="tblatt_dlg" class="easyui-dialog" title="编辑索引" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'">
+        <input id="fb" type="file" style="width:300px;display:none">
+        <div class="easyui-panel" data-options="border:false" style="width:520px;height:120px;padding:10px;border-bottom:1px solid #1E9FFF">
+
+        </div>
+
+        <div style="text-align:center;margin-top:15px;margin-bottom:15px">
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitTblAtt()">保存</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelTblAtt()">取消</a>
+        </div>
+    </div>
+
+    <div id="template_dlg" class="easyui-dialog" title="使用预先定义的模板" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'" style="padding:20px">
+
+        <div style="width:500px;height:40px;padding:2px;border:1px solid #1E9FFF" onclick="useTemplate1()">
+            模板1：`valid`, `created_by`, `created_date`, `updated_by`, `updated_date`
+        </div>
+
+        <div style="width:500px;height:40px;padding:2px;border:1px solid #1E9FFF;margin-top:20px" onclick="useTemplate2()">
+            模板2：`created_by`, `created_date`
+        </div>
+
     </div>
 
     <input type="hidden" id="favDb" th:value="${#authentication.principal.favorite}" />

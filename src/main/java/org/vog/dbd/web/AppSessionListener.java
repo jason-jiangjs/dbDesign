@@ -3,6 +3,7 @@ package org.vog.dbd.web;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vog.base.service.BaseService;
 import org.vog.common.Constants;
+import org.vog.dbd.service.TableService;
 import org.vog.dbd.service.UserService;
 
 import javax.servlet.annotation.WebListener;
@@ -18,6 +19,9 @@ public class AppSessionListener extends BaseService implements HttpSessionListen
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TableService tableService;
 
     @Override
     public void attributeAdded(HttpSessionBindingEvent httpSessionBindingEvent) {
@@ -51,6 +55,9 @@ public class AppSessionListener extends BaseService implements HttpSessionListen
         infoMap.put("inLogin", 0);
         infoMap.put("loginTime", null);
         userService.updateUserInfo(userId, infoMap);
+
+        // 如果正在编辑表，则取消
+        tableService.endEditTable4User(userId);
     }
 
 }

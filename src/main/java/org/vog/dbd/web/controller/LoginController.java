@@ -6,17 +6,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.vog.base.controller.BaseController;
 import org.vog.base.model.mongo.BaseMongoMap;
 import org.vog.common.Constants;
 import org.vog.common.ErrorCode;
-import org.vog.common.util.AESCoderUtil;
 import org.vog.common.util.ApiResponseUtil;
 import org.vog.common.util.DateTimeUtil;
 import org.vog.common.util.StringUtil;
@@ -59,7 +54,7 @@ public class LoginController extends BaseController {
                 model.addObject("dbId", 0);
             } else {
                 request.getSession().setAttribute("_dbId", dbId);
-                model.addObject("dbId", AESCoderUtil.encode(dbId.toString()));
+                model.addObject("dbId", dbId.toString());
                 int dbType = dbMap.getIntAttribute("type");
                 if (dbType == 0) {
                     logger.warn("getColumnList 未设置数据库类型 id={}", dbId);
