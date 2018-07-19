@@ -13,6 +13,7 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/").setViewName("index");
+        registry.addViewController("/to_drawio").setViewName("index2");
 //        registry.addViewController("/index").setViewName("index"); // 参见CommonController.tologin()
     }
 

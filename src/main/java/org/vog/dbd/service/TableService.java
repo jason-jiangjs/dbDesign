@@ -57,6 +57,7 @@ public class TableService extends BaseService {
             queryObj.addCriteria(where("tableName").regex(tblName, "i"));
         }
         queryObj.fields().include("tableName");
+        queryObj.fields().include("tableNameCN");
         queryObj.fields().include("column_list");
 
         queryObj.with(new Sort(Sort.Direction.ASC, "tableName"));

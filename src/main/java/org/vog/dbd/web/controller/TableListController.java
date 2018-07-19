@@ -426,7 +426,8 @@ public class TableListController extends BaseController {
                 int idx = 0;
                 List<String> primKey = new ArrayList<>();
                 for (Map<String, Object> colItem : colList) {
-                    String line = "  `" + colItem.get("columnName") + "` ";
+                    String colName = (String) colItem.get("columnName");
+                    String line = "  `" + colName + "` ";
                     String colType = (String) colItem.get("type");
                     if ("timestamp".equalsIgnoreCase(colType)) {
                         line += colType + " NULL";
@@ -442,15 +443,28 @@ public class TableListController extends BaseController {
                         primKey.add((String) colItem.get("columnName"));
                     }
                     if ("Y".equalsIgnoreCase((String) colItem.get("notnull"))) {
-                        line += " NOT NULL ";
+                        line += " NOT NULL";
                     }
 
                     if ("Y".equalsIgnoreCase((String) colItem.get("increment"))) {
                         line += " AUTO_INCREMENT";
                     }
                     if (StringUtils.isNotBlank((String) colItem.get("default"))) {
-                        line += " DEFAULT '" + colItem.get("default") + "'";
+                        String defaultValStr = (String) colItem.get("default");
+                        if ("tinyint".equalsIgnoreCase(colType) || "smallint".equalsIgnoreCase(colType) || "int".equalsIgnoreCase(colType) || "bigint".equalsIgnoreCase(colType)) {
+                            defaultValStr.replaceAll("'", "");
+                        }
+                        line += " DEFAULT " + defaultValStr;
                     }
+
+                    // 时间格式固定输出
+                    if ("created_date".equalsIgnoreCase(colName)) {
+                        line += " DEFAULT CURRENT_TIMESTAMP";
+                    }
+                    if ("updated_date".equalsIgnoreCase(colName)) {
+                        line += " DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+                    }
+
                     if (StringUtils.isNotBlank((String) colItem.get("columnNameCN"))) {
                         line += " COMMENT '" + colItem.get("columnNameCN") + "'";
                     }
@@ -486,7 +500,7 @@ public class TableListController extends BaseController {
                 }
             }
 
-            outputStr.add(") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n");
+            outputStr.add(") ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='" + tblMap.getStringAttribute("tableNameCN") + "';\n");
             outputStr.add("\n");
         }
 

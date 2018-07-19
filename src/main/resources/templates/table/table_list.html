@@ -39,7 +39,7 @@
             <div class="menu-sep"></div>
             <div data-options="iconCls:'fa fa-unlock'" onclick="javascript:endEditing()" title="退出编辑状态，不保存当前修改!!!">取消编辑</div>
             <div class="menu-sep"></div>
-            <div data-options="iconCls:'fa fa-remove'" onclick="javascript:delCurrTable()">删除当前项目</div>
+            <div data-options="iconCls:'fa fa-exchange'" onclick="javascript:enableDragDrop()">开启行拖放操作</div>
             <div class="menu-sep"></div>
             <div data-options="iconCls:'fa fa-edit'" onclick="javascript:editIndex()">编辑索引</div>
             <div class="menu-sep"></div>
@@ -47,6 +47,8 @@
             <div class="menu-sep"></div>
         </th:block>
         <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
+        <div class="menu-sep"></div>
+        <div data-options="href:'to_drawio',iconCls:'fa fa-paperclip'">查看ER图</div>
         <div class="menu-sep"></div>
         <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql(1)">导出当前SQL文</div>
         <div class="menu-sep"></div>
@@ -65,6 +67,7 @@
         <div class="menu-sep"></div>
         <th:block dbd:authorize="${dbId}">
             <div data-options="iconCls:'fa fa-plus'" onclick="javascript:createNewTable()">创建项目</div>
+            <div data-options="iconCls:'fa fa-remove'" onclick="javascript:delCurrTable()">删除当前项目</div>
             <div class="menu-sep"></div>
         </th:block>
         <div data-options="iconCls:'fa fa-refresh'" onclick="javascript:doSearch('',1)">刷新</div>

@@ -49,11 +49,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.tomcat</groupId>
-			<artifactId>tomcat-juli</artifactId>
-			<version>7.0.84</version>
-		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>org.apache.tomcat</groupId>-->
+			<!--<artifactId>tomcat-juli</artifactId>-->
+			<!--<version>7.0.84</version>-->
+		<!--</dependency>-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>
@@ -114,11 +114,11 @@
             <!--<version>1.11</version>-->
         <!--</dependency>-->
 		<!-- https://mvnrepository.com/artifact/com.google.appengine/appengine-api-1.0-sdk -->
-		<!--<dependency>-->
-			<!--<groupId>com.google.appengine</groupId>-->
-			<!--<artifactId>appengine-api-1.0-sdk</artifactId>-->
-			<!--&lt;!&ndash;<version>1.9.64</version>&ndash;&gt;-->
-		<!--</dependency>-->
+		<dependency>
+			<groupId>com.google.appengine</groupId>
+			<artifactId>appengine-api-1.0-sdk</artifactId>
+			<!--<version>1.9.64</version>-->
+		</dependency>
         <!--<dependency>-->
             <!--<groupId>com.google.appengine</groupId>-->
             <!--<artifactId>appengine-api-stubs</artifactId>-->
@@ -126,11 +126,11 @@
             <!--<scope>test</scope>-->
         <!--</dependency>-->
         <!--&lt;!&ndash; https://mvnrepository.com/artifact/com.google.code.gson/gson &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>com.google.code.gson</groupId>-->
-            <!--<artifactId>gson</artifactId>-->
-            <!--&lt;!&ndash;<version>2.7</version>&ndash;&gt;-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <!--<version>2.7</version>-->
+        </dependency>
         <!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
         <dependency>
             <groupId>commons-fileupload</groupId>

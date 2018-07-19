@@ -500,10 +500,7 @@ function _createTblGrid(tblId, colHeader) {
             $(this).datagrid('enableDnd');
         };
         options.onBeforeDrag = function(row) {
-            if (editableMap[_curTblId] === false) {
-                return false;
-            }
-            if (editIndexMap[_curTblId] === true) {
+            if (dragDropableMap[_curTblId] === true) {
                 return true;
             }
             return false;
@@ -673,7 +670,10 @@ var _curTblId = null;
 // 用来标识当前表是否正在编辑的变量必须是独立的，也就是要定义为map类型，key的值为_curTblId
 var editIndexMap = [];
 var isRowEditedMap = [];
+// 保存当前可以编辑的表
 var editableMap = [];
+// 保存当前可以拖放操作的表
+var dragDropableMap = [];
 
 // 双击表格行，开始编辑，只允许一行一行编辑
 function onClickRowBegEdit(index, field, value) {
@@ -832,6 +832,7 @@ function endEditing() {
         return;
     }
     editableMap[_curTblId] = false;
+    dragDropableMap[_curTblId] = false;
     _endEditing();
     var loadLy = layer.load(1);
     $.ajax({
@@ -842,11 +843,24 @@ function endEditing() {
             if (data.code == 0) {
                 // 隐藏编辑工具栏
                 _displayEditToolbar(false);
+                _getGrid().datagrid('reload');
+
             } else {
                 layer.msg(data.msg + ' code=' + data.code);
             }
         }
     });
+}
+
+// 开启行拖放操作
+function enableDragDrop() {
+    if (editableMap[_curTblId] == undefined || editableMap[_curTblId] === false) {
+        return false;
+    }
+    if (_curTblId == undefined || _curTblId == null || _curTblId == '') {
+        return false;
+    }
+    dragDropableMap[_curTblId] = true;
 }
 
 // 取得当前页的grid
@@ -984,8 +998,8 @@ function saveAll() {
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0) {
-                editIndexMap[_curTblId] = null;
-                editableMap[_curTblId] = false;
+                // editIndexMap[_curTblId] = null;
+                // editableMap[_curTblId] = false;
                 // 保存成功后关闭表格的编辑状态，如果是新建表还要刷新tab
                 if (_curTblId < 100) {
                     loadLy = layer.load(1);
@@ -1049,17 +1063,20 @@ function nameDspformatter(value, row, index) {
 
 // 导出SQL文
 function exportSql(opType) {
-    if (_curTblId == 0 || _curTblId == undefined || _curTblId == '') {
-        return;
+    if (opType == 1) {
+        if (_curTblId == 0 || _curTblId == undefined || _curTblId == '') {
+            return;
+        }
+        if (_curTblId < 100) {
+            layer.msg("创建表时不可直接导出表定义，必须先保存．");
+            return;
+        }
     }
-    if (_curTblId < 100) {
-        layer.msg("创建表时不可直接导出表定义，必须先保存．");
-        return;
-    }
-    var prefixId = '#' + _curTblId;
+
     var url = Ap_servletContext + '/ajax/exportSql';
     if (opType == 1) {
         // 导出当前打开的表
+        var prefixId = '#' + _curTblId;
         var tName = $.trim($(prefixId + ' input._tbl_name').textbox('getValue'));
         url += "?tblName=" + tName;
     }
@@ -1182,7 +1199,7 @@ function submitTblIdx() {
                 // 保存成功
                 layer.msg("保存成功。");
                 $('#tblidx_dlg').dialog('close');
-                _getGrid().datagrid('reload')
+                _getGrid().datagrid('reload');
             } else {
                 layer.msg(data.msg + ' code=' + data.code);
             }
@@ -1285,7 +1302,7 @@ function submitTblIdx() {
                 // 保存成功
                 layer.msg("保存成功。");
                 $('#tblidx_dlg').dialog('close');
-                _getGrid().datagrid('reload')
+                _getGrid().datagrid('reload');
             } else {
                 layer.msg(data.msg + ' code=' + data.code);
             }
@@ -1321,16 +1338,21 @@ function useTemplate() {
 
 // 使用预定义模板1
 function useTemplate1() {
-    _getGrid().datagrid('appendRow', { columnName: "valid", type: "tinyint", columnLens: "4", default: "1", columnNameCN: "数据是否有效", desc: "0:无效 1:有效" });
-    _getGrid().datagrid('appendRow', { columnName: "created_by", type: "bigint", columnLens: "20", columnNameCN: "创建者ID" });
-    _getGrid().datagrid('appendRow', { columnName: "created_date", type: "timestamp", columnNameCN: "创建时间" });
-    _getGrid().datagrid('appendRow', { columnName: "updated_by", type: "bigint", columnLens: "20", columnNameCN: "更新者ID" });
-    _getGrid().datagrid('appendRow', { columnName: "updated_date", type: "timestamp", columnNameCN: "创建时间" });
+    _getGrid().datagrid('appendRow', { columnName: "valid", type: "tinyint", columnLens: "2", notnull: "Y", default: "1", columnNameCN: "数据是否有效", desc: "0:无效 1:有效" });
+    _getGrid().datagrid('appendRow', { columnName: "created_by", type: "bigint", columnLens: "20", notnull: "Y", columnNameCN: "创建者ID" });
+    _getGrid().datagrid('appendRow', { columnName: "updated_by", type: "bigint", columnLens: "20", notnull: "Y", columnNameCN: "更新者ID" });
+    _getGrid().datagrid('appendRow', { columnName: "created_date", type: "datetime ", notnull: "Y", columnNameCN: "创建时间" });
+    _getGrid().datagrid('appendRow', { columnName: "updated_date", type: "datetime ", notnull: "Y", columnNameCN: "创建时间" });
     $('#template_dlg').dialog('close');
 }
 // 使用预定义模板2
 function useTemplate2() {
-    _getGrid().datagrid('appendRow', { columnName: "created_by", type: "bigint", columnLens: "20", columnNameCN: "创建者ID" });
-    _getGrid().datagrid('appendRow', { columnName: "created_date", type: "timestamp", columnNameCN: "创建时间" });
+    _getGrid().datagrid('appendRow', { columnName: "created_by", type: "bigint", columnLens: "20", notnull: "Y", columnNameCN: "创建者ID" });
+    _getGrid().datagrid('appendRow', { columnName: "created_date", type: "datetime ", notnull: "Y", columnNameCN: "创建时间" });
     $('#template_dlg').dialog('close');
+}
+
+// 查看ER图
+function lookDiagram() {
+
 }

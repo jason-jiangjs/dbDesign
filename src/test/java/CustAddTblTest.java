@@ -35,7 +35,7 @@ public class CustAddTblTest {
     @Test
     public void testAddCustomer1() {
         try {
-            File file = new File("D:\\SVN-DOC\\12.Sneakerhead-app\\blf_snapp.sql");
+            File file = new File("e:\\m2.sql");
             // 读取文件，并且以utf-8的形式写出去
             BufferedReader bufread;
             String read;
