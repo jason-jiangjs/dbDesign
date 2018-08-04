@@ -8,7 +8,7 @@ index.html?offline=1
 index.html?offline=1&https=0
 offline.html
 open.html
-js/app.min.js
+js/app.cst.js
 js/shapes.min.js
 js/stencils.min.js
 js/extensions.min.js
