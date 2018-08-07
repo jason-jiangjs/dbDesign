@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <th:block th:replace="/layout/head"></th:block>
+    <script th:src="@{/js/db_mng.js}"></script>
+</head>
+<body>
+<div style="padding:4px;width:100px">
+    <div class="easyui-panel">
+        <a href="#" class="easyui-menubutton" data-options="menu:'#mm1',iconCls:'icon-more',width:'100%'">菜单</a>
+    </div>
+    <div id="mm1" style="width:150px;">
+        <div data-options="iconCls:'fa fa-home'" th:href="@{/home}">返回</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-sign-out'" th:href="@{/logout}">退出</div>
+    </div>
+</div>
+<div style="margin:0 auto;width:1000px">
+    <h2>数据库一览</h2>
+    <p th:if="${hasAuth==1}">可以在此画面管理各项目的数据库设计，包括创建、编辑、删除。</p>
+    <p th:if="${hasAuth==0}">对不起，你没有权限操作该业务。</p>
+    <div style="height:600px" th:if="${hasAuth==1}">
+        <table id="db_grid"></table>
+    </div>
+</div>
+<div id="db_grid_toolbar" style="padding: 6px" th:if="${hasAuth==1}">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" onclick="addDb()">添加</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-remove" onclick="deleteDb()" style="margin-left:15px">删除</a>
+</div>
+<div id="db_dlg" class="easyui-dialog" title="Basic Dialog" data-options="iconCls:'icon-man',modal:true,closed:true,border:'thin',width:650,height:370">
+    <div style="padding:10px 20px 0px 20px">
+        <form id="ff" method="post">
+            <input type="hidden" id="dbId">
+            <table cellpadding="5" style="margin-bottom:10px">
+                <tr>
+                    <td style="width:80px">名称:</td>
+                    <td style="width:500px" colspan="2"><input class="easyui-textbox" id="dbName" data-options="required:true" style="width:300px"></td>
+                </tr>
+                <tr>
+                    <td style="width:35px">说明:</td>
+                    <td colspan="2"><input class="easyui-textbox" id="dbNameCN" style="width:480px"></td>
+                </tr>
+                <tr>
+                    <td>类型及版本:</td>
+                    <td style="width:205px"><input class="easyui-combobox" id="typeStr" data-options="limitToList:true,panelHeight:120,editable:false,required:true" style="width:173px"></td>
+                    <td><input class="easyui-textbox" id="ver" data-options="required:true" style="width:80px"></td>
+                </tr>
+                <tr>
+                    <td>备注:</td>
+                    <td colspan="2"><input class="easyui-textbox" id="desc" multiline="true" style="width:480px;height:120px" /></td>
+                </tr>
+            </table>
+        </form>
+        <div style="text-align:center;margin-top:15px">
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitForm()">保存</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelForm()">取消</a>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="adminId" th:value="${adminId}">
+</body>
+</html>

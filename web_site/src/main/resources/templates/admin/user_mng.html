@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <th:block th:replace="/layout/head"></th:block>
+    <script th:src="@{/js/user_mng.js}"></script>
+</head>
+<body>
+<div style="padding:4px;width:100px">
+    <div class="easyui-panel">
+        <a href="#" class="easyui-menubutton" data-options="menu:'#mm1',iconCls:'icon-more',width:'100%'">菜单</a>
+    </div>
+    <div id="mm1" style="width:150px;">
+        <div data-options="iconCls:'fa fa-home'" th:href="@{/home}">返回</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-sign-out'" th:href="@{/logout}">退出</div>
+    </div>
+</div>
+<div style="margin:0 auto;width:1000px">
+    <h2>用户一览</h2>
+    <p th:if="${hasAuth==1}">可以在此画面管理用户，包括创建、编辑、删除和设置访问权限。</p>
+    <p th:if="${hasAuth==0}">对不起，你没有权限操作该业务。</p>
+    <div style="height:600px" th:if="${hasAuth==1}">
+        <table id="user_grid"></table>
+    </div>
+</div>
+<div id="user_grid_toolbar" style="padding: 6px" th:if="${hasAuth==1}">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" onclick="addUser()">添加</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-remove" onclick="deleteUser()" style="margin-left:15px">删除</a>
+</div>
+<div id="role_grid_toolbar" style="padding: 4px" th:if="${hasAuth==1}">
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" onclick="addUserRole()" plain="true">添加</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-remove" onclick="deleteUserRole()" plain="true" style="margin-left:15px">删除</a>
+</div>
+<div id="user_dlg" class="easyui-dialog" title="Basic Dialog" data-options="iconCls:'icon-man',modal:true,closed:true,border:'thin',width:650">
+    <div style="padding:10px 20px 0px 20px">
+        <form id="ff" method="post">
+            <input type="hidden" id="userId">
+            <table cellpadding="5" style="margin-bottom:10px">
+                <tr>
+                    <td style="width:60px">登录帐号:</td>
+                    <td style="width:200px"><input class="easyui-textbox" type="text" id="accNo" data-options="required:true"></td>
+                    <td style="width:35px">姓名:</td>
+                    <td style="width:200px"><input class="easyui-textbox" type="text" id="userName" data-options="required:true"></td>
+                </tr>
+                <tr>
+                    <td>角色:</td>
+                    <td>
+                        <select class="easyui-combobox" id="role" data-options="limitToList:true,panelHeight:120,editable:false" style="width:173px"><option value="0">无</option><option value="1">只读权限</option><option value="2">读写权限</option>
+                            <option value="8">项目管理员</option><option value="9">系统管理员</option></select>
+                    </td>
+                    <td>状态:</td>
+                    <td>
+                        <select class="easyui-combobox" id="status" data-options="limitToList:true,panelHeight:100,editable:false" style="width:173px"><option value="0">创建</option><option value="1">正常</option><option value="2">锁定</option><option value="4">删除</option></select>
+                    </td>
+                </tr>
+            </table>
+        </form>
+        <div style="width:600px;height:320px;margin:0 auto">
+            <table id="role_grid" class="easyui-datagrid" title="数据库及访问权限一览"
+                data-options="singleSelect:true,striped:true,fit:true,rownumbers:true,method:'get',idField:'dbId',toolbar:'#role_grid_toolbar'"></table>
+        </div>
+    </div>
+    <div style="text-align:center;margin-top:15px;margin-bottom:15px">
+        <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitForm()">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelForm()">取消</a>
+    </div>
+</div>
+<input type="hidden" id="adminId" th:value="${adminId}">
+<input type="hidden" id="optType">
+</body>
+</html>

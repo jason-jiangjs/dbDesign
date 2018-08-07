@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <th:block th:replace="/layout/head"></th:block>
+    <link th:href="@{/js/lib/umeditor/themes/default/css/umeditor.css}" rel="stylesheet">
+    <script th:src="@{/js/umeditor.config.js}"></script>
+    <script th:src="@{/js/lib/umeditor/umeditor.min.js}"></script>
+    <script th:src="@{/js/lib/umeditor/lang/zh-cn/zh-cn.js}"></script>
+    <script th:src="@{/js/lib/datagrid-dnd.js}"></script>
+    <script th:src="@{/js/table_list.js}"></script>
+</head>
+
+<body class="easyui-layout" style="width:100%;height:100%;">
+    <div id="cc" data-options="region:'west',split:true,collapsible:false,tools:'#db-tools'" style="width:220px">
+        <div class="easyui-layout" data-options="fit:true,border:false"><!--/* 这里必须再嵌套一层layout，否则tblList的滚动条不正常 */-->
+            <div data-options="region:'north',border:false" style="height:27px;">
+                <input id="tbl_searchbox" type="text" style="width:100%">
+            </div>
+            <div id="dd" data-options="region:'center',border:false">
+                <table id="tblList"></table>
+            </div>
+        </div>
+    </div>
+    <div data-options="region:'center',border:false">
+        <div id="tbl-tabs" class="easyui-tabs" data-options="tools:'#tab-tools',fit:true,border:false">
+            <div title="主页" style="padding:10px" data-options="id:0,closable: true">
+                <p id="main_page" style="font-size:14px">该内容暂为空。
+                以后考虑显示该数据库的业务介绍，表定义变更历史，登录用户的代办事项(比如未完成的编辑等)，维护通知等</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-tools"><!--/* 表定义区域的工具栏和弹出菜单 */-->
+        <a href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,iconCls:'icon-more'" onclick="javascript:popmenu(event,'tab-tools_menu')"></a>
+    </div>
+    <div id="tab-tools_menu" class="easyui-menu">
+        <th:block dbd:authorize="${dbId}">
+            <div data-options="iconCls:'fa fa-lock'" onclick="javascript:chkForEditing()">开始编辑</div>
+            <div class="menu-sep"></div>
+            <div data-options="iconCls:'fa fa-unlock'" onclick="javascript:endEditing()" title="退出编辑状态，不保存当前修改!!!">取消编辑</div>
+            <div class="menu-sep"></div>
+            <div data-options="iconCls:'fa fa-exchange'" onclick="javascript:enableDragDrop()">开启行拖放操作</div>
+            <div class="menu-sep"></div>
+            <div data-options="iconCls:'fa fa-edit'" onclick="javascript:editIndex()">编辑索引</div>
+            <div class="menu-sep"></div>
+            <div data-options="iconCls:'fa fa-edit'" onclick="javascript:useTemplate()">使用预定义模板</div>
+            <div class="menu-sep"></div>
+        </th:block>
+        <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
+        <div class="menu-sep"></div>
+        <div data-options="href:'to_drawio',iconCls:'fa fa-paperclip'">查看ER图</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql(1)">导出当前SQL文</div>
+        <div class="menu-sep"></div>
+        <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
+    </div>
+
+    <div id="db-tools"><!--/* 表一览区域的工具栏和弹出菜单 */-->
+        <a href="javascript:void(0)" class="fa fa-gear" style="width:20px;height:20px" onclick="javascript:popmenu(event,'db-tools_menu')"></a>
+    </div>
+    <div id="db-tools_menu" class="easyui-menu" style="width:160px;">
+        <div onclick="javascript:convertType(1)" th:if="${dbType==1}">切换到表一览</div>
+        <div onclick="javascript:convertType(2)" th:if="${dbType==1}">切换到视图一览</div>
+        <div class="menu-sep" th:if="${dbType==1}"></div>
+        <div data-options="name:'setdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(1)">设置缺省工作环境</div>
+        <div data-options="name:'unsetdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(0)">取消缺省工作环境</div>
+        <div class="menu-sep"></div>
+        <th:block dbd:authorize="${dbId}">
+            <div data-options="iconCls:'fa fa-plus'" onclick="javascript:createNewTable()">创建项目</div>
+            <div data-options="iconCls:'fa fa-remove'" onclick="javascript:delCurrTable()">删除当前项目</div>
+            <div class="menu-sep"></div>
+        </th:block>
+        <div data-options="iconCls:'fa fa-refresh'" onclick="javascript:doSearch('',1)">刷新</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql(0)">导出所有SQL文</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-home'" th:href="@{/home?type=1}">返回选择数据库</div>
+        <div class="menu-sep"></div>
+    </div>
+
+    <div id="tb_info" style="display:none">
+        <table style="margin:5px 0px 5px 10px">
+            <tr>
+                <td style="width:80px">表名</td>
+                <td><input class="_tbl_name" style="width:300px"></td>
+                <td rowspan="2" style="width:60px;text-align:right;padding-right:10px;padding-top:6px" valign="top">说明</td>
+                <td rowspan="2"><input class="_tbl_desc" style="width:500px;height:54px"></td>
+            </tr>
+            <tr>
+                <td>表名(中文)</td><td><input class="_tbl_name_cn" style="width:300px"></td>
+            </tr>
+        </table>
+        <input type="hidden" class="_tbl_name_p"><input type="hidden" class="_tbl_desc_p"><input type="hidden" class="_tbl_name_cn_p">
+        <input type="hidden" class="_tbl_last_updtime">
+        <div class="_tbl_edit_toolbar" style="padding:7px 0px 7px 12px;border-top:1px solid #e0e0e0;display:none" dbd:authorize="${dbId}">
+            <a href="#" class="_linkbtn_add" onclick="javascript:addColumn()" style="width:90px">添加栏位</a>
+            <a href="#" class="_linkbtn_edit" onclick="javascript:insertColumn()" style="width:90px;margin-left:10px">插入栏位</a>
+            <a href="#" class="_linkbtn_remove" onclick="javascript:delColumn()" style="width:90px;margin-left:10px">删除栏位</a>
+            <a href="#" class="_linkbtn_save" onclick="javascript:saveAll()" style="width:80px;margin-left:10px">保存</a>
+        </div>
+    </div>
+
+    <div id="tblidx_dlg" class="easyui-dialog" title="编辑索引" data-options="iconCls:'fa fa-list',modal:true,closed:true,border:'thin'">
+        <div class="_idx_edit_toolbar" style="padding:10px 0px 0px 15px;border-top:1px solid #e0e0e0" dbd:authorize="${dbId}">
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add',width:90" onclick="javascript:addTblIndex()">添加索引</a>
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove',width:90" onclick="javascript:delTblIndex()" style="margin-left:20px">删除索引</a>
+        </div>
+        <div style="width:1215px;height:320px;margin:0 auto;margin-top:12px">
+            <table id="tblidx_grid" class="easyui-datagrid"
+                   data-options="singleSelect:true,striped:true,fit:true,rownumbers:true,method:'get',idField:'idxId',toolbar:'#_idx_edit_toolbar'"></table>
+        </div>
+
+        <div style="text-align:center;margin-top:15px;margin-bottom:15px">
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitTblIdx()">保存</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelTblIdx()">取消</a>
+        </div>
+    </div>
+
+    <div id="tblatt_dlg" class="easyui-dialog" title="编辑索引" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'">
+        <input id="fb" type="file" style="width:300px;display:none">
+        <div class="easyui-panel" data-options="border:false" style="width:520px;height:120px;padding:10px;border-bottom:1px solid #1E9FFF">
+
+        </div>
+
+        <div style="text-align:center;margin-top:15px;margin-bottom:15px">
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitTblAtt()">保存</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelTblAtt()">取消</a>
+        </div>
+    </div>
+
+    <div id="template_dlg" class="easyui-dialog" title="使用预先定义的模板" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'" style="padding:20px">
+
+        <div style="width:500px;height:40px;padding:2px;border:1px solid #1E9FFF" onclick="useTemplate1()">
+            模板1：`valid`, `created_by`, `created_date`, `updated_by`, `updated_date`
+        </div>
+
+        <div style="width:500px;height:40px;padding:2px;border:1px solid #1E9FFF;margin-top:20px" onclick="useTemplate2()">
+            模板2：`created_by`, `created_date`
+        </div>
+
+    </div>
+
+    <input type="hidden" id="favDb" th:value="${#authentication.principal.favorite}" />
+    <input type="hidden" id="readAttr" th:value="${userReadonly}" />
+    <input type="hidden" id="dbn" th:value="${dbName}" />
+    <input type="hidden" id="dbId" th:value="${dbId}" />
+    <input type="hidden" id="dbType" th:value="${dbType}" />
+</body>
+</html>

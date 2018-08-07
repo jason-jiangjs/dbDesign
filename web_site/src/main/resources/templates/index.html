@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <th:block th:replace="/layout/head"></th:block>
+</head>
+
+<body>
+<section style="position: absolute; left: 50%; top: 25%;width:500px;height:300px;margin-left:-250px;">
+    <h2>帐号登录</h2>
+    <div style="margin:20px 0;"></div>
+    <p style="font-size: small" th:if="${errMsg}" th:text="${errMsg}"></p>
+    <div class="easyui-panel" style="width:100%;max-width:400px;padding:30px 60px;">
+        <form method="post" th:action="@{/doLogin}">
+            <div style="margin-bottom:20px">
+                <input class="easyui-textbox" name="username" style="width:100%" data-options="label:'用户名:',required:true">
+            </div>
+            <div style="margin-bottom:20px">
+                <input class="easyui-passwordbox" name="password" style="width:100%" data-options="label:'密码:',required:true">
+            </div>
+            <div style="text-align:center;margin-top:30px">
+                <button type="submit" class="easyui-linkbutton" style="width:80px">登录</button>
+            </div>
+        </form>
+    </div>
+    <div style="margin-top:20px;font-size:12px;color: #0E2D5F">第三方登录<span style="font-size:10.8px;transform-origin: 0;transform: scale(0.90);margin-left:10px">(第三方登录的用户必须设置访问权限后才能正式使用．)</span></div>
+    <div style="width:400px;margin-top:5px"><img th:src="@{/img/gitlab.gif}" style="width:90px;cursor:pointer" onclick="gitlabThdLogin()"></div>
+</section>
+<script>
+    function gitlabThdLogin() {
+        window.location.href = Ap_servletContext + '/trdlogin/gitlab';
+    }
+</script>
+</body>
+</html>
