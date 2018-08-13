@@ -8,9 +8,10 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <packaging>jar</packaging>
+    <groupId>com.vog</groupId>
     <artifactId>drawio</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>war</packaging>
     <description>drawio</description>
 
     <properties>
@@ -21,10 +22,6 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <!--<version>2.7</version>-->
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
