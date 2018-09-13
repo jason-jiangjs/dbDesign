@@ -102,7 +102,10 @@ Draw.loadPlugin(function(ui)
 
 	function isDeskLink(link)
 	{
-		return config != null && link.substring(0, deskDomain.length) == deskDomain;
+		var dl = deskDomain.length;
+		
+		return config != null && link.substring(0, dl) == deskDomain &&
+			link.substring(dl, dl + 18) == '/helpdesk/tickets/';
 	};
 	
 	function getIdForDeskLink(link)
@@ -194,6 +197,7 @@ Draw.loadPlugin(function(ui)
 	{
 		if (config != null && (!spin || ui.spinner.spin(document.body, mxResources.get('loading') + '...')))
 		{
+			var validate = false;
 			var pending = 0;
 			
 			graph.view.states.visit(function(id, state)
@@ -215,15 +219,23 @@ Draw.loadPlugin(function(ui)
 							if (updateStyle(state.cell, ticket) |
 								updateData(state.cell, ticket))
 							{
-								state.style = null;
 								graph.view.invalidate(state.cell, true, false);
-								graph.view.validate(state.cell);
+								state.style = null;
+								validate = true;
 							}
 						}
 						
-						if (spin && pending == 0)
+						if (pending == 0)
 						{
-							ui.spinner.stop();
+							if (spin)
+							{
+								ui.spinner.stop();
+							}
+							
+							if (validate)
+							{
+								graph.view.validate();
+							}
 						}
 					})
 				}

@@ -3,8 +3,8 @@ package org.vog.dbd.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import org.vog.base.model.mongo.BaseMongoMap;
-import org.vog.base.service.BaseService;
+import org.vog.common.base.model.mongo.BaseMongoMap;
+import org.vog.common.base.service.BaseService;
 import org.vog.common.util.DateTimeUtil;
 import org.vog.dbd.dao.DbDao;
 

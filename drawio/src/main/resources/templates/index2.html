@@ -272,8 +272,10 @@
 			}
 			else
 			{
-				document.write('<script src="' + src + '"' + ((id != null) ? ' id="' + id +'" ' : '') +
-					((dataAppKey != null) ? ' data-app-key="' + dataAppKey +'" ' : '') + '></scr' + 'ipt>');
+
+                    document.write('<script src="' + src + '"' + ((id != null) ? ' id="' + id + '" ' : '') +
+                        ((dataAppKey != null) ? ' data-app-key="' + dataAppKey + '" ' : '') + '></scr' + 'ipt>');
+
 			}
 		};
 
@@ -336,7 +338,7 @@
 		}
 		else
 		{
-			mxscript('js/app.cst.js');
+			mxscript('js/app.min.js');
 		}
 
 		// Electron

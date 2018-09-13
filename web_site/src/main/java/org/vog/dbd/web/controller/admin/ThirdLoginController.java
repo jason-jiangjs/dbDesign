@@ -13,7 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
-import org.vog.base.controller.BaseController;
+import org.vog.common.base.controller.BaseController;
 import org.vog.common.Constants;
 import org.vog.dbd.web.util.HttpResponseErrorHandler;
 import org.vog.dbd.web.util.SystemProperty;

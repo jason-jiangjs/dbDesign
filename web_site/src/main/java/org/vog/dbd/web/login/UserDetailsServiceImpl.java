@@ -10,7 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
-import org.vog.base.model.mongo.BaseMongoMap;
+import org.vog.common.base.model.mongo.BaseMongoMap;
 import org.vog.dbd.dao.UserDao;
 
 import java.util.ArrayList;

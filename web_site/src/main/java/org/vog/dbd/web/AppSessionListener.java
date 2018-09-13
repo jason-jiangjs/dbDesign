@@ -1,7 +1,7 @@
 package org.vog.dbd.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.vog.base.service.BaseService;
+import org.vog.common.base.service.BaseService;
 import org.vog.common.Constants;
 import org.vog.dbd.service.TableService;
 import org.vog.dbd.service.UserService;

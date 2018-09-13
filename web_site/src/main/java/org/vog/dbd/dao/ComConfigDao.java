@@ -2,7 +2,7 @@ package org.vog.dbd.dao;
 
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
-import org.vog.base.dao.mongo.BaseMongoDao;
+import org.vog.common.base.dao.mongo.BaseMongoDao;
 
 
 import java.util.List;

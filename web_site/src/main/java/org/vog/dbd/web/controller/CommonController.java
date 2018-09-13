@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-import org.vog.base.controller.BaseController;
+import org.vog.common.base.controller.BaseController;
 import org.vog.dbd.web.util.SystemProperty;
 import org.vog.common.util.StringUtil;
 

@@ -1,7 +1,7 @@
 package org.vog.dbd.dao;
 
 import org.springframework.stereotype.Repository;
-import org.vog.base.dao.mongo.BaseMongoDao;
+import org.vog.common.base.dao.mongo.BaseMongoDao;
 
 /**
  * 库定义

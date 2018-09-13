@@ -3,7 +3,7 @@ package org.vog.dbd.dao;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import org.vog.base.dao.mongo.BaseMongoDao;
+import org.vog.common.base.dao.mongo.BaseMongoDao;
 import org.springframework.stereotype.Repository;
 
 /**
