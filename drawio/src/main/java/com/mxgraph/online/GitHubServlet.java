@@ -14,7 +14,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
  * Servlet implementation ProxyServlet
  */
 @SuppressWarnings("serial")
-@WebServlet(name = "GitHubServlet", urlPatterns = "/github")
 public class GitHubServlet extends HttpServlet
 {
 

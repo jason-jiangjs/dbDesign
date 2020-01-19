@@ -19,8 +19,8 @@ public class Graphic
 		@SerializedName("Mindmap") MINDMAP,
 		@SerializedName("PopupNote") POPUPNOTE,
 		@SerializedName("Unwknown") UNKNOWN;
+		
 
-		@Override
 		public String toString()
 		{
 			return this.name();
@@ -29,13 +29,17 @@ public class Graphic
 
 	public static abstract class GliffyAbstractShape
 	{
-		public int strokeWidth;
+		private float strokeWidth;
 
 		public String strokeColor;
 
 		public String fillColor;
 
 		public String dashStyle;
+		
+		public int getStrokeWidth() {
+			return Math.round(strokeWidth);
+		}
 	}
 
 	public static class GliffyLine extends GliffyAbstractShape
@@ -61,11 +65,23 @@ public class Graphic
 
 		public int state;
 
-		public int shadowX;
+		public float shadowX;
 
-		public int shadowY;
+		public float shadowY;
 
 		public float opacity;
+
+		/**
+		 * @return true if there is no_fill string found in this element
+		 */
+		public boolean isNoFill()
+		{
+			if (tid != null)
+			{
+				return tid.contains("no_fill");
+			}
+			return false;
+		}
 
 	}
 

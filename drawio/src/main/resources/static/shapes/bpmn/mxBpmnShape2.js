@@ -39,15 +39,39 @@ function mxBpmnShape(bounds, fill, stroke, strokewidth)
 mxUtils.extend(mxBpmnShape, mxShape);
 
 mxBpmnShape.prototype.customProperties = [
-	{name: 'fillColor', dispName: 'Fill Color', type: 'color'},
-	{name: 'rounded', dispName: 'Rounded', type: 'bool'},
-	{name: 'strokeWidth', dispName: 'Stroke Width', type: 'int'},
-	{name: 'floatVal', dispName: 'Float Value', type: 'float'},
-	{name: 'fontFamily', dispName: 'Font Family', type: 'string'},
-	{name: 'verticalAlign', dispName: 'Vertical Align', type: 'enum', 
-		enumList: [{val: 'middle', dispName: 'Middle'}, {val: 'bottom', dispName: 'Bottom'}, {val: 'top', dispName: 'Top'}]
+	{name: 'symbol', dispName: 'Event', type: 'enum', defVal:'general', 
+		enumList: [{val: 'general', dispName: 'General'}, 
+				   {val: 'message', dispName: 'Message'}, 
+				   {val: 'timer', dispName: 'Timer'}, 
+				   {val: 'escalation', dispName: 'Escalation'}, 
+				   {val: 'conditional', dispName: 'Conditional'}, 
+				   {val: 'link', dispName: 'Link'}, 
+				   {val: 'error', dispName: 'Error'}, 
+				   {val: 'cancel', dispName: 'Cancel'}, 
+				   {val: 'compensation', dispName: 'Compensation'}, 
+				   {val: 'signal', dispName: 'Signal'}, 
+				   {val: 'multiple', dispName: 'Multiple'}, 
+				   {val: 'parallelMultiple', dispName: 'Parallel Multiple'}, 
+				   {val: 'terminate', dispName: 'Terminate'}, 
+				   {val: 'exclusiveGw', dispName: 'Exclusive Gw'}, 
+				   {val: 'parallelGw', dispName: 'Parallel Gw'}, 
+				   {val: 'complexGw', dispName: 'Complex Gw'}]
 	},
-];
+	{name: 'outline', dispName: 'Event Type', type: 'enum', defVal:'standard', 
+		enumList: [{val: 'standard', dispName: 'Standard'}, 
+				   {val: 'eventInt', dispName: 'Interrupting'}, 
+				   {val: 'eventNonint', dispName: 'Non-Interrupting'}, 
+				   {val: 'catching', dispName: 'Catching'}, 
+				   {val: 'boundInt', dispName: 'Bound Interrupting'}, 
+				   {val: 'boundNonint', dispName: 'Bound Non-Interrupting'}, 
+				   {val: 'throwing', dispName: 'Throwing'}, 
+				   {val: 'end', dispName: 'End'}, 
+				   {val: 'none', dispName: 'None'}]
+	},
+	{name: 'background', dispName: 'Background', type: 'enum', defVal:'none',
+		enumList: [{val: 'gateway', dispName: 'Gateway'}, 
+				   {val: 'none', dispName: 'None'}]
+}];
 
 mxBpmnShape.prototype.eventTypeEnum = { 
 		START_STANDARD : 'standard', 
@@ -270,14 +294,8 @@ mxBpmnShape.prototype.redrawPath = function(c, x, y, w, h, layer)
 					c.translate(w * 0.12, 0);
 					w = w * 0.76;
 				}
-				else if (s === mxBpmnShape.prototype.eventEnum.GW_PARALLEL)
-				{
-				}
-				else if (s === mxBpmnShape.prototype.eventEnum.GW_COMPLEX)
-				{
-				}
 				
-				isInverse = false;
+				var isInverse = false;
 				
 				if (s === 'star')
 				{

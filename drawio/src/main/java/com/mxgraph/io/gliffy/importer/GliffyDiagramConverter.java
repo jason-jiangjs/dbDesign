@@ -17,6 +17,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -74,6 +76,12 @@ public class GliffyDiagramConverter
 	private Map<String, GliffyLayer> layers;
 
 	private Pattern rotationPattern = Pattern.compile("rotation=(\\-?\\w+)");
+	
+	private static Pattern lightboxPageIdGliffyMigration =  Pattern.compile("pageId=(.*?)(?=&)");
+	
+	private static Pattern lightboxNameGliffyMigration =  Pattern.compile("name=(.*?)(?=&)");
+	
+	private StringBuilder report;
 
 	/**
 	 * Constructs a new converter and starts a conversion.
@@ -90,7 +98,7 @@ public class GliffyDiagramConverter
 		drawioDiagram.setExtendParents(false);
 		drawioDiagram.setExtendParentsOnAdd(false);
 		drawioDiagram.setConstrainChildren(false);
-
+		this.report = new StringBuilder();
 		start();
 	}
 
@@ -112,10 +120,13 @@ public class GliffyDiagramConverter
 		try
 		{
 			importLayers();
-
 			for (GliffyObject obj : gliffyDiagram.stage.getObjects())
 			{
-				importObject(obj, obj.parent);
+				try {
+					importObject(obj, obj.parent);
+				} catch (Throwable thr) {
+					report.append("-- Warning, Object " + obj.id + " cannot be transformed. Please contact support for more details." + System.lineSeparator());
+				}
 			}
 		}
 		finally
@@ -194,8 +205,9 @@ public class GliffyDiagramConverter
 			mxCell startTerminal = getTerminalCell(obj, true);
 			mxCell endTerminal = getTerminalCell(obj, false);
 
-			drawioDiagram.addCell(obj.getMxObject(), parent, null, startTerminal, endTerminal);
-
+			obj.getMxObject().setTerminal(startTerminal, true);
+			obj.getMxObject().setTerminal(endTerminal, false);
+			
 			setWaypoints(obj, startTerminal, endTerminal);
 		}
 	}
@@ -204,7 +216,6 @@ public class GliffyDiagramConverter
 	{
 		Comparator<GliffyObject> c = new Comparator<GliffyObject>()
 		{
-			@Override
 			public int compare(GliffyObject o1, GliffyObject o2)
 			{
 				Float o1o;
@@ -245,7 +256,6 @@ public class GliffyDiagramConverter
 	{
 		Comparator<GliffyLayer> c = new Comparator<GliffyLayer>()
 		{
-			@Override
 			public int compare(GliffyLayer o1, GliffyLayer o2)
 			{
 				return o1.order - o2.order;
@@ -289,9 +299,9 @@ public class GliffyDiagramConverter
 	/**
 	 * Sets the waypoints
 	 * 
-//	 * @param object Gliffy line
-//	 * @param startTerminal starting point
-//	 * @param endTerminal ending point
+	 * @param object Gliffy line
+	 * @param startTerminal starting point
+	 * @param endTerminal ending point
 	 */
 	private String getStyle(mxCell cell, String key, String defaultValue)
 	{
@@ -348,7 +358,7 @@ public class GliffyDiagramConverter
 				temp = mxUtils.getRotatedPoint(temp, Math.cos(rad), Math.sin(rad), new mxPoint(0.5, 0.5));
 			}
 
-			if (!orthogonal || (temp.getX() == 0.5 && temp.getY() == 0.5))
+			if (!orthogonal || (temp.getX() == 0.5 && temp.getY() == 0.5) || GliffyObject.FORCE_CONSTRAINTS_SHAPES.contains(object.uid))
 			{
 				mxCell cell = object.getMxObject();
 				cell.setStyle(cell.getStyle() + ((source) ? "exitX=" : "entryX=") + temp.getX() + ";" + ((source) ? "exitY=" : "entryY=")
@@ -394,7 +404,7 @@ public class GliffyDiagramConverter
 				double rads = Math.toRadians(object.rotation);
 				double cos = Math.cos(rads);
 				double sin = Math.sin(rads);
-				waypoint = Utils.getRotatedPoint(waypoint, cos, sin, pivot);
+				waypoint = mxUtils.getRotatedPoint(waypoint, cos, sin, pivot);
 			}
 
 			mxPoints.add(waypoint);
@@ -606,14 +616,13 @@ public class GliffyDiagramConverter
 		String link = null;
 
 		Graphic graphic = gliffyObject.getGraphic();
-		String mxShapeName = StencilTranslator.translate(gliffyObject.uid,
+		String translatedStyle = StencilTranslator.translate(gliffyObject.uid,
 				graphic != null && graphic.getShape() != null ? graphic.getShape().tid : null);
 
 		if (gliffyObject.isGroup())
 		{
-			if (graphic == null || mxShapeName == null) {
+			if (graphic == null || translatedStyle == null)
 				style.append("group;");
-			}
 
 			cell.setVertex(true);
 		}
@@ -631,10 +640,12 @@ public class GliffyDiagramConverter
 				GliffyShape shape = graphic.Shape;
 
 				cell.setVertex(true);
+				
+				boolean isChevron = gliffyObject.uid != null && gliffyObject.uid.contains("chevron");
 
-				if (mxShapeName != null)
+				if (translatedStyle != null)
 				{
-					style.append("shape=").append(mxShapeName).append(";");
+					style.append("shape=").append(translatedStyle).append(";");
 				}
 
 				if (style.lastIndexOf("shadow=") == -1)
@@ -644,9 +655,9 @@ public class GliffyDiagramConverter
 
 				if (style.lastIndexOf("strokeWidth") == -1)
 				{
-					style.append("strokeWidth=" + shape.strokeWidth).append(";");
+					style.append("strokeWidth=" + shape.getStrokeWidth()).append(";");
 
-					if (shape.strokeWidth == 0)
+					if (shape.getStrokeWidth() == 0 && !isChevron)
 					{
 						style.append("strokeColor=none;");
 					}
@@ -654,7 +665,15 @@ public class GliffyDiagramConverter
 
 				if (style.lastIndexOf("fillColor") == -1)
 				{
-					style.append("fillColor=" + shape.fillColor).append(";");
+					if (shape.isNoFill() && !isChevron)
+					{
+						style.append("fillColor=none;");
+
+					}
+					else
+					{
+						style.append("fillColor=" + shape.fillColor).append(";");
+					}
 
 					if (shape.fillColor.equals("none"))
 					{
@@ -662,7 +681,7 @@ public class GliffyDiagramConverter
 					}
 
 				}
-				if (style.lastIndexOf("strokeColor") == -1)
+				if (style.lastIndexOf("strokeColor") == -1 && !shape.isNoFill())
 				{
 					String strokeClr = gliffyObject.isUseFillColor4StrokeColor() ? shape.fillColor : shape.strokeColor;
 					style.append("strokeColor=" + strokeClr).append(";");
@@ -686,6 +705,14 @@ public class GliffyDiagramConverter
 					//Gliffy's subroutine maps to drawio process, whose inner boundary, unlike subroutine's, is relative to it's width so here we set it to 10px
 					style.append("size=" + 10 / gliffyObject.width).append(";");
 				}
+				
+				String fragmentText;
+				if((fragmentText = gliffyObject.getUmlSequenceCombinedFragmentText()) != null) 
+				{
+					cell.setValue(fragmentText);
+					gliffyObject.children.remove(0);
+				}
+				setFontSizeBasedOnGlobal(style);
 			}
 			else if (gliffyObject.isLine())
 			{
@@ -693,13 +720,13 @@ public class GliffyDiagramConverter
 
 				cell.setEdge(true);
 				style.append("shape=filledEdge;");
-				style.append("strokeWidth=" + line.strokeWidth).append(";");
+				style.append("strokeWidth=" + line.getStrokeWidth()).append(";");
 				style.append("strokeColor=" + line.strokeColor).append(";");
 				style.append("fillColor=" + line.fillColor).append(";");
 				style.append(ArrowMapping.get(line.startArrow).toString(true)).append(";");
 				style.append(ArrowMapping.get(line.endArrow).toString(false)).append(";");
 				style.append("rounded=" + (line.cornerRadius != null ? "1" : "0")).append(";");
-				style.append(DashStyleMapping.get(line.dashStyle, line.strokeWidth));
+				style.append(DashStyleMapping.get(line.dashStyle, line.getStrokeWidth()));
 				style.append(LineMapping.get(line.interpolationType));
 
 				geometry.setX(0);
@@ -803,14 +830,15 @@ public class GliffyDiagramConverter
 			{
 				GliffySvg svg = graphic.Svg;
 				cell.setVertex(true);
-				style.append("shape=image;aspect=fixed;");
+				style.append("shape=image;imageAspect=0;");
 				Resource res = gliffyDiagram.embeddedResources.get(svg.embeddedResourceId);
-
+				SVGImporterUtils svgUtils = new SVGImporterUtils();
+				res.data = svgUtils.setViewBox(res.data);
 				style.append("image=data:image/svg+xml,").append(res.getBase64EncodedData()).append(";");
 			}
 		}
 		// swimlanes have children without uid so their children are converted here ad hoc
-		else if (gliffyObject.isSwimlane())
+		else if (gliffyObject.isSwimlane() && gliffyObject.children != null && gliffyObject.children.size() > 0)
 		{
 			cell.setVertex(true);
 			style.append(StencilTranslator.translate(gliffyObject.uid, null)).append(";");
@@ -823,7 +851,7 @@ public class GliffyDiagramConverter
 			GliffyObject header = gliffyObject.children.get(0);// first child is the header of the swimlane
 
 			GliffyShape shape = header.graphic.getShape();
-			style.append("strokeWidth=" + shape.strokeWidth).append(";");
+			style.append("strokeWidth=" + shape.getStrokeWidth()).append(";");
 			style.append("shadow=" + (shape.dropShadow ? 1 : 0)).append(";");
 			style.append("fillColor=" + shape.fillColor).append(";");
 			style.append("strokeColor=" + shape.strokeColor).append(";");
@@ -838,7 +866,7 @@ public class GliffyDiagramConverter
 				GliffyShape gs = gLane.graphic.getShape();
 				StringBuilder laneStyle = new StringBuilder();
 				laneStyle.append("swimlane;collapsible=0;swimlaneLine=0;");
-				laneStyle.append("strokeWidth=" + gs.strokeWidth).append(";");
+				laneStyle.append("strokeWidth=" + gs.getStrokeWidth()).append(";");
 				laneStyle.append("shadow=" + (gs.dropShadow ? 1 : 0)).append(";");
 				laneStyle.append("fillColor=" + gs.fillColor).append(";");
 				laneStyle.append("strokeColor=" + gs.strokeColor).append(";");
@@ -881,7 +909,7 @@ public class GliffyDiagramConverter
 				gLane.mxObject = mxLane;
 			}
 		}
-		else if (gliffyObject.isMindmap())
+		else if (gliffyObject.isMindmap() && gliffyObject.children != null && !gliffyObject.children.isEmpty())
 		{
 			GliffyObject rectangle = gliffyObject.children.get(0);
 
@@ -889,7 +917,7 @@ public class GliffyDiagramConverter
 
 			style.append("shape=" + StencilTranslator.translate(gliffyObject.uid, null)).append(";");
 			style.append("shadow=" + (mindmap.dropShadow ? 1 : 0)).append(";");
-			style.append("strokeWidth=" + mindmap.strokeWidth).append(";");
+			style.append("strokeWidth=" + mindmap.getStrokeWidth()).append(";");
 			style.append("fillColor=" + mindmap.fillColor).append(";");
 			style.append("strokeColor=" + mindmap.strokeColor).append(";");
 			style.append(DashStyleMapping.get(mindmap.dashStyle, 1));
@@ -935,6 +963,14 @@ public class GliffyDiagramConverter
 				}
 				else
 				{
+					if (gliffyObject.isGroup())
+					{
+						for (GliffyObject childObject : gliffyObject.children)
+						{
+							rotateGroupedObject(gliffyObject, childObject);
+						}
+
+					}
 					style.append("rotation=" + gliffyObject.rotation + ";");
 				}
 			}
@@ -956,7 +992,17 @@ public class GliffyDiagramConverter
 
 				cell.setValue(textObject.getText());
 				gliffyObject.adjustTextPos(textObject);
-				style.append(textObject == gliffyObject ? txt.getStyle(0, 0) : txt.getStyle(textObject.x, textObject.y));
+				// If gliffyObject is Frame then always stick text on top left corner.
+				if (gliffyObject.containsTextBracket())
+				{
+					fixFrameTextBorder(gliffyObject, style);
+					style.append(txt.getStyle(0, 0).replaceAll("verticalAlign=middle", "verticalAlign=top"));
+				}
+				else
+				{
+					boolean isChevron = gliffyObject.uid != null && gliffyObject.uid.contains("chevron");
+					style.append(textObject == gliffyObject || isChevron ? txt.getStyle(0, 0) : txt.getStyle(textObject.x, textObject.y));
+				}
 			}
 		}
 
@@ -964,6 +1010,11 @@ public class GliffyDiagramConverter
 		{
 			Document doc = mxDomUtils.createDocument();
 			Element uo = doc.createElement("UserObject");
+
+			Pair<Long, String> lightBox = extractLightboxDataFromGliffyUrl(link);
+			if (lightBox != null) {
+				link = "/plugins/drawio/lightbox.action?ceoId=" + lightBox.getKey() + "&diagramName=" + lightBox.getValue() + ".drawio";
+			}
 			uo.setAttribute("link", link);
 			drawioDiagram.getModel().setValue(cell, uo);
 
@@ -980,5 +1031,75 @@ public class GliffyDiagramConverter
 		gliffyObject.mxObject = cell;
 
 		return cell;
+	}
+
+	private void setFontSizeBasedOnGlobal(StringBuilder style)
+	{
+		if (gliffyDiagram.stage.getTextStyles() != null && gliffyDiagram.stage.getTextStyles().getGlobal() != null
+				&& gliffyDiagram.stage.getTextStyles().getGlobal().getSize() != null)
+		{
+			style.append("fontSize=" + gliffyDiagram.stage.getTextStyles().getGlobal().getSize() + ";");
+		}
+	}
+
+	/**
+	 * Rotate objects inside Group
+	 * 
+	 * @param group
+	 * @param childObject
+	 */
+	private void rotateGroupedObject(GliffyObject group, GliffyObject childObject)
+	{
+		mxPoint pivot = new mxPoint(group.width / 2 - childObject.width / 2, group.height / 2 - childObject.height / 2);
+		mxPoint temp = new mxPoint(childObject.x, childObject.y);
+		if (group.rotation != 0)
+		{
+			double rads = Math.toRadians(group.rotation);
+			double cos = Math.cos(rads);
+			double sin = Math.sin(rads);
+			temp = mxUtils.getRotatedPoint(temp, cos, sin, pivot);
+			childObject.x = (float) temp.getX();
+			childObject.y = (float) temp.getY();
+			childObject.rotation += group.rotation;
+		}
+	}
+	
+	/**
+	 * Update borders of Text bracket in Frame objects.
+	 * 
+	 * @param gliffyObject the GliffyObject
+	 * @param style the StringBuilder with our style
+	 */
+	private void fixFrameTextBorder(GliffyObject gliffyObject, StringBuilder style)
+	{
+		String wrongValue = "labelX=32"; // hard-coded 32 from gliffyTranslation.properties needs to be replaced
+		String correctValue = "labelX=" + gliffyObject.getTextObject().width * 1.1f; // 10% more to bracket width, looks nicer on UI
+		int start = style.indexOf(wrongValue);
+		int end = start + wrongValue.length();
+		style.replace(start, end, correctValue);
+	}
+
+	public Pair<Long, String> extractLightboxDataFromGliffyUrl(String link) {
+		Matcher pagem = lightboxPageIdGliffyMigration.matcher(link);
+		Matcher namem = lightboxNameGliffyMigration.matcher(link);
+		if (pagem.find())
+		{
+			 Long oldPageId = Long.parseLong(pagem.group(1));
+			 if (namem.find()) {
+				 String oldDiagramName = namem.group(1);
+				 return new ImmutablePair<Long, String>(oldPageId, oldDiagramName);
+			 }
+		}
+		return null;
+	}
+	
+	public StringBuilder getReport()
+	{
+		return report;
+	}
+
+	public void setReport(StringBuilder report)
+	{
+		this.report = report;
 	}
 }

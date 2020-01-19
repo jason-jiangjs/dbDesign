@@ -7,7 +7,6 @@ import java.net.URLDecoder;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,7 +16,6 @@ import com.mxgraph.util.mxBase64;
 /**
  * Servlet implementation class SaveServlet
  */
-@WebServlet(name = "TestServlet", urlPatterns = {"/save", "/SaveServlet"})
 public class SaveServlet extends HttpServlet
 {
 	/**
@@ -189,7 +187,7 @@ public class SaveServlet extends HttpServlet
 								"attachment; filename=\"" + filename
 										+ "\"; filename*=UTF-8''" + filename);
 					}
-					else if (mime.equals("image/svg+xml"))
+					else if (mime != null && mime.equals("image/svg+xml"))
 					{
 						response.setContentType("image/svg+xml");
 					}
@@ -207,6 +205,21 @@ public class SaveServlet extends HttpServlet
 				{
 					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 				}
+
+				long mem = Runtime.getRuntime().totalMemory()
+						- Runtime.getRuntime().freeMemory();
+
+				log.fine("save: ip=" + request.getRemoteAddr() + " ref=\""
+						+ request.getHeader("Referer") + "\" in="
+						+ request.getContentLength() + " enc="
+						+ ((enc != null) ? enc.length() : "[none]") + " xml="
+						+ ((xml != null) ? xml.length() : "[none]") + " dt="
+						+ request.getContentLength() + " mem=" + mem + " dt="
+						+ (System.currentTimeMillis() - t0));
+			}
+			catch (OutOfMemoryError e)
+			{
+				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 			catch (IllegalArgumentException e)
 			{
@@ -214,16 +227,6 @@ public class SaveServlet extends HttpServlet
 						+ System.getProperty("line.separator")
 						+ "Original stack trace : " + e.getMessage());
 			}
-			long mem = Runtime.getRuntime().totalMemory()
-					- Runtime.getRuntime().freeMemory();
-
-			log.fine("save: ip=" + request.getRemoteAddr() + " ref=\""
-					+ request.getHeader("Referer") + "\" in="
-					+ request.getContentLength() + " enc="
-					+ ((enc != null) ? enc.length() : "[none]") + " xml="
-					+ ((xml != null) ? xml.length() : "[none]") + " dt="
-					+ request.getContentLength() + " mem=" + mem + " dt="
-					+ (System.currentTimeMillis() - t0));
 		}
 		else
 		{

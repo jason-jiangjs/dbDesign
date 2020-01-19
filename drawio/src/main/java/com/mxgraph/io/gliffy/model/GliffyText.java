@@ -36,11 +36,11 @@ public class GliffyText implements PostDeserializer.PostDeserializable
 	
 	private boolean forceTopPaddingShift = false;
 	
-	private static Pattern pattern = Pattern.compile("<p(.*?)<\\/p>");
-	
 	private static Pattern spanPattern = Pattern.compile("<span style=\"(.*?)\">");
 
 	private static Pattern textAlign = Pattern.compile(".*(text-align: ?(left|center|right);).*", Pattern.DOTALL);
+
+	private static Pattern textAlignToDrawIO = Pattern.compile("style=\"text-align:\\s?(left|center|right);\"");
 
 	private static Pattern lineHeight = Pattern.compile(".*(line-height: .*px;).*", Pattern.DOTALL);
 
@@ -51,7 +51,8 @@ public class GliffyText implements PostDeserializer.PostDeserializable
 	public void postDeserialize() 
 	{
 		halign = getHorizontalTextAlignment();
-		html = replaceParagraphWithDiv(html);
+		setDrawIoFormatForTextAlignment();
+		replaceParagraphWithDiv();
 	}
 
 	public String getHtml()
@@ -70,22 +71,20 @@ public class GliffyText implements PostDeserializer.PostDeserializable
 
 		//I hate magic numbers, but -7 seams to fix all text top padding when valign is not middle 
 		int topPaddingShift = 7;
-		
+
 		//vertical label position
 		if (vposition.equals("above"))
 		{
-			sb.append("verticalLabelPosition=top;").append(
-					"verticalAlign=bottom;");
+			sb.append("verticalLabelPosition=top;").append("verticalAlign=bottom;");
 		}
 		else if (vposition.equals("below"))
 		{
-			sb.append("verticalLabelPosition=bottom;").append(
-					"verticalAlign=top;");
+			sb.append("verticalLabelPosition=bottom;").append("verticalAlign=top;");
 		}
 		else if (vposition.equals("none"))
 		{
 			sb.append("verticalAlign=").append(valign).append(";");
-			
+
 			if (!forceTopPaddingShift && "middle".equals(valign))
 				topPaddingShift = 0;
 		}
@@ -123,7 +122,7 @@ public class GliffyText implements PostDeserializer.PostDeserializable
 
 		sb.append("spacingLeft=").append(paddingLeft + x).append(";");
 		sb.append("spacingRight=").append(paddingRight).append(";");
-		
+
 		if (forceTopPaddingShift || !"middle".equals(valign))
 		{
 			sb.append("spacingTop=").append(paddingTop - topPaddingShift + y).append(";");
@@ -133,56 +132,52 @@ public class GliffyText implements PostDeserializer.PostDeserializable
 		//We should wrap only if overflow is none. (TODO better support left & right overflow) 
 		if ("none".equals(overflow))
 			sb.append("whiteSpace=wrap;");
-		
+
 		return sb.toString();
 	}
 
-	private String replaceParagraphWithDiv(String html)
+	private void replaceParagraphWithDiv()
 	{
-		Matcher m = pattern.matcher(html);
-		StringBuilder sb = new StringBuilder();
+		Matcher m = spanPattern.matcher(html);
+		StringBuilder modHtml = new StringBuilder(); 
+		int last = 0;
+		
 		while (m.find())
 		{
-			// Adds line-height:0 to empty spans with no line-height
-			// to match quirks mode sizing in standards mode
-			sb.append("<div");
-			String str = m.group(1);
-			Matcher m2 = spanPattern.matcher(str);
-			int last = 0;
+			String span = html.substring(last, m.end());
+			String style = m.group(1);
 			
-			while (m2.find())
+			if (style != null)
 			{
-				String span = str.substring(last, m2.end());
-				String style = m2.group(1);
+				// Adds line-height:0 to empty spans with no line-height
+				// to match quirks mode sizing in standards mode
+				Matcher m2 = lineHeight.matcher(style);
 				
-				if (style != null)
+				if (!m2.find())
 				{
-					Matcher m3 = lineHeight.matcher(style);
-					
-					if (!m3.find())
+					if (html.substring(m.end(), m.end() + 5).equalsIgnoreCase("<span"))
 					{
-						if (str.substring(m2.end(), m2.end() + 5).equalsIgnoreCase("<span"))
-						{
-							span = span.substring(0, m2.end(1) - last) + " line-height: 0;" + span.substring(m2.end(1) - last);
-						}
-						else
-						{
-							// Overrides line-height with default value in child span elements
-							span = span.substring(0, m2.end(1) - last) + " line-height: normal;" + span.substring(m2.end(1) - last);
-						}
+						span = span.substring(0, m.end(1) - last) + " line-height: 0;" + span.substring(m.end(1) - last);
+					}
+					else
+					{
+						// Overrides line-height with default value in child span elements
+						span = span.substring(0, m.end(1) - last) + " line-height: normal;" + span.substring(m.end(1) - last);
 					}
 				}
-
-				last = m2.end();
-				sb.append(span);
 			}
-			
 
-			sb.append(str.substring(last));
-			sb.append("</div>");
+			last = m.end();
+			modHtml.append(span);
 		}
-
-		return sb.length() > 0 ? sb.toString() : html;
+		
+		if (modHtml.length() > 0)
+		{
+			modHtml.append(html.substring(last));
+			html = modHtml.toString();
+		}
+		
+		html = html.replace("<p ", "<div ").replace("<p>", "<div>").replace("</p>", "</div>");
 	}
 
 	/**
@@ -193,14 +188,22 @@ public class GliffyText implements PostDeserializer.PostDeserializable
 	private String getHorizontalTextAlignment()
 	{
 		Matcher m = textAlign.matcher(html);
-
 		if (m.matches())
 		{
-			html = html.replaceAll("text-align: ?\\w*;", "");
 			return m.group(2);
 		}
 
 		return null;
+	}
+
+	/**
+	 * Replaces all occurrences of style="text-align: {position}" with align="{position}"
+	 * This enables per-line horizontal alignment in all browsers
+	 */
+	private void setDrawIoFormatForTextAlignment()
+	{
+		Matcher m = textAlignToDrawIO.matcher(html);
+		html = m.replaceAll("align=\"$1\"");
 	}
 
 	public void setHalign(String halign) 

@@ -4,24 +4,13 @@
  */
 package com.mxgraph.online;
 
-import com.mxgraph.io.gliffy.importer.GliffyDiagramConverter;
-import com.mxgraph.io.mxCodec;
-import com.mxgraph.io.mxGraphMlCodec;
-import com.mxgraph.util.mxXmlUtils;
-import com.mxgraph.view.mxGraph;
-import com.mxgraph.view.mxGraphHeadless;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.util.Streams;
-import org.apache.commons.lang3.StringEscapeUtils;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -29,10 +18,27 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.util.Streams;
+import org.apache.commons.lang3.StringEscapeUtils;
+
+import com.mxgraph.io.mxCodec;
+import com.mxgraph.io.mxGraphMlCodec;
+import com.mxgraph.io.gliffy.importer.GliffyDiagramConverter;
+import com.mxgraph.util.mxXmlUtils;
+import com.mxgraph.view.mxGraph;
+import com.mxgraph.view.mxGraphHeadless;
+
 /**
  * Servlet implementation class OpenServlet
  */
-@WebServlet(name = "OpenServlet", urlPatterns = "/open")
 public class OpenServlet extends HttpServlet
 {
 	/**
@@ -140,21 +146,24 @@ public class OpenServlet extends HttpServlet
 					xml = extractXmlFromPng(
 							upfile.getBytes(Utils.CHARSET_FOR_URL_ENCODING));
 				}
-				else if (ENABLE_GRAPHML_SUPPORT && upfile.matches(graphMlRegex))
+				else if (upfile != null)
 				{
-					// Creates a graph that contains a model but does not validate
-					// since that is not needed for the model and not allowed on GAE
-					mxGraph graph = new mxGraphHeadless();
-
-					mxGraphMlCodec.decode(mxXmlUtils.parseXml(upfile), graph);
-					xml = mxXmlUtils
-							.getXml(new mxCodec().encode(graph.getModel()));
-				}
-				else if (ENABLE_GLIFFY_SUPPORT && upfile.matches(gliffyRegex))
-				{
-					GliffyDiagramConverter converter = new GliffyDiagramConverter(
-							upfile);
-					xml = converter.getGraphXml();
+					if (ENABLE_GRAPHML_SUPPORT && upfile.matches(graphMlRegex))
+					{
+						// Creates a graph that contains a model but does not validate
+						// since that is not needed for the model and not allowed on GAE
+						mxGraph graph = new mxGraphHeadless();
+	
+						mxGraphMlCodec.decode(mxXmlUtils.parseXml(upfile), graph);
+						xml = mxXmlUtils
+								.getXml(new mxCodec().encode(graph.getModel()));
+					}
+					else if (ENABLE_GLIFFY_SUPPORT && upfile.matches(gliffyRegex))
+					{
+						GliffyDiagramConverter converter = new GliffyDiagramConverter(
+								upfile);
+						xml = converter.getGraphXml();
+					}
 				}
 
 				// Fallback to old data parameter
@@ -205,6 +214,12 @@ public class OpenServlet extends HttpServlet
 				writeScript(writer,
 						"window.parent.showOpenAlert(window.parent.mxResources.get('drawingTooLarge'));");
 			}
+		}
+		catch (OutOfMemoryError e)
+		{
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			writeScript(writer,
+					"window.parent.showOpenAlert('Out of memory');");
 		}
 		catch (Exception e)
 		{

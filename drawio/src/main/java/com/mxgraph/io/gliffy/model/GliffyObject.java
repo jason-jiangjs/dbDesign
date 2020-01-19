@@ -28,6 +28,10 @@ public class GliffyObject implements PostDeserializable
 	
 	private static Set<String> FILLCLR_IS_STROKECLR_SHAPES = new HashSet<>();
 	
+	public static Set<String> FORCE_CONSTRAINTS_SHAPES = new HashSet<String>();
+	
+	public static Set<String> DEEPLY_NESTED_LINKS = new HashSet<String>();
+	
 	private static Map<String, double[]> SHAPES_COORD_FIX = new HashMap<>();
 
 	public float x;
@@ -196,9 +200,13 @@ public class GliffyObject implements PostDeserializable
 		//It is a group but we have one similar
 		//GROUP_SHAPES.add("com.gliffy.shape.ui.ui_v3.forms_controls.audio_controls");
 		
+		GROUP_SHAPES.add("com.gliffy.shape.uml.uml_v2.sequence.recursive_message");
+		
 		MINDMAP_SHAPES.add("com.gliffy.shape.mindmap.mindmap_v1.default.main_topic");
 		MINDMAP_SHAPES.add("com.gliffy.shape.mindmap.mindmap_v1.default.subtopic");
 		MINDMAP_SHAPES.add("com.gliffy.shape.mindmap.mindmap_v1.default.child_node");
+		
+		FORCE_CONSTRAINTS_SHAPES.add("com.gliffy.shape.uml.uml_v2.class.association");
 
 		//This map is used to change Gliffy coordinates to match mxGraph ones
 		//Format [xShift, yShift, widthShift, heightShift, DONT REPOSITION TEXT] values between ]-1, 1[ means percentage
@@ -208,6 +216,7 @@ public class GliffyObject implements PostDeserializable
 		SHAPES_COORD_FIX.put("com.gliffy.shape.uml.uml_v2.deployment.device_node", new double[]{0, -10, 10, 10});
 		SHAPES_COORD_FIX.put("com.gliffy.shape.uml.uml_v2.deployment.execution_environment_node", new double[]{0, -10, 10, 10});
 		SHAPES_COORD_FIX.put("com.gliffy.shape.flowchart.flowchart_v1.default.data_storage", new double[]{0, 0, 0.115, 0});
+		SHAPES_COORD_FIX.put("com.gliffy.shape.flowchart.flowchart_v1.default.database", new double[]{0, 0, 0, 0.15});
 		//these shapes cannot be resized (width is fixed) in Gliffy 
 		SHAPES_COORD_FIX.put("com.gliffy.stencil.entity_lifeline.uml_v2", new double[]{10, 0, -20, 0});
 		SHAPES_COORD_FIX.put("com.gliffy.stencil.boundary_lifeline.uml_v2", new double[]{35, 0, -70, 0});
@@ -218,6 +227,12 @@ public class GliffyObject implements PostDeserializable
 		
 		//There are many shapes where fillColor is the strokeColor
 		FILLCLR_IS_STROKECLR_SHAPES.add("com.gliffy.stencil.rectangle.no_fill_line_bottom_2px_off");
+		
+		//these shapes put links on their grandchildren
+		DEEPLY_NESTED_LINKS.add("com.gliffy.shape.basic.basic_v1.default.chevron_box_right");
+		DEEPLY_NESTED_LINKS.add("com.gliffy.shape.basic.basic_v1.default.chevron_box_left");
+		DEEPLY_NESTED_LINKS.add("com.gliffy.shape.basic.basic_v1.default.chevron_tail_right");
+		DEEPLY_NESTED_LINKS.add("com.gliffy.shape.basic.basic_v1.default.chevron_tail_left");
 	}
 
 	public GliffyObject()
@@ -283,7 +298,11 @@ public class GliffyObject implements PostDeserializable
 
 	public String getText()
 	{
-		return graphic.getText().getHtml();
+		GliffyText text = graphic.getText();
+		//TODO These values are heuristics based on analyzing many files. 6 is a range from 2 to 6 so used the maximum
+		int widthDiff = "none".equals(text.overflow)? -3 : 6;
+		return "<div style='width: "+ (width + widthDiff) +"px;height:auto;word-break: break-word;'>" + text.getHtml() + "</div>";
+
 	}
 
 	/**
@@ -299,17 +318,46 @@ public class GliffyObject implements PostDeserializable
 			
 		Iterator<GliffyObject> it = children.iterator();
 		
-		while (it.hasNext()) 
+		StringBuilder sb = new StringBuilder();
+		if(isDeeplyNestedLink()) 
 		{
-			GliffyObject child = it.next();
-
-			if (child.isLink())
+			getDeeplyNestedLink(sb);
+		}
+		else 
+		{
+			while (it.hasNext()) 
 			{
-				return child.graphic.getLink().href;
+				GliffyObject child = it.next();
+				
+				if (child.isLink())
+				{
+					return child.graphic.getLink().href;
+				}
 			}
 		}
 
-		return null;
+		return sb.length() > 0 ? sb.toString() : null;
+	}
+	
+	/**
+	 * Inspects entire hierarchy of sub-elements to get the link URL.
+	 * 
+	 * @param sb placeholder for link URL
+	 */
+	private void getDeeplyNestedLink(StringBuilder sb) 
+	{
+		for(GliffyObject child : children) 
+		{
+			if (child.isLink())
+			{
+				sb.append(child.graphic.getLink().href);
+				return;
+			}
+			else if(child.children != null && !child.children.isEmpty())
+			{
+				child.getDeeplyNestedLink(sb);
+			}
+		}
 	}
 
 	/**
@@ -391,6 +439,11 @@ public class GliffyObject implements PostDeserializable
 	public boolean isVennCircle()
 	{
 		return uid != null && uid.startsWith("com.gliffy.shape.venn");
+	}
+	
+	public boolean isDeeplyNestedLink() 
+	{
+		return uid != null && DEEPLY_NESTED_LINKS.contains(uid);
 	}
 
 	public String getGradientColor()
@@ -616,4 +669,38 @@ public class GliffyObject implements PostDeserializable
 	{
 		return FILLCLR_IS_STROKECLR_SHAPES.contains(uid != null? uid : (graphic != null && graphic.getShape() != null ? graphic.getShape().tid : null));
 	}
+
+	/**
+	 * @return true If gliffyObject is Frame then always stick text on top left corner.
+	 */
+	public boolean containsTextBracket()
+	{
+		return uid != null ? uid.contains("com.gliffy.shape.uml.uml_v2.activity.frame") : false;
+	}
+	
+	/**
+	 * @return
+	 */
+	public String getUmlSequenceCombinedFragmentText() 
+	{
+		if("com.gliffy.shape.uml.uml_v2.sequence.interaction_use".equals(uid))
+		{
+			return "ref";
+		}
+		if("com.gliffy.shape.uml.uml_v2.sequence.opt_combined_fragment".equals(uid)) 
+		{
+			return "opt";
+		}
+		if("com.gliffy.shape.uml.uml_v2.sequence.loop_combined_fragment".equals(uid)) 
+		{
+			return "loop";
+		}
+		if("com.gliffy.shape.uml.uml_v2.sequence.alt_combined_fragment".equals(uid)) 
+		{
+			return "alt";
+		}
+		
+		return null;
+	}
+
 }

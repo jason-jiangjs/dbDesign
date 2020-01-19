@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.Locale;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,7 +45,6 @@ import com.google.appengine.api.utils.SystemProperty;
 /**
  * Servlet implementation class OpenServlet
  */
-@WebServlet(name = "EmbedServlet2", urlPatterns = "/embed2.js")
 public class EmbedServlet2 extends HttpServlet
 {
 	/**
@@ -88,15 +86,10 @@ public class EmbedServlet2 extends HttpServlet
 		{
 			// Uses deployment date as lastModified header
 			String applicationVersion = SystemProperty.applicationVersion.get();
-			Date uploadDate = null;
-			if (applicationVersion == null) {
-				uploadDate = new Date();
-			} else {
-				uploadDate = new Date(Long
-						.parseLong(applicationVersion
-								.substring(applicationVersion.lastIndexOf(".") + 1))
-						/ (2 << 27) * 1000);
-			}
+			Date uploadDate = new Date(Long
+					.parseLong(applicationVersion
+							.substring(applicationVersion.lastIndexOf(".") + 1))
+					/ (2 << 27) * 1000);
 
 			DateFormat httpDateFormat = new SimpleDateFormat(
 					"EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
