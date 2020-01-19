@@ -7,6 +7,7 @@ import java.net.URLDecoder;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +17,7 @@ import com.mxgraph.util.mxBase64;
 /**
  * Servlet implementation class SaveServlet
  */
+@WebServlet(name = "SaveServlet", urlPatterns = {"/save", "/SaveServlet"})
 public class SaveServlet extends HttpServlet
 {
 	/**

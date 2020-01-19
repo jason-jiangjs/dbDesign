@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Locale;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,6 +46,7 @@ import com.google.appengine.api.utils.SystemProperty;
 /**
  * Servlet implementation class OpenServlet
  */
+@WebServlet(name = "EmbedServlet2", urlPatterns = "/embed2.js")
 public class EmbedServlet2 extends HttpServlet
 {
 	/**
