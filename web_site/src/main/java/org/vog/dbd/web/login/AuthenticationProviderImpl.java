@@ -16,6 +16,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.util.Collections;
 
 /**
  * Created by dell on 2017/4/6.
@@ -48,6 +51,11 @@ public class AuthenticationProviderImpl implements AuthenticationProvider {
         // 先密码匹配验证
         if (!passwordEncoder().matches(password, user.getPassword())) {
             throw new UsernameNotFoundException("nameorpasswd.invalid");
+        }
+
+        // 判断用户是否已定义角色
+        if (CollectionUtils.isEmpty(user.getAuthorities())) {
+            throw new DisabledException("user.isInvalid");
         }
 
         // 再判断用户状态

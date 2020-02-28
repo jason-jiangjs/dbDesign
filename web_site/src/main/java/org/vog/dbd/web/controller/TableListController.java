@@ -391,22 +391,8 @@ public class TableListController extends BaseController {
 
         List<String> outputStr = new ArrayList<>();
         outputStr.add("/*\n");
-        outputStr.add("Navicat MySQL Data Transfer\n");
-        outputStr.add("\n");
-        outputStr.add("Source Server         : 192.168.10.129_3306\n");
-        outputStr.add("Source Server Version : 50722\n");
-        outputStr.add("Source Host           : 192.168.10.129:3306\n");
-        outputStr.add("Source Database       : guoyie_ca_dev\n");
-        outputStr.add("\n");
-        outputStr.add("Target Server Type    : MYSQL\n");
-        outputStr.add("Target Server Version : 50722\n");
-        outputStr.add("File Encoding         : 65001\n");
-        outputStr.add("\n");
-        outputStr.add("Date: 2018-06-05 17:11:46\n");
-        outputStr.add("*/\n");
-        outputStr.add("\n");
-        outputStr.add("SET FOREIGN_KEY_CHECKS=0;\n");
-        outputStr.add("\n");
+        outputStr.add("Output Date: " + DateTimeUtil.getNow() + "\n");
+        outputStr.add("*/\n\n");
 
         String tblName = StringUtils.trimToNull(request.getParameter("tblName"));
         List<BaseMongoMap> tblList = tableService.getTableList(dbId, dbType, tblName);

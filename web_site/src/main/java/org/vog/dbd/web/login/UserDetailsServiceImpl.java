@@ -78,7 +78,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
         if (userRole == 0) {
             logger.warn("该用户的角色未设置 userid={}", userId);
-            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_EMPTY"));
         } else if (userRole == 1) {
             grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_READONLY"));
         } else if (userRole == 2) {
@@ -89,7 +88,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             grantedAuthorities.add(new SimpleGrantedAuthority("ADMIN_USER"));
         } else {
             logger.warn("该用户的角色设置不正确 userid={}，role={}", userId, userRole);
-            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_EMPTY"));
         }
         return grantedAuthorities;
     }

@@ -74,10 +74,12 @@
         </th:block>
         <div data-options="iconCls:'fa fa-refresh'" onclick="javascript:doSearch('',1)">刷新</div>
         <div class="menu-sep"></div>
-        <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql(0)">导出所有SQL文</div>
-        <div class="menu-sep"></div>
+        <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')"><!--/* 管理员才可以导出SQL文 */-->
+            <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql(0)">导出所有SQL文</div>
+            <div class="menu-sep"></div>
+        </th:block>
         <div data-options="iconCls:'fa fa-home'" th:href="@{/home?type=1}">返回选择数据库</div>
-        <div class="menu-sep"></div>
+
     </div>
 
     <div id="tb_info" style="display:none">
