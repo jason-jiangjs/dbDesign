@@ -50,8 +50,10 @@
         <div class="menu-sep"></div>
         <div data-options="href:'to_drawio?offline=1',iconCls:'fa fa-paperclip'">查看ER图</div>
         <div class="menu-sep"></div>
-        <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql(1)">导出当前SQL文</div>
-        <div class="menu-sep"></div>
+        <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')"><!--/* 管理员才可以导出SQL文 */-->
+            <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql(1)">导出当前SQL文</div>
+            <div class="menu-sep"></div>
+        </th:block>
         <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
     </div>
 

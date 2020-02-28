@@ -1,5 +1,7 @@
 package org.vog.dbd.web.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -12,6 +14,7 @@ import org.vog.common.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -19,6 +22,9 @@ import java.util.Map;
  */
 @Controller
 public class CommonController extends BaseController {
+
+    @Autowired
+    private MessageSource messageSource;
 
     /**
      * 获取数据类型的定义
@@ -42,7 +48,9 @@ public class CommonController extends BaseController {
     public ModelAndView tologin(@RequestParam Map<String, String> params) {
         ModelAndView model = new ModelAndView();
         model.setViewName("index");
-        model.addObject("errMsg", params.get("msg"));
+        if (params.get("msg") != null) {
+            model.addObject("errMsg", messageSource.getMessage(params.get("msg"), null, Locale.getDefault()));
+        }
         return model;
     }
 
