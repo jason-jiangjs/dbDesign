@@ -11,7 +11,7 @@ import org.vog.dbd.web.tag.dialect.VoDialect;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "org.vog")
-@ServletComponentScan(basePackages = "org.vog.dbd.web")
+@ServletComponentScan(basePackages = {"org.vog.dbd.web","com.mxgraph.online"})
 public class DbDesignApplication extends SpringBootServletInitializer {
 
 	@Override

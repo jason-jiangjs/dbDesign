@@ -485,8 +485,12 @@ public class TableListController extends BaseController {
                     outputStr.add(line);
                 }
             }
-
-            outputStr.add(") ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='" + tblMap.getStringAttribute("tableNameCN") + "';\n");
+            String tableNameCN = tblMap.getStringAttribute("tableNameCN");
+            if (tableNameCN == null) {
+                outputStr.add(");\n");
+            } else {
+                outputStr.add(") COMMENT='" + tblMap.getStringAttribute("tableNameCN") + "';\n");
+            }
             outputStr.add("\n");
         }
 

@@ -7,7 +7,7 @@ import javax.servlet.annotation.WebServlet;
 import java.io.IOException;
 
 @SuppressWarnings("serial")
-@WebServlet(name = "GoogleAuthServlet", urlPatterns = "/google")
+//@WebServlet(name = "GoogleAuthServlet", urlPatterns = "/google")
 public class GoogleAuthServlet extends AbsAuthServlet
 {
 	public static String CLIENT_SECRET_FILE_PATH = "/WEB-INF/google_client_secret";

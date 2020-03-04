@@ -23,6 +23,7 @@ git clone https://github.com/jason-jiangjs/dbDesign.git
 数据库必须事先创建好，初始数据在系统第一次运行时自动加载。
 开发环境修改:\src\main\resources\application-dev.properties，正式环境修改:\src\main\resources\application-prod.properties
 修改"spring.data.mongodb.uri"为实际的数据库连接。
-maven编译安装时需要指定参数 "-P dev"或"-P prod"。
+maven编译安装时需要指定参数 "-P dev"或"-P prod"：
+mvn package -P dev
 
 

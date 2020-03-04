@@ -27,7 +27,7 @@ import org.apache.commons.io.FilenameUtils;
 
 //This servlet is an interface between draw.io and CloudConverter.
 //For EMF files, it detect its size and resize the huge images such that max dimension is MAX_DIM
-@WebServlet(name = "ConverterServlet", urlPatterns = "/convert")
+//@WebServlet(name = "ConverterServlet", urlPatterns = "/convert")
 public class ConverterServlet  extends HttpServlet
 {
 	private static final long serialVersionUID = -5084595244442555865L;

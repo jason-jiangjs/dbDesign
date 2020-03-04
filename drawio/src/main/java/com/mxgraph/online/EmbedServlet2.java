@@ -46,7 +46,7 @@ import com.google.appengine.api.utils.SystemProperty;
 /**
  * Servlet implementation class OpenServlet
  */
-@WebServlet(name = "EmbedServlet2", urlPatterns = "/embed2.js")
+//@WebServlet(name = "EmbedServlet2", urlPatterns = "/embed2.js")
 public class EmbedServlet2 extends HttpServlet
 {
 	/**

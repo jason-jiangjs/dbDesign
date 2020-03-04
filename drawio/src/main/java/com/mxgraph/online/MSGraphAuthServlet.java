@@ -7,7 +7,7 @@ import javax.servlet.annotation.WebServlet;
 import java.io.IOException;
 
 @SuppressWarnings("serial")
-@WebServlet(name = "MSGraphAuthServlet", urlPatterns = "/microsoft")
+//@WebServlet(name = "MSGraphAuthServlet", urlPatterns = "/microsoft")
 public class MSGraphAuthServlet extends AbsAuthServlet
 {
 	public static String DEV_CLIENT_SECRET_FILE_PATH = "/WEB-INF/msgraph_dev_client_secret";

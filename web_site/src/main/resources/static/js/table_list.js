@@ -112,7 +112,7 @@ $(function () {
 
     // 设置当前编辑的数据库名
     $('#cc').panel({title: $('#dbn').val()});
-
+    // 下拉菜单的菜单项控制，某些特定场景下不显示或禁用
     var favDb = $.trim($('#favDb').val());
     if (favDb == '' || favDb == '0' || favDb != $.trim($('#dbId').val())) {
         var item = $('#db-tools_menu').menu('findItem', 'setdbenv');
@@ -152,6 +152,7 @@ $(function () {
         onSelect: function(title, index) {
             _curTblId = null;
             if (index == 0) {
+                // 回到主页
                 _curTblId = 0;
                 $('#tblList').datalist("unselectAll");
                 return;
@@ -372,6 +373,10 @@ function _openNewTab(tblId) {
 
 // 弹出菜单，目前只有两个
 function popmenu(e, menuKey) {
+    if (menuKey === 'tab-tools_menu' && (_curTblId === 0 || _curTblId == null || _curTblId === undefined)) {
+        // 切换到主页时,下拉菜单不包含表编辑相关的选项
+        menuKey = 'tab-tools_menu2';
+    }
     $('#' + menuKey).menu('show', {
         left: e.pageX,
         top: e.pageY

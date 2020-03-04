@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet implementation class OpenServlet
  */
-@WebServlet(name = "GoogleGadgetServlet", urlPatterns = "/gadget.xml")
+//@WebServlet(name = "GoogleGadgetServlet", urlPatterns = "/gadget.xml")
 public class GoogleGadgetServlet extends HttpServlet
 {
 	/**

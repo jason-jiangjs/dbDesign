@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <div id="tab-tools"><!--/* 表定义区域的工具栏和弹出菜单 */-->
+    <div id="tab-tools"><!--/* (右侧)表定义区域的工具栏和弹出菜单 */-->
         <a href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,iconCls:'icon-more'" onclick="javascript:popmenu(event,'tab-tools_menu')"></a>
     </div>
     <div id="tab-tools_menu" class="easyui-menu">
@@ -48,7 +48,7 @@
         </th:block>
         <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
         <div class="menu-sep"></div>
-        <div data-options="href:'to_drawio?offline=1',iconCls:'fa fa-paperclip'">查看ER图</div>
+        <div data-options="href:'drawio?dev=1&gapi=0&db=0&od=0&tr=0&gh=0&gl=0',iconCls:'fa fa-paperclip'">查看ER图</div>
         <div class="menu-sep"></div>
         <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')"><!--/* 管理员才可以导出SQL文 */-->
             <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql(1)">导出当前SQL文</div>
@@ -56,13 +56,18 @@
         </th:block>
         <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
     </div>
+    <div id="tab-tools_menu2" class="easyui-menu">
+        <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
+        <div class="menu-sep"></div>
+        <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
+    </div>
 
-    <div id="db-tools"><!--/* 表一览区域的工具栏和弹出菜单 */-->
+    <div id="db-tools"><!--/* (左侧)表一览区域的工具栏和弹出菜单 */-->
         <a href="javascript:void(0)" class="fa fa-gear" style="width:20px;height:20px" onclick="javascript:popmenu(event,'db-tools_menu')"></a>
     </div>
     <div id="db-tools_menu" class="easyui-menu" style="width:160px;">
-        <div onclick="javascript:convertType(1)" th:if="${dbType==1}">切换到表一览</div>
-        <div onclick="javascript:convertType(2)" th:if="${dbType==1}">切换到视图一览</div>
+        <div data-options="name:'to_tbl_list',iconCls:'icon-save'" onclick="javascript:convertType(1)" th:if="${dbType==1}">切换到表一览</div>
+        <div data-options="name:'to_view_list',iconCls:'icon-save'" onclick="javascript:convertType(2)" th:if="${dbType==1}">切换到视图一览</div>
         <div class="menu-sep" th:if="${dbType==1}"></div>
         <div data-options="name:'setdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(1)">设置缺省工作环境</div>
         <div data-options="name:'unsetdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(0)">取消缺省工作环境</div>
@@ -79,7 +84,6 @@
             <div class="menu-sep"></div>
         </th:block>
         <div data-options="iconCls:'fa fa-home'" th:href="@{/home?type=1}">返回选择数据库</div>
-
     </div>
 
     <div id="tb_info" style="display:none">
@@ -113,7 +117,6 @@
             <table id="tblidx_grid" class="easyui-datagrid"
                    data-options="singleSelect:true,striped:true,fit:true,rownumbers:true,method:'get',idField:'idxId',toolbar:'#_idx_edit_toolbar'"></table>
         </div>
-
         <div style="text-align:center;margin-top:15px;margin-bottom:15px">
             <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitTblIdx()">保存</a>
             <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelTblIdx()">取消</a>
@@ -123,9 +126,7 @@
     <div id="tblatt_dlg" class="easyui-dialog" title="编辑索引" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'">
         <input id="fb" type="file" style="width:300px;display:none">
         <div class="easyui-panel" data-options="border:false" style="width:520px;height:120px;padding:10px;border-bottom:1px solid #1E9FFF">
-
         </div>
-
         <div style="text-align:center;margin-top:15px;margin-bottom:15px">
             <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitTblAtt()">保存</a>
             <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelTblAtt()">取消</a>
@@ -133,15 +134,12 @@
     </div>
 
     <div id="template_dlg" class="easyui-dialog" title="使用预先定义的模板" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'" style="padding:20px">
-
         <div style="width:500px;height:40px;padding:2px;border:1px solid #1E9FFF" onclick="useTemplate1()">
             模板1：`valid`, `created_by`, `created_date`, `updated_by`, `updated_date`
         </div>
-
         <div style="width:500px;height:40px;padding:2px;border:1px solid #1E9FFF;margin-top:20px" onclick="useTemplate2()">
             模板2：`created_by`, `created_date`
         </div>
-
     </div>
 
     <input type="hidden" id="favDb" th:value="${#authentication.principal.favorite}" />
