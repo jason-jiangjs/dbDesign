@@ -207,9 +207,9 @@ window.uiTheme = window.uiTheme || (function()
  */
 function setCurrentXml(data, filename)
 {
-	if (window.parent != null && window.parent.openFile != null)
+	if (window.openFile != null) // todo-- 修改 这里不需要再取上一级页面
 	{
-		window.parent.openFile.setData(data, filename);
+		window.openFile.setData(data, filename);
 	}
 };
 

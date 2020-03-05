@@ -273,7 +273,7 @@ App.PUSHER_CLUSTER = 'eu';
 /**
  * Specifies the URL for the pusher API.
  */
-App.PUSHER_URL = 'https://js.pusher.com/4.3/pusher.min.js';
+App.PUSHER_URL = mxDevUrl + 'js/pusher.min.js'; // 原来是https://js.pusher.com/4.3/
 
 /**
  * Google APIs to load. The realtime API is needed to notify collaborators of conversion
@@ -533,9 +533,9 @@ App.main = function(callback, createUi)
 		// Injects offline dependencies
 		if (urlParams['offline'] == '1' || urlParams['appcache'] == '1')
 		{
-			mxscript('js/shapes.min.js');
-			mxscript('js/stencils.min.js');
-			mxscript('js/extensions.min.js');
+			mxscript(drawDevUrl + 'js/shapes.min.js');
+			mxscript(drawDevUrl + 'js/stencils.min.js');
+			mxscript(drawDevUrl + 'js/extensions.min.js');
 			
 			// Check that service workers are supported
 			if ('serviceWorker' in navigator)
@@ -543,7 +543,7 @@ App.main = function(callback, createUi)
 				// Use the window load event to keep the page load performant
 				window.addEventListener('load', function()
 				{
-					navigator.serviceWorker.register('/service-worker.js');
+					navigator.serviceWorker.register('/dbd/js/service-worker.js');
 				});
 			}
 			else if (window.applicationCache != null)
@@ -561,7 +561,7 @@ App.main = function(callback, createUi)
 			// Needed to update cache if PWA was used
 			window.addEventListener('load', function()
 			{
-				navigator.serviceWorker.register('/service-worker.js');
+				navigator.serviceWorker.register('/dbd/service-worker.js');
 			});
 		}
 		
@@ -1456,7 +1456,9 @@ App.prototype.init = function()
 		this.formatContainer.style.visibility = 'hidden';
 		this.hsplit.style.display = 'none';
 		this.sidebarContainer.style.display = 'none';
-		this.sidebarFooterContainer.style.display = 'none';
+		if (this.sidebarFooterContainer) {
+			this.sidebarFooterContainer.style.display = 'none';
+		}
 
 		// Sets the initial mode
 		if (urlParams['local'] == '1')
@@ -1532,51 +1534,51 @@ App.prototype.init = function()
 				}
 			}));
 		}
-		else if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp && (!this.editor.chromeless || this.editor.editable))
-		{
-			this.editor.addListener('fileLoaded', mxUtils.bind(this, function()
-			{
-				var file = this.getCurrentFile();
-				
-				if (file.mode == App.MODE_DEVICE && (!isLocalStorage || mxSettings.settings == null ||
-					mxSettings.settings.closeDesktopFooter == null) && !this.footerShowing && urlParams['open'] == null)
-				{
-					var footer = createFooter('<img border="0" align="absmiddle" style="margin-top:-6px;cursor:pointer;margin-left:8px;margin-right:12px;width:24px;height:24px;" src="' +
-						IMAGE_PATH + '/logo.png' + '"><font size="3" style="color:#ffffff;">' +
-						mxUtils.htmlEntities(mxResources.get('downloadDesktop')) + '</font>',
-						'https://get.draw.io/', 'geStatusMessage geBtn gePrimaryBtn',
-						mxUtils.bind(this, function()
-						{
-							footer.parentNode.removeChild(footer);
-							this.footerShowing = false;
-							this.hideFooter();
-	
-							// Close permanently
-							if (isLocalStorage && mxSettings.settings != null)
-							{
-								mxSettings.settings.closeDesktopFooter = Date.now();
-								mxSettings.save();
-							}
-						}));
-			
-					// Push to after splash dialog background
-					footer.style.zIndex = mxPopupMenu.prototype.zIndex;
-					footer.style.padding = '18px 50px 12px 30px';
-					footer.getElementsByTagName('img')[1].style.filter = 'invert(1)';
-					document.body.appendChild(footer);
-					this.footerShowing = true;
-					
-					window.setTimeout(mxUtils.bind(this, function()
-					{
-						mxUtils.setPrefixedStyle(footer.style, 'transform', 'translate(-50%,0%)');
-					}), 500);
-					
-					window.setTimeout(mxUtils.bind(this, function()
-					{
-						mxUtils.setPrefixedStyle(footer.style, 'transform', 'translate(-50%,110%)');
-						this.footerShowing = false;
-					}), 60000);
-				}
+		// else if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp && (!this.editor.chromeless || this.editor.editable))
+		// {
+		// 	this.editor.addListener('fileLoaded', mxUtils.bind(this, function()
+		// 	{
+		// 		var file = this.getCurrentFile();
+		//      修改 不显示"get draw.io desktop"的提示
+		// 		if (file.mode == App.MODE_DEVICE && (!isLocalStorage || mxSettings.settings == null ||
+		// 			mxSettings.settings.closeDesktopFooter == null) && !this.footerShowing && urlParams['open'] == null)
+		// 		{
+		// 			var footer = createFooter('<img border="0" align="absmiddle" style="margin-top:-6px;cursor:pointer;margin-left:8px;margin-right:12px;width:24px;height:24px;" src="' +
+		// 				IMAGE_PATH + '/logo.png' + '"><font size="3" style="color:#ffffff;">' +
+		// 				mxUtils.htmlEntities(mxResources.get('downloadDesktop')) + '</font>',
+		// 				'https://get.draw.io/', 'geStatusMessage geBtn gePrimaryBtn',
+		// 				mxUtils.bind(this, function()
+		// 				{
+		// 					footer.parentNode.removeChild(footer);
+		// 					this.footerShowing = false;
+		// 					this.hideFooter();
+		//
+		// 					// Close permanently
+		// 					if (isLocalStorage && mxSettings.settings != null)
+		// 					{
+		// 						mxSettings.settings.closeDesktopFooter = Date.now();
+		// 						mxSettings.save();
+		// 					}
+		// 				}));
+		//
+		// 			// Push to after splash dialog background
+		// 			footer.style.zIndex = mxPopupMenu.prototype.zIndex;
+		// 			footer.style.padding = '18px 50px 12px 30px';
+		// 			footer.getElementsByTagName('img')[1].style.filter = 'invert(1)';
+		// 			document.body.appendChild(footer);
+		// 			this.footerShowing = true;
+		//
+		// 			window.setTimeout(mxUtils.bind(this, function()
+		// 			{
+		// 				mxUtils.setPrefixedStyle(footer.style, 'transform', 'translate(-50%,0%)');
+		// 			}), 500);
+		//
+		// 			window.setTimeout(mxUtils.bind(this, function()
+		// 			{
+		// 				mxUtils.setPrefixedStyle(footer.style, 'transform', 'translate(-50%,110%)');
+		// 				this.footerShowing = false;
+		// 			}), 60000);
+		// 		}
 	//			else if ((!isLocalStorage || mxSettings.settings == null ||
 	//				mxSettings.settings.closeRateFooter == null) &&
 	//				(!this.editor.chromeless || this.editor.editable) &&
@@ -1625,8 +1627,8 @@ App.prototype.init = function()
 	//					mxUtils.setPrefixedStyle(footer.style, 'transform', 'translate(-50%,0%)');
 	//				}), 1500);
 	//			}
-			}));
-		}
+	// 		}));
+	// 	}
 		
 		if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp && urlParams['embed'] != '1' && DrawioFile.SYNC == 'auto' &&
 			urlParams['local'] != '1' && urlParams['stealth'] != '1' && urlParams['offline'] != '1' &&
@@ -1672,6 +1674,18 @@ App.prototype.init = function()
 	}
 
 	this.updateHeader();
+	// todo-- 修改 手动触发全屏
+	var bbb = document.getElementById('fullscreen_btn_id');
+	if (bbb.fireEvent) {
+		bbb.fireEvent('onclick');
+	} else {
+		var ev = document.createEvent("HTMLEvents");
+		ev.initEvent("click", false, true);
+		bbb.dispatchEvent(ev);
+	}
+	this.actions.get('formatPanel').funct();
+	bbb.parentNode.removeChild(bbb);
+	// bbb.remove(); // 不支持IE
 
 	if (this.menubar != null)
 	{
@@ -3189,24 +3203,26 @@ App.prototype.start = function()
 App.prototype.showSplash = function(force)
 {
 	var serviceCount = this.getServiceCount(true, true);
-	
+
 	var showSecondDialog = mxUtils.bind(this, function()
 	{
-		var dlg = new SplashDialog(this);
-		
-		this.showDialog(dlg.container, 340, (mxClient.IS_CHROMEAPP || EditorUi.isElectronApp) ? 200 :
-			((serviceCount < 2) ? 230 : 260), true, true,
-			mxUtils.bind(this, function(cancel)
-			{
-				// Creates a blank diagram if the dialog is closed
-				if (cancel && !mxClient.IS_CHROMEAPP)
-				{
-					var prev = Editor.useLocalStorage;
-					this.createFile(this.defaultFilename, null, null, null, null, null, null,
-						urlParams['local'] != '1');
-					Editor.useLocalStorage = prev;
-				}
-			}), true);
+		// var dlg = new SplashDialog(this);
+		//
+		// this.showDialog(dlg.container, 340, (mxClient.IS_CHROMEAPP || EditorUi.isElectronApp) ? 200 :
+		// 	((serviceCount < 2) ? 230 : 260), true, true,
+		// 	mxUtils.bind(this, function(cancel)
+		// 	{
+		// 		// Creates a blank diagram if the dialog is closed
+		// 		if (cancel && !mxClient.IS_CHROMEAPP)
+		// 		{
+		// 			var prev = Editor.useLocalStorage;
+		// 			this.createFile(this.defaultFilename, null, null, null, null, null, null,
+		// 				urlParams['local'] != '1');
+		// 			Editor.useLocalStorage = prev;
+		// 		}
+		// 	}), true);
+        // todo-- 修改 不显示文件选择对话框(新建/选择现有本地文件)
+		this.actions.get('open').funct();
 	});
 	
 	if (this.editor.isChromelessView())
@@ -3219,17 +3235,19 @@ App.prototype.showSplash = function(force)
 	}
 	else if (!mxClient.IS_CHROMEAPP && (this.mode == null || force))
 	{
-		var rowLimit = (serviceCount == 4) ? 2 : 3;
-		
-		var dlg = new StorageDialog(this, mxUtils.bind(this, function()
-		{
-			this.hideDialog();
-			showSecondDialog();
-		}), rowLimit);
-		
-		this.showDialog(dlg.container, (rowLimit < 3) ? 240 : 300,
-			(serviceCount >= 4) ? 440 : ((this.isOfflineApp()) ? 300 : 320), true, false);
-		dlg.init();
+		// todo-- 修改 不显示存储方式选择对话框(原有的选择是保存到本地/浏览器/第三方网盘)，本系统默认保存到后台mongo数据库
+		// var rowLimit = (serviceCount == 4) ? 2 : 3;
+		//
+		// var dlg = new StorageDialog(this, mxUtils.bind(this, function()
+		// {
+		// 	this.hideDialog();
+		// 	showSecondDialog();
+		// }), rowLimit);
+		//
+		// this.showDialog(dlg.container, (rowLimit < 3) ? 240 : 300,
+		// 	(serviceCount >= 4) ? 440 : ((this.isOfflineApp()) ? 300 : 320), true, false);
+		// dlg.init();
+		showSecondDialog();
 	}
 	else if (urlParams['create'] == null)
 	{
@@ -3401,10 +3419,10 @@ App.prototype.pickFile = function(mode)
 					Editor.useLocalStorage = prevValue;
 					dlgClose.apply(dlg, arguments);
 		
-					if (this.getCurrentFile() == null)
-					{
-						this.showSplash();
-					}
+					// if (this.getCurrentFile() == null) // todo-- 修改 搞不清楚这里的代码，为什么还要再打开对话框
+					// {
+					// 	this.showSplash();
+					// }
 				});
 			}
 		}
@@ -5833,6 +5851,7 @@ App.prototype.updateHeader = function()
 		toggleFormatPanel();
 
 		this.fullscreenElement = document.createElement('a');
+        this.fullscreenElement.setAttribute('id', 'fullscreen_btn_id'); // todo-- 修改 添加button的id
 		this.fullscreenElement.setAttribute('title', mxResources.get('fullscreen'));
 		this.fullscreenElement.style.position = 'absolute';
 		this.fullscreenElement.style.display = 'inline-block';
@@ -5878,7 +5897,7 @@ App.prototype.updateHeader = function()
 			}
 
 			this.toggleFormatPanel(!collapsed);
-			this.hsplitPosition = (!collapsed) ? 0 : initialPosition;
+			// this.hsplitPosition = (!collapsed) ? 0 : initialPosition; // todo-- 修改 默认显示左侧模板栏
 			this.hideFooter();
 			collapsed = !collapsed;
 			mxEvent.consume(evt);
@@ -5972,7 +5991,9 @@ App.prototype.toggleCompactMode = function(forceHide)
 		this.menubar.container.style.paddingBottom = '0px';
 		this.menubar.container.style.top = '0px';
 		this.toolbar.container.style.paddingLeft = '8px';
-		this.buttonContainer.style.visibility = 'hidden';
+		if (this.buttonContainer) {
+			this.buttonContainer.style.visibility = 'hidden';
+		}
 		this.appIcon.style.display = 'none';
 		this.fnameWrapper.style.display = 'none';
 		this.fnameWrapper.style.visibility = 'hidden';

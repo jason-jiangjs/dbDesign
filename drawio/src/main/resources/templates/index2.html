@@ -163,15 +163,15 @@
 		})();
 	</script>
     <link rel="chrome-webstore-item" href="https://chrome.google.com/webstore/detail/plgmlhohecdddhbmmkncjdmlhcmaachm">
-	<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
-	<link rel="mask-icon" href="images/safari-pinned-tab.svg" color="#d89000">
-	<link rel="stylesheet" type="text/css" href="js/croppie/croppie.min.css">
-    <link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
+	<link rel="apple-touch-icon" sizes="180x180" href="/dbd/images/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/dbd/images/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/dbd/images/favicon-16x16.png">
+	<link rel="mask-icon" href="/dbd/images/safari-pinned-tab.svg" color="#d89000">
+	<link rel="stylesheet" type="text/css" href="/dbd/js/croppie/croppie.min.css">
+    <link rel="stylesheet" type="text/css" href="/dbd/styles/grapheditor.css">
     <link rel="canonical" href="https://www.draw.io">
-	<link rel="manifest" href="images/manifest.json">
-	<link rel="shortcut icon" href="favicon.ico">
+	<!--<link rel="manifest" href="images/manifest.json">--><!--todo修改 不需要离线缓存-->
+	<link rel="shortcut icon" href="/dbd/favicon.ico">
 	<style type="text/css">
 		body { overflow:hidden; }
 		div.picker { z-index: 10007; }
@@ -338,27 +338,18 @@
 		if (urlParams['dev'] == '1')
 		{
 			// Used to request grapheditor/mxgraph sources in dev mode
-			var mxDevUrl = document.location.protocol + '//devhost.jgraph.com/mxgraph2';
-			
+			var mxDevUrl = document.location.origin + '/dbd/';
 			// Used to request draw.io sources in dev mode
-			var drawDevUrl = document.location.protocol + '//devhost.jgraph.com/drawio/src/main/webapp/';
-			
-			if (document.location.protocol == 'file:')
-			{
-				mxDevUrl = '../../../../../mxgraph2';
-				drawDevUrl = './';
-				
-				// Forces includes for dev environment in node.js
-				mxForceIncludes = true;
-			}
+			var drawDevUrl = mxDevUrl;
 
-			var geBasePath = mxDevUrl + '/javascript/examples/grapheditor/www/js';
-			var mxBasePath = mxDevUrl + '/javascript/src';
+			var geBasePath = mxDevUrl + 'js/mxgraph';
+			var mxBasePath = mxDevUrl + 'mxgraph/';
 			
 			mxscript(drawDevUrl + 'js/PreConfig.js');
 			mxscript(drawDevUrl + 'js/diagramly/Init.js');
 			mxscript(geBasePath + '/Init.js');
-			mxscript(mxDevUrl + '/javascript/src/js/mxClient.js');
+			mxscript(mxBasePath + 'mxClient.js'); // 开发时用
+			//mxscript(mxBasePath + 'mxClient.min.js');
 			
 			// Adds all JS code that depends on mxClient. This indirection via Devel.js is
 			// required in some browsers to make sure mxClient.js (and the files that it
@@ -419,41 +410,9 @@
 		</p>
 	</div>
 </div>
-<div id="geFooter" style="visibility:hidden;overflow:hidden;margin-right:170px;height:100%;">
-	<div class="geSocialFooter" style="position:absolute;right:32px;white-space:nowrap;">
-    	<a href="https://www.youtube.com/channel/UCiTtRN9b8P4CoSfpkfgEJHA" title="draw.io on Youtube" target="_blank">
-    		<img border="0" width="24" height="24" src="images/glyphicons_youtube.png" alt="draw.io on Youtube"/>
-    	</a>
-    	&nbsp;
-    	<a href="https://www.facebook.com/pages/drawio/161015263923018" title="draw.io on Facebook" target="_blank">
-    		<img border="0" width="24" height="24" src="images/glyphicons_facebook.png" alt="draw.io on Facebook"/>
-    	</a>
-    	&nbsp;
-    	<a href="https://www.twitter.com/drawio" title="draw.io on Twitter" target="_blank">
-    		<img border="0" width="24" height="24" src="images/glyphicons_twitter.png" alt="draw.io on Twitter"/>
-    	</a>
-    	&nbsp;
-    	<a href="https://github.com/jgraph/drawio" title="draw.io on GitHub" target="_blank">
-    		<img border="0" width="24" height="24" src="images/glyphicons_github.png" alt="draw.io on GitHub"/>
-    	</a>
-	</div>
-	<table align="center" height="100%">
-		<tr>
-			<td id="geFooterItem1" align="center" style="width:280px;transition: all 1s ease;">
-				<a title="GitHub" href="https://github.com/jgraph/drawio" target="_blank">
-					<img border="0" align="absmiddle" style="margin-top:-4px;padding-right:10px;"
-						width="24" height="24" src="images/glyphicons_github.png"/>Fork us on GitHub</a>
-			</td>
-			<td id="geFooterItem2" align="center" style="width:260px;">
-				<a id="geFooterLink1" title="Download draw.io Desktop" target="_blank"
-					href="https://get.draw.io/">
-					<img border="0" align="absmiddle" style="margin-top:-2px;padding-right:10px;"
-					width="26" src="images/drawlogo48.png">Download draw.io Desktop
-				</a>
-			</td>
-		</tr>
-	</table>
+<div id="geFooter" style="visibility:hidden;overflow:hidden;">
 </div>
+<script src="/dbd/js/lib/jquery-1.12.4.min.js"></script>
 <script type="text/javascript">
 /**
  * Main

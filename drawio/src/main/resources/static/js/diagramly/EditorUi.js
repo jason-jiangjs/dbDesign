@@ -3635,7 +3635,7 @@
 		var div =  this.createDiv('geSidebarContainer geSidebarFooter');
 		div.style.position = 'absolute';
 		div.style.overflow = 'hidden';
-		
+
 		var elt2 = document.createElement('a');
 		elt2.className = 'geTitle';
 		elt2.style.color = '#DF6C0C';
@@ -3652,15 +3652,15 @@
 		{
 			evt.preventDefault();
 		}));
-		
+
 		mxEvent.addListener(elt2, 'click', mxUtils.bind(this, function(evt)
 		{
 			this.actions.get('shapes').funct();
 			mxEvent.consume(evt);
 		}));
-		
+
 		div.appendChild(elt2);
-		
+
 		return div;
 	};
 	
@@ -11030,7 +11030,9 @@
 	{
 		this.diagramContainer.style.visibility = (enabled) ? '' : 'hidden';
 		this.formatContainer.style.visibility = (enabled) ? '' : 'hidden';
-		this.sidebarFooterContainer.style.display = (enabled) ? '' : 'none';
+		if (this.sidebarFooterContainer) {
+			this.sidebarFooterContainer.style.display = (enabled) ? '' : 'none';
+		}
 		this.sidebarContainer.style.display = (enabled) ? '' : 'none';
 		this.hsplit.style.display = (enabled) ? '' : 'none';
 		this.editor.graph.setEnabled(enabled);

@@ -18,8 +18,8 @@ var OpenDialog = function()
 	var dx = (mxClient.IS_VML && (document.documentMode == null || document.documentMode < 8)) ? 20 : 0;
 	
 	iframe.setAttribute('width', (((Editor.useLocalStorage) ? 640 : 320) + dx) + 'px');
-	iframe.setAttribute('height', (((Editor.useLocalStorage) ? 480 : 220) + dx) + 'px');
-	iframe.setAttribute('src', OPEN_FORM);
+	iframe.setAttribute('height', (((Editor.useLocalStorage) ? 480 : 120) + dx) + 'px');
+	iframe.setAttribute('src', OPEN_FORM_2); // todo--修改 使用自定义的文件选择对话框
 	
 	this.container = iframe;
 };

@@ -16,6 +16,7 @@ window.IMAGE_PATH = window.IMAGE_PATH || 'images';
 window.STYLE_PATH = window.STYLE_PATH || 'styles';
 window.CSS_PATH = window.CSS_PATH || 'styles';
 window.OPEN_FORM = window.OPEN_FORM || 'open.html';
+window.OPEN_FORM_2 = window.OPEN_FORM_2 || 'open2.html'; // todo--修改 使用自定义的文件选择对话框
 
 // Sets the base path, the UI language via URL param and configures the
 // supported languages to avoid 404s. The loading of all core language

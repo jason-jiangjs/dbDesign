@@ -24,9 +24,9 @@
 	Sidebar.prototype.libAliases = {'aws2': 'aws3', 'gcp' : 'gcp2'};
 	
 	/**
-	 * 
+	 * 	todo-- 修改 缺省模板,删除bpmn
 	 */
-	Sidebar.prototype.defaultEntries = 'general;uml;er;bpmn;flowchart;basic;arrows2';
+	Sidebar.prototype.defaultEntries = 'general;uml;er;flowchart;basic;arrows2';
 	
 	/**
 	 * Library definitions 
@@ -730,7 +730,7 @@
 			mxLog.textarea.value = '';
 		}
 
-		this.addSearchPalette(true);
+		//this.addSearchPalette(true); todo-- 修改，不显示图形模板搜索框
 		
 		// Adds custom sections first
 		if (this.customEntries != null)
@@ -816,7 +816,7 @@
 			}
 		}
 		
-		this.addGeneralPalette(this.customEntries == null);
+		this.addGeneralPalette(false); // todo-- 修改 默认不展开普通模板,(原来是 this.customEntries == null)
 		this.addMiscPalette(false);
 		this.addAdvancedPalette(false);
 		this.addBasicPalette();

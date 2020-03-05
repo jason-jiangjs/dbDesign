@@ -71,7 +71,7 @@ function Sidebar(editorUi, container)
 		this.hideTooltip();
 	}));
 	
-	this.init();
+	this.init(); // 这里调用的是 diagramly\sidebar\Sidebar.js 里的 Sidebar.prototype.init
 };
 
 /**

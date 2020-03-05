@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Open Diagram</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="/dbd/js/lib/jquery-1.12.4.min.js"></script>
+</head>
+<script type="text/javascript">
+	// 改变原有方案，使用ajax从后台服务器获取数据
+    var postData = { 'dbId': 1001, 'tableId': 10910};
+    $.ajax({
+        type: 'post',
+        url: '/dbd/ajax/er/getErChartInfo',
+        data: JSON.stringify(postData),
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+
+            if (data.code == 0) {
+                handleSubmit(data.data);
+            } else {
+                window.parent.showOpenAlert({message: '从后台服务器获取数据时出错'});
+            }
+        }
+    });
+
+	function handleSubmit(data)
+	{
+	    var parentWinObj = window.parent;
+        try {
+            parentWinObj.setCurrentXml(decodeURIComponent(data.content),decodeURIComponent(data.title));
+            // parentWinObj.openFile.cancel(true);
+        } catch(e) {
+            parentWinObj.showOpenAlert({message: e.message});
+        }
+	}
+
+</script>
+<body>
+<table style="width:100%;">
+<tr>
+<td style="height:40px;vertical-align:top;">正在加载Diagram数据......
+</td>
+</tr>
+</table>
+</form>
+</body>
+</html>

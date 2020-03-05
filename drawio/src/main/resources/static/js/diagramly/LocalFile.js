@@ -104,8 +104,26 @@ LocalFile.prototype.saveFile = function(title, revision, success, error)
 	{
 		if (this.ui.isOfflineApp() || this.ui.isLocalFileSave())
 		{
-			this.ui.doSaveLocalFile(data, title, (binary) ?
-				'image/png' : 'text/xml', binary);
+			// this.ui.doSaveLocalFile(data, title, (binary) ?	'image/png' : 'text/xml', binary);
+			// todo -- 修改 不保存为本地文件, 而是上传到后台服务器
+			var postData = { 'dbId': 1001, 'tableId': 10910};
+			var that = this;
+			postData.erChartId = 1001;
+			postData.content = data; // 这里暂定文件名不会被修改
+			$.ajax({
+				type: 'post',
+				url: '/dbd/ajax/er/saveErChartInfo',
+				data: JSON.stringify(postData),
+				contentType: "application/json; charset=utf-8",
+				success: function (data) {
+					if (data.code == 0) {
+						that.ui.spinner.spin(document.body, '保存成功。');
+						that.ui.spinner.stop();
+					} else {
+						window.showOpenAlert({message: '保存数据到后台服务器时出错'});
+					}
+				}
+			});
 		}
 		else
 		{
