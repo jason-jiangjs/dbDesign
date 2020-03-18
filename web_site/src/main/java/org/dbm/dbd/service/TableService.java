@@ -4,6 +4,7 @@ import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.base.service.BaseService;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.dbd.dao.TableDao;
+import org.dbm.dbd.web.util.BizCommUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -77,21 +78,6 @@ public class TableService extends BaseService {
     }
 
     /**
-     * 查询指定表名称查询
-     * 这里返回数组形式是为了防止万一有数据重复
-     */
-    public List<BaseMongoMap> findTableByName(long dbId, String tblName) {
-        if (dbId == 0 && tblName == null) {
-            return Collections.EMPTY_LIST;
-        }
-
-        Query queryObj = new Query(where("dbId").is(dbId));
-        queryObj.addCriteria(where("tableName").is(tblName));
-        queryObj.addCriteria(where("deleteFlg").is(false));
-        return tableDao.getMongoMapList(queryObj);
-    }
-
-    /**
      * 根据tableId查询指定的表
      */
     public BaseMongoMap getTableById(long tblId) {
@@ -103,7 +89,7 @@ public class TableService extends BaseService {
         queryObj.fields().include("column_list");
         queryObj.fields().include("index_list");
         queryObj.fields().include("dbId");
-        queryObj.fields().include("modifiedTime");
+        queryObj.fields().include("auditData.modifiedTime");
         queryObj.fields().include("currEditorId");
         queryObj.fields().include("startEditTime");
         return tableDao.getMongoMap(queryObj);
@@ -116,14 +102,14 @@ public class TableService extends BaseService {
     public List<BaseMongoMap> getTableByIds(Long dbId, List<Long> tblIds, boolean needDetail, boolean needSorted) {
         Query queryObj = new Query(where("_id").in(tblIds));
         queryObj.addCriteria(where("dbId").is(dbId));
-        queryObj.addCriteria(where("deleteFlg").is(false));
+        queryObj.addCriteria(where("auditData.valid").is(true));
         queryObj.fields().include("tableName");
-        queryObj.fields().include("tableNameCN");
+        queryObj.fields().include("aliasName");
         if (needDetail) {
             queryObj.fields().include("column_list");
             queryObj.fields().include("index_list");
         }
-        queryObj.fields().include("modifiedTime");
+        queryObj.fields().include("auditData.modifiedTime");
         queryObj.fields().include("currEditorId");
         queryObj.fields().include("currEditorName");
         queryObj.fields().include("startEditTime");
@@ -138,9 +124,10 @@ public class TableService extends BaseService {
      */
     public void delTableById(long userId, long tblId) {
         Map<String, Object> infoMap = new HashMap<>();
-        infoMap.put("deleteFlg", true);
-        infoMap.put("modifier", userId);
-        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
+        infoMap.put("auditData.valid", false);
+        infoMap.put("auditData.modifierId", userId);
+        infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
+        infoMap.put("auditData.modifiedTime", DateTimeUtil.getDate().getTime());
         tableDao.updateObject(tblId, infoMap, false);
     }
 
@@ -157,17 +144,20 @@ public class TableService extends BaseService {
     public void startEditTable(long userId, long tblId) {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("currEditorId", userId);
-        infoMap.put("startEditTime", DateTimeUtil.getNowTime());
+        infoMap.put("currEditorName", BizCommUtil.getLoginUserName());
+        infoMap.put("startEditTime", DateTimeUtil.getDate().getTime());
 
         tableDao.updateObject(tblId, infoMap, false);
     }
 
     /**
-     * 结束编辑表
+     * 结束编辑表(没有通常意义下的结束编辑，应该是取消编辑)
+     * 正常情况下应该是和保存时一起
      */
     public void endEditTable(long tblId) {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("currEditorId", null);
+        infoMap.put("currEditorName", null);
         infoMap.put("startEditTime", null);
 
         tableDao.updateObject(tblId, infoMap, false);
@@ -179,6 +169,7 @@ public class TableService extends BaseService {
     public void endEditTable4User(long userId) {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("currEditorId", null);
+        infoMap.put("currEditorName", null);
         infoMap.put("startEditTime", null);
 
         Query query = new Query(where("currEditorId").is(userId));
@@ -192,7 +183,7 @@ public class TableService extends BaseService {
     public List<BaseMongoMap> getTableInEditing(long dbId) {
         Query queryObj = new Query(where("dbId").is(dbId));
         queryObj.addCriteria(where("currEditorId").gt(0));
-        queryObj.addCriteria(where("deleteFlg").is(false));
+        queryObj.addCriteria(where("auditData.valid").is(true));
 
         queryObj.fields().include("tableName");
         queryObj.fields().include("currEditorName");

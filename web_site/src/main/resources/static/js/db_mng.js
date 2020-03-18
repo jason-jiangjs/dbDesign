@@ -10,6 +10,7 @@ $(function () {
         idField: "_id",
         fit: true,
         fitColumns: true,
+        rownumbers: true,
         nowrap: false,
         striped: true,
         singleSelect: true,
@@ -21,22 +22,21 @@ $(function () {
     };
     options.url = Ap_servletContext + '/ajax/mng/getDbList?_t=' + new Date().getTime();
     options.columns = [[
-        {field:'_id',title:'ID',width:80},
+        {field:'_id',title:'ID',width:40},
         {field:'dbName',title:'名称',width:100},
-        {field:'dbNameCN',title:'说明',width:100},
-        {field:'typeStr',title:'版本号',width:100,
+        {field:'typeStr',title:'版本号',width:60,
             formatter: function(value, row, index) {
-                return $.trim(value) + ' ' + $.trim(row.typeVer);
+                return $.trim(row.dbProvider) + ' ' + $.trim(row.dbVersion);
             }},
-        {field:'desc',title:'备注',width:100},
-        {field:'deleteFlg',title:'状态',width:80,
+        {field:'projectStatus',title:'状态',width:40,
             formatter: function(value, row, index) {
-                if (value == true || value == 'true') {
-                    return $translate('user_status_val_4');
+                if (value) {
+                    return $translate('user_status_val_' + value);
                 }
                 return '';
             }
-        }
+        },
+        {field:'desc',title:'备注',width:100}
     ]];
 
     options.onDblClickRow = function(index, row) {
@@ -52,6 +52,20 @@ $(function () {
 
     $('#db_grid').datagrid(options);
 
+    $('#projStatus').combobox({
+        data: [{
+            "id": 1,
+            "text": "正常"
+        },{
+            "id": 2,
+            "text": "锁定"
+        },{
+            "id": 4,
+            "text": "删除"
+        }],
+        valueField: 'id',
+        textField: 'text'
+    });
     $('#typeStr').combobox({
         data: [{
             "id": 1,

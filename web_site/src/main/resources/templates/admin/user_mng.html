@@ -37,7 +37,7 @@
     <a href="#" class="easyui-linkbutton" iconCls="icon-add" onclick="addUserRole()" plain="true">添加</a>
     <a href="#" class="easyui-linkbutton" iconCls="icon-remove" onclick="deleteUserRole()" plain="true" style="margin-left:15px">删除</a>
 </div>
-<div id="user_dlg" class="easyui-dialog" title="Basic Dialog" style="width:650px;height:505px" data-options="iconCls:'icon-man',modal:true,closed:true,border:'thin'">
+<div id="user_dlg" class="easyui-dialog" title="编辑用户信息" style="width:675px;height:505px" data-options="iconCls:'icon-man',modal:true,closed:true,border:'thin'">
     <div style="padding:10px 20px 0px 20px">
         <form id="ff" method="post">
             <input type="hidden" id="userId">
@@ -61,7 +61,7 @@
                 </tr>
             </table>
         </form>
-        <div style="width:600px;height:300px;margin:0 auto">
+        <div style="width:625px;height:300px;margin:0 auto">
             <table id="role_grid" class="easyui-datagrid" title="数据库及访问权限一览"
                 data-options="singleSelect:true,striped:true,fit:true,rownumbers:true,method:'get',idField:'dbId',toolbar:'#role_grid_toolbar'"></table>
         </div>

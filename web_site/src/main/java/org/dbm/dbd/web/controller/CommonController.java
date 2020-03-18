@@ -42,7 +42,6 @@ public class CommonController extends BaseController {
         return dataList;
     }
 
-
     /**
      * 查询表设计时的表头定义数据
      */

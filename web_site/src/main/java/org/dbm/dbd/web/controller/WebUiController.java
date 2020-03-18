@@ -126,7 +126,7 @@ public class WebUiController extends BaseController {
     /**
      * 跳转到表一览(主Tab)画面
      */
-    @RequestMapping(value = "/table_list", method = RequestMethod.GET)
+    @RequestMapping(value = "/table_list", method = RequestMethod.POST)
     public ModelAndView getTableList(@RequestParam Map<String, String> params) {
         ModelAndView model = new ModelAndView();
         model.setViewName("table/table_list");

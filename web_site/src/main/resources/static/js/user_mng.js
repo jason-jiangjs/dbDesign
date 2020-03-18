@@ -80,6 +80,7 @@ $(function () {
         idField: "_id",
         fit: true,
         fitColumns: true,
+        rownumbers: true,
         nowrap: false,
         striped: true,
         singleSelect: true,
@@ -87,9 +88,7 @@ $(function () {
         pagination: true,
         pageSize: 20,
         pageList: [20,50,100],
-        toolbar: '#user_grid_toolbar',
-        rownumbers: true,
-        rownumberWidth: 60
+        toolbar: '#user_grid_toolbar'
     };
     options.onDblClickRow = function(index, row) {
         // 弹出对话框，显示用户详细信息（包括数据库访问权限）

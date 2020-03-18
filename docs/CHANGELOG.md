@@ -21,6 +21,9 @@
 原draw.io下的index.html改名为index2.html
 新增open2.html
 
+2018-01-12 升级 EasyUI 到1.7.6（这是最后一个支持jQuery1.12的版本）
+修改EasyUI的源代码，'rownumberWidth'从30改到40
+
 2018-08-14
 以下列定义暂不显示
         {

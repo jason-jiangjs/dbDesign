@@ -33,7 +33,7 @@
     <a href="#" class="easyui-linkbutton" iconCls="icon-add" onclick="addDb()">添加</a>
     <a href="#" class="easyui-linkbutton" iconCls="icon-remove" onclick="deleteDb()" style="margin-left:15px">删除</a>
 </div>
-<div id="db_dlg" class="easyui-dialog" title="Basic Dialog" data-options="iconCls:'icon-man',modal:true,closed:true,border:'thin',width:650,height:370">
+<div id="db_dlg" class="easyui-dialog" title="编辑项目信息" data-options="iconCls:'icon-save',modal:true,closed:true,border:'thin',width:650,height:370">
     <div style="padding:10px 20px 0px 20px">
         <form id="ff" method="post">
             <input type="hidden" id="dbId">
@@ -44,11 +44,11 @@
                 </tr>
                 <tr>
                     <td style="width:35px">说明:</td>
-                    <td colspan="2"><input class="easyui-textbox" id="dbNameCN" style="width:480px"></td>
+                    <td colspan="2"><input class="easyui-combobox" id="projStatus" data-options="limitToList:true,panelHeight:100,editable:false,required:true" style="width:173px"></td>
                 </tr>
                 <tr>
                     <td>类型</td>
-                    <td style="width:205px"><input class="easyui-combobox" id="typeStr" data-options="limitToList:true,panelHeight:120,editable:false,required:true" style="width:173px"></td>
+                    <td style="width:205px"><input class="easyui-combobox" id="typeStr" data-options="limitToList:true,panelHeight:150,editable:false,required:true" style="width:173px"></td>
                     <td><span style="padding-right:15px">版本</span><input class="easyui-textbox" id="ver" data-options="required:true" style="width:80px"></td>
                 </tr>
                 <tr>

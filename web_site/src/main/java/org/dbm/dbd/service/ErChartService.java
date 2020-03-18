@@ -1,5 +1,6 @@
 package org.dbm.dbd.service;
 
+import org.dbm.dbd.web.util.BizCommUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
@@ -36,8 +37,9 @@ public class ErChartService extends BaseService {
             infoMap.put("title", title);
         }
         infoMap.put("content", info);
-        infoMap.put("modifier", userId);
-        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
+        infoMap.put("auditData.modifierId", userId);
+        infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
+        infoMap.put("auditData.modifiedTime", DateTimeUtil.getDate().getTime());
         erChartDao.updateObject(ercId, infoMap, false);
     }
 }

@@ -1,6 +1,7 @@
 package org.dbm.dbd.service;
 
 import org.apache.commons.lang3.StringUtils;
+import org.dbm.dbd.web.util.BizCommUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,12 +39,13 @@ public class UserService extends BaseService {
     /**
      * 保存用户的默认工作数据库
      */
-    public void setUserFavorite(long userIId, long dbId) {
+    public void setUserFavorite(long userId, long dbId) {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("favorite", dbId);
-        infoMap.put("modifier", userIId);
-        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
-        userDao.updateObject(userIId, infoMap, false);
+        infoMap.put("auditData.modifierId", userId);
+        infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
+        infoMap.put("auditData.modifiedTime", DateTimeUtil.getDate().getTime());
+        userDao.updateObject(userId, infoMap, false);
     }
 
     /**
@@ -51,7 +53,7 @@ public class UserService extends BaseService {
      */
     public List<BaseMongoMap> findUserList(int page, int limit) {
         Query queryObj = new Query();
-        queryObj.fields().include("userId");
+        queryObj.fields().include("account");
         queryObj.fields().include("userName");
         queryObj.fields().include("role");
         queryObj.fields().include("status");
@@ -131,11 +133,11 @@ public class UserService extends BaseService {
 
     private static String getDbNameTxt(BaseMongoMap dbMap) {
         String dbTxt = StringUtils.trimToEmpty(dbMap.getStringAttribute("dbName"));
-        String cnName = StringUtils.trimToNull(dbMap.getStringAttribute("dbNameCN"));
+        String cnName = StringUtils.trimToNull(dbMap.getStringAttribute("dbProvider"));
         if (cnName != null) {
             dbTxt = dbTxt + "  =>  " + cnName;
         }
-        String dbVerStr = StringUtils.trimToNull(dbMap.getStringAttribute("typeStr"));
+        String dbVerStr = StringUtils.trimToNull(dbMap.getStringAttribute("dbVersion"));
         if (dbVerStr != null) {
             dbTxt = dbTxt + " (" + dbVerStr + ")";
         }
@@ -148,8 +150,9 @@ public class UserService extends BaseService {
     public void removeUser(Long adminId, long userId) {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("status", 4);
-        infoMap.put("modifier", adminId);
-        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
+        infoMap.put("auditData.modifierId", adminId);
+        infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
+        infoMap.put("auditData.modifiedTime", DateTimeUtil.getDate().getTime());
         userDao.updateObject(userId, infoMap, false);
     }
 
@@ -160,7 +163,7 @@ public class UserService extends BaseService {
         long iid = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);
         Map<String, Object> userObj = new HashMap<>();
         userObj.put("_id", iid);
-        userObj.put("userId", params.get("accNo"));
+        userObj.put("account", params.get("accNo"));
         userObj.put("userName", params.get("accName"));
         userObj.put("password", new BCryptPasswordEncoder().encode("abc.2018"));
         userObj.put("status", 0);
@@ -168,6 +171,14 @@ public class UserService extends BaseService {
         userObj.put("role", StringUtil.convertToInt(params.get("role")));
         List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
         userObj.put("roleList", roleList);
+
+        long currTime = DateTimeUtil.getDate().getTime();
+        userObj.put("auditData.valid", true);
+        userObj.put("auditData.creatorId", BizCommUtil.getLoginUserId());
+        userObj.put("auditData.createdTime", currTime);
+        userObj.put("auditData.modifierId", BizCommUtil.getLoginUserId());
+        userObj.put("auditData.modifierName", BizCommUtil.getLoginUserName());
+        userObj.put("auditData.modifiedTime", currTime);
         userDao.updateObject(iid, userObj, true);
     }
 
@@ -185,14 +196,20 @@ public class UserService extends BaseService {
         long iid = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);
         Map<String, Object> userObj = new HashMap<>();
         userObj.put("_id", iid);
-        userObj.put("userId", userId);
+        userObj.put("account", userId);
         userObj.put("userName", userName);
         userObj.put("password", "");
         userObj.put("status", 1);
         userObj.put("registered", false);
         userObj.put("from", fromSrc);
-        userObj.put("creator", iid);
-        userObj.put("createdTime", DateTimeUtil.getNowTime());
+
+        long currTime = DateTimeUtil.getDate().getTime();
+        userObj.put("auditData.valid", true);
+        userObj.put("auditData.creatorId", iid);
+        userObj.put("auditData.createdTime", currTime);
+        userObj.put("auditData.modifierId", iid);
+        userObj.put("auditData.modifierName", userName);
+        userObj.put("auditData.modifiedTime", currTime);
         userDao.updateObject(iid, userObj, true);
     }
 

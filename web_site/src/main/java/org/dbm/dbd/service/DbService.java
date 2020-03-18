@@ -1,5 +1,6 @@
 package org.dbm.dbd.service;
 
+import org.dbm.dbd.web.util.BizCommUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
@@ -70,9 +71,10 @@ public class DbService extends BaseService {
      */
     public void removeDb(long userId, long dbId) {
         Map<String, Object> infoMap = new HashMap<>();
-        infoMap.put("deleteFlg", true);
-        infoMap.put("modifier", userId);
-        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
+        infoMap.put("projectStatus", 4);
+        infoMap.put("auditData.modifierId", userId);
+        infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
+        infoMap.put("auditData.modifiedTime", DateTimeUtil.getDate().getTime());
         dbDao.updateObject(dbId, infoMap, false);
     }
 
