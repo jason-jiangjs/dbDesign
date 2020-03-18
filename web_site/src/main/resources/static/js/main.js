@@ -15,19 +15,14 @@ $(function () {
                 var errObj = JSON.parse(xhr.responseText);
                 if (errObj.status == 408) {
                     window.location = Ap_servletContext + "/index";
+                } else if (errObj.status == 404) {
+                    window.location = Ap_servletContext + "/error/404.html";
                 }
             }
         }
     });
 
-    // 加载资源文件（如果不考虑多语言问题，则不需要这样处理，直接在html中加载该js）
-    var lang = navigator.language;
-    if (!lang) {
-        lang = navigator.browserLanguage;
-    }
-    if (lang) {
-        jQuery.getScript(Ap_servletContext + "/js/messages/msg_" + lang + ".js"); // 这里的context-path固定
-    }
+    _loadLanguage();
 
     // 对Date的扩展，将 Date 转化为指定格式的String
     // 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
@@ -49,15 +44,31 @@ $(function () {
     }
 });
 
+// 向string添加扩展（注意这里的参数是个数组）
+function _loadLanguage() {
+    // 加载资源文件（如果不考虑多语言问题，则不需要这样处理，直接在html中加载该js）
+    var lang = navigator.language;
+    if (!lang) {
+        lang = navigator.browserLanguage;
+    }
+    if (lang) {
+        jQuery.getScript(Ap_servletContext + "/js/messages/msg_" + lang + ".js"); // 这里的context-path固定
+    }
+}
 
 // 获取资源文件中的属性值(支持参数形式)
 function $translate(key) {
-    if (msg) {
-        var args = arguments;
-        args[0] = $.trim(msg[key]);
-        if (args[0]) {
-            return _formatString(args);
+    try {
+        if (typeof msg == "undefined") { // 这里要换一种方式加载
+            _loadLanguage();
         }
+    } catch (e) {
+        _loadLanguage();
+    }
+    var args = arguments;
+    args[0] = $.trim(msg[key]);
+    if (args[0]) {
+        return _formatString(args);
     }
     return '';
 

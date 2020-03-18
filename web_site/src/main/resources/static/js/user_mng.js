@@ -87,7 +87,9 @@ $(function () {
         pagination: true,
         pageSize: 20,
         pageList: [20,50,100],
-        toolbar: '#user_grid_toolbar'
+        toolbar: '#user_grid_toolbar',
+        rownumbers: true,
+        rownumberWidth: 60
     };
     options.onDblClickRow = function(index, row) {
         // 弹出对话框，显示用户详细信息（包括数据库访问权限）
@@ -301,7 +303,7 @@ var defaultVal = 0;
 // 添加用户权限
 function addUserRole() {
     defaultVal ++;
-    $('#role_grid').datagrid('appendRow', { default: defaultVal });
+    $('#role_grid').datagrid('appendRow', { 'default': defaultVal });
 }
 
 // 删除用户权限
@@ -312,7 +314,7 @@ function deleteUserRole() {
         layer.msg('请选择一个项目后再操作．')
         return;
     }
-    if (s1.default >= 1) {
+    if (s1['default'] >= 1) {
         // 新增的项目，直接删除
         var s2 = gridObj.datagrid('getRowIndex', s1);
         if (s2 < 0) {

@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.vog</groupId>
+		<groupId>org.dbm</groupId>
 		<artifactId>dbd</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<groupId>com.vog</groupId>
+	<groupId>org.dbm</groupId>
 	<artifactId>web_site</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
@@ -56,7 +56,13 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
-		</dependency>
+            <exclusions>
+                <exclusion>
+                    <artifactId>groovy</artifactId>
+                    <groupId>org.codehaus.groovy</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -121,22 +127,22 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
         </dependency>
+		<!--<dependency>-->
+			<!--<groupId>com.google.appengine</groupId>-->
+			<!--<artifactId>appengine-api-1.0-sdk</artifactId>-->
+			<!--&lt;!&ndash;<version>1.9.64</version>&ndash;&gt;-->
+		<!--</dependency>-->
 		<dependency>
-			<groupId>com.google.appengine</groupId>
-			<artifactId>appengine-api-1.0-sdk</artifactId>
-			<!--<version>1.9.64</version>-->
-		</dependency>
-		<dependency>
-			<groupId>com.vog</groupId>
+			<groupId>org.dbm</groupId>
 			<artifactId>drawio</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
             <type>war</type>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
-			<scope>test</scope>
-		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>org.springframework.boot</groupId>-->
+			<!--<artifactId>spring-boot-starter-jdbc</artifactId>-->
+			<!--<scope>test</scope>-->
+		<!--</dependency>-->
 
 	</dependencies>
 
@@ -147,7 +153,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>org.vog.dbd.web.DbDesignApplication</mainClass>
+					<mainClass>org.dbm.dbd.web.DbDesignApplication</mainClass>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -172,7 +178,7 @@
                     <packagingExcludes>WEB-INF/web.xml</packagingExcludes>
                     <overlays>
                         <overlay>
-                            <groupId>com.vog</groupId>
+							<groupId>org.dbm</groupId>
                             <artifactId>drawio</artifactId>
                         </overlay>
                     </overlays>

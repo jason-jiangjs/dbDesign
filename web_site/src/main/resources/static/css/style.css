@@ -4,3 +4,15 @@ body {
     margin:0;
 }
 
+/* 文本超长class */
+.grid-cell-textEllipsis {
+    overflow: hidden;/*不允许滚动条*/
+    white-space: nowrap;/*不允许文本换行*/
+    text-overflow: ellipsis;/*文本超长显示省略号*/
+}
+
+/* 鼠标移上,显示全文class */
+.grid-cell-textEllipsis:hover {
+    white-space:normal;
+    word-break: break-all;
+}

@@ -1,0 +1,77 @@
+<div id="tab-tools"><!--/* (右侧)表定义区域的工具栏和弹出菜单 */-->
+    <div style="width:95px"><!--/* 这里要加一层指定宽度,否则tab标题栏会和工具菜单重叠 */-->
+        <a href="javascript:void(0)" class="easyui-linkbutton" style="padding-right:5px" data-options="plain:true,iconCls:'fa fa-home fa-lg',width:40" onclick="javascript:jumptoHomeTab()"></a>
+        <a id="_home_page_btn" href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,menu:'#tab-tools_menu_home',iconCls:'icon-more'"></a>
+        <a id="_tab_page_btn_editable" href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,menu:'#tab-tools_menu_editable',iconCls:'icon-more'" style="display:none" ></a>
+        <a id="_tab_page_btn_editing" href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,menu:'#tab-tools_menu_editing',iconCls:'icon-more'" style="display:none" ></a>
+    </div>
+</div>
+<div id="tab-tools_menu_home" class="easyui-menu"><!-- 当为主页时显示此下拉菜单 -->
+    <div data-options="iconCls:'fa fa-refresh'" th:href="@{/home?type=1}">刷新</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql()">导出SQL脚本</div>
+    <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportUpdateSql()">导出SQL更改脚本</div>
+    <div class="menu-sep"></div>
+    <th:block dbd:authorize="${dbId}">
+        <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:releaseNewTag()">发布版本</div>
+    </th:block>
+    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看历史发布版本</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
+    <div data-options="href:'drawio?dev=1&gapi=0&db=0&od=0&tr=0&gh=0&gl=0',iconCls:'fa fa-paperclip'">查看ER图</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-backward'" th:href="@{/home?type=1}">返回选择数据库</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-support'" th:href="@{/home?type=1}">帮助</div>
+    <div class="menu-sep"></div>
+    <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
+</div>
+<!--/* 下面列出了2种形态的菜单,代码有冗余,修改起来要注意 */-->
+<!--/* 先用这种方法来实现,使用menuitem的enable/disable功能也一样麻烦，而且要取出子菜单逐个判断 */-->
+<div id="tab-tools_menu_editable" class="easyui-menu">
+    <th:block dbd:authorize="${dbId}">
+        <div data-options="iconCls:'fa fa-lock'" onclick="javascript:chkForEditing()">开始编辑</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-exchange',disabled:true" onclick="javascript:enableDragDrop()">开启行拖放操作</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-edit',disabled:true" onclick="javascript:editIndex()">编辑索引</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-edit',disabled:true" onclick="javascript:useTemplate()">使用预定义模板</div>
+        <div class="menu-sep"></div>
+    </th:block>
+    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看历史发布版本</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-backward'" th:href="@{/home?type=1}">返回选择数据库</div>
+    <div class="menu-sep"></div>
+    <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
+</div>
+<div id="tab-tools_menu_editing" class="easyui-menu">
+    <th:block dbd:authorize="${dbId}">
+        <div data-options="iconCls:'fa fa-unlock'" onclick="javascript:endEditing()" title="退出编辑状态，不保存当前修改!!!">取消编辑</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-exchange'" onclick="javascript:enableDragDrop()">开启行拖放操作</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-edit'" onclick="javascript:editIndex()">编辑索引</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fa fa-edit'" onclick="javascript:useTemplate()">使用预定义模板</div>
+        <div class="menu-sep"></div>
+    </th:block>
+    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看历史发布版本</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-backward'" th:href="@{/home?type=1}">返回选择数据库</div>
+    <div class="menu-sep"></div>
+    <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
+</div>
+
+
+<!--<div id="db-tools_menu" class="easyui-menu" style="width:160px;">-->
+    <!--<div data-options="name:'to_tbl_list',iconCls:'icon-save'" onclick="javascript:convertType(1)" th:if="${dbType==1}">切换到表一览</div>-->
+    <!--<div data-options="name:'to_view_list',iconCls:'icon-save'" onclick="javascript:convertType(2)" th:if="${dbType==1}">切换到视图一览</div>-->
+    <!--<div class="menu-sep" th:if="${dbType==1}"></div>-->
+    <!--<div data-options="name:'setdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(1)">设置缺省工作环境</div>-->
+    <!--<div data-options="name:'unsetdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(0)">取消缺省工作环境</div>-->
+<!--</div>-->

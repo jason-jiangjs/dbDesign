@@ -41,7 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import com.google.appengine.api.utils.SystemProperty;
+//import com.google.appengine.api.utils.SystemProperty;
 
 /**
  * Servlet implementation class OpenServlet
@@ -87,7 +87,7 @@ public class EmbedServlet2 extends HttpServlet
 		if (lastModified == null)
 		{
 			// Uses deployment date as lastModified header
-			String applicationVersion = SystemProperty.applicationVersion.get();
+			String applicationVersion = "";//SystemProperty.applicationVersion.get();
 			Date uploadDate = new Date(Long
 					.parseLong(applicationVersion
 							.substring(applicationVersion.lastIndexOf(".") + 1))

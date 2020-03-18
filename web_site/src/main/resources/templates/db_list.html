@@ -4,22 +4,24 @@
     <th:block th:replace="/layout/head"></th:block>
 </head>
 
-<body>
-<div style="padding:4px;width:100px">
-    <div class="easyui-panel">
-        <a href="#" class="easyui-menubutton" data-options="menu:'#mm1',iconCls:'fa fa-bars',width:'100%'">菜单</a>
-    </div>
-    <div id="mm1" style="width:150px;">
-        <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')">
-            <div data-options="iconCls:'fa fa-database'" th:href="@{/mng/db_mng}">数据库管理</div>
-            <div class="menu-sep"></div>
-            <div data-options="iconCls:'fa fa-user'" th:href="@{/mng/user_mng}">用户管理</div>
-            <div class="menu-sep"></div>
-        </th:block>
-        <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
+<body style="width:800px;margin: 0 auto">
+<div style="position:absolute;width:800px;z-index:198">
+    <div style="width:95px;float:right;margin-right:56px">
+        <div class="easyui-panel">
+            <a href="#" class="easyui-menubutton" data-options="menu:'#mm1',iconCls:'icon-more',width:93">菜单</a>
+        </div>
+        <div id="mm1" style="width:150px;">
+            <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')">
+                <div data-options="iconCls:'fa fa-database'" th:href="@{/mng/db_mng}">数据库管理</div>
+                <div class="menu-sep"></div>
+                <div data-options="iconCls:'fa fa-user'" th:href="@{/mng/user_mng}">用户管理</div>
+                <div class="menu-sep"></div>
+            </th:block>
+            <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
+        </div>
     </div>
 </div>
-<section style="width:500px;height:300px;margin:0 auto;margin-top:80px">
+<div style="width:500px;margin:0 auto;margin-top:60px">
     <h2>当前数据库表设计一览</h2>
     <th:block th:if="${#lists.isEmpty(dbList)}">
         <div style="margin:20px"></div>
@@ -35,7 +37,7 @@
             <input type="checkbox" id="defaultFlg"><label style="font-size: small">将所选择的数据库设置为默认工作环境，下次再登录时不会出现该一览画面．</label>
         </div>
     </th:block>
-</section>
+</div>
 <form id="itemForm" method="get" th:action="@{/table_list}">
     <input type="hidden" id="dbId" name="ddId" />
     <input type="hidden" id="checkFlg" name="checkFlg" />
