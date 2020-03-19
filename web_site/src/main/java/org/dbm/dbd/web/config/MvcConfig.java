@@ -12,14 +12,12 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/").setViewName("index");
         // 下面几项是drawio所用(注意原drawio首页是index.html，这里以免冲突改为index2.html)
         registry.addViewController("/drawio").setViewName("index2");
         registry.addViewController("/app.html").setViewName("app");
         registry.addViewController("/offline.html").setViewName("offline");
         registry.addViewController("/open.html").setViewName("open");
         registry.addViewController("/open2.html").setViewName("open2");
-          //        registry.addViewController("/index").setViewName("index"); // 参见CommonController.tologin()
     }
 
 //    @Override

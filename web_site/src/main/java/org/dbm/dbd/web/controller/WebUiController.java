@@ -40,6 +40,20 @@ public class WebUiController extends BaseController {
     private MessageSource messageSource;
 
     /**
+     * 首页/登录页面
+     */
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    public ModelAndView toIndexPage() {
+        String userLanguage = (String) request.getSession().getAttribute("_user_language");
+        if (userLanguage == null) {
+            request.getSession().setAttribute("_user_language", request.getLocale().toString());
+        }
+        ModelAndView model = new ModelAndView();
+        model.setViewName("index");
+        return model;
+    }
+
+    /**
      * 登录成功,转到数据库选择画面
      */
     @RequestMapping(value = "/home", method = RequestMethod.GET)

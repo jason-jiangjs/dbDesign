@@ -20,3 +20,10 @@
 <script th:src="@{/js/lib/easyui/locale/easyui-lang-zh_CN.js}"></script>
 <script th:src="@{/js/lib/layer/layer.js}"></script>
 <script th:src="@{/js/main.js}"></script>
+
+<th:block th:if="${session._user_language}">
+    <script th:src="@{'/js/messages/msg_' + ${session._user_language} + '.js'}"></script>
+</th:block>
+<th:block th:unless="${session._user_language != null}"><!--/* 默认加载中文信息 */-->
+    <script th:src="@{'/js/messages/msg_zh_CN.js'}"></script>
+</th:block>

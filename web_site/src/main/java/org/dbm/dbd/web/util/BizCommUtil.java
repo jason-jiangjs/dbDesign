@@ -1,11 +1,11 @@
 package org.dbm.dbd.web.util;
 
+import org.dbm.common.Constants;
+import org.dbm.dbd.web.login.CustomerUserDetails;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.dbm.common.Constants;
-import org.dbm.dbd.web.login.CustomerUserDetails;
 
 /**
  * 共通处理辅助类
