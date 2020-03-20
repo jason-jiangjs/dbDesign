@@ -15,6 +15,7 @@ public class ComSequenceService {
         FX_TABLE_ID("FX_TABLE_ID"),
         FX_COLUMN_ID("FX_COLUMN_ID"),
         FX_USER_ID("FX_USER_ID"),
+        FX_ERCHART_ID("FX_ERCHART_ID"),
         ;
 
         // 成员变量

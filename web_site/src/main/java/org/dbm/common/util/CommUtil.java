@@ -3,11 +3,14 @@ package org.dbm.common.util;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
@@ -63,4 +66,34 @@ public final class CommUtil {
         }
     }
 
+    /**
+     * 读取resources目录下的文件
+     */
+    public static String getFileString(Resource file) {
+        FileInputStream fileInputStream = null;
+        try {
+            //2、建立数据通道
+            fileInputStream = new FileInputStream(file.getFile());
+            byte[] buf = new byte[1024];
+            int length = 0;
+            StringBuilder txt = new StringBuilder();
+            //当文件读取到结尾时返回 -1,循环结束。
+            while ((length = fileInputStream.read(buf)) != -1) {
+                txt.append(new String(buf, 0, length));
+            }
+            return txt.toString();
+        } catch (IOException ioexp) {
+            logger.error("读取文件流时出错 file={}", file.getFilename(), ioexp);
+            return null;
+        } finally {
+            //最后记得，关闭流
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    logger.error("关闭文件流时出错 file={}", file.getFilename(), e);
+                }
+            }
+        }
+    }
 }

@@ -58,8 +58,15 @@ public abstract class BaseMongoDao {
     /**
      * 插入数据，指定表
      */
-    public void insertObject(List<DBObject> dataObj, String tblName) {
+    public final void insertObject(List<DBObject> dataObj, String tblName) {
         mongoTemplate.insert(dataObj, tblName);
+    }
+
+    /**
+     * 插入数据，指定表
+     */
+    public void insertObject(Map dataObj) {
+        mongoTemplate.save(dataObj, getTableName());
     }
 
     /**

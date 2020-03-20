@@ -1,13 +1,13 @@
 package org.dbm.dbd.service;
 
-import org.dbm.dbd.web.util.BizCommUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Service;
 import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.base.service.BaseService;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.dbd.dao.DbDao;
+import org.dbm.dbd.web.util.BizCommUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,9 +20,6 @@ public class DbService extends BaseService {
 
     @Autowired
     private DbDao dbDao;
-
-    @Autowired
-    private ComSequenceService sequenceService;
 
     /**
      * 查询指定数据库
@@ -82,10 +79,6 @@ public class DbService extends BaseService {
      * 保存数据库
      */
     public void saveDb(Long dbId, Map<String, Object> params) {
-        if (dbId == null || dbId == 0) {
-            dbId = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);
-            params.put("_id", dbId);
-        }
         dbDao.updateObject(dbId, params, true);
     }
 }

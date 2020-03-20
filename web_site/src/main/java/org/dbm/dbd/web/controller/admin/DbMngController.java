@@ -7,9 +7,7 @@ import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.util.ApiResponseUtil;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.common.util.StringUtil;
-import org.dbm.dbd.service.DbService;
-import org.dbm.dbd.service.UpdateHisService;
-import org.dbm.dbd.service.UserService;
+import org.dbm.dbd.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +30,12 @@ public class DbMngController extends BaseController {
 
     @Autowired
     private UpdateHisService updateHisService;
+
+    @Autowired
+    private ComSequenceService sequenceService;
+
+    @Autowired
+    private ErChartService erChartService;
 
     /**
      * 查询数据库一览数据
@@ -66,10 +70,17 @@ public class DbMngController extends BaseController {
 
         if (dbId == 0) {
             // 新增
+            dbId = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);
+            params.put("_id", dbId);
             params.put("deleteFlg", false);
             params.put("creator", adminId);
             params.put("createdTime", DateTimeUtil.getNowTime());
             dbService.saveDb(dbId, params);
+
+            // 创建一个默认的空白ER图, 关联到该数据库,
+            // 这里另一种方案是懒加载，到第一次读取的时候再创建
+            erChartService.createBlankErChart(adminId, dbId, dbName);
+
         } else {
             // 修改
             BaseMongoMap dbObj = dbService.findDbById(dbId);

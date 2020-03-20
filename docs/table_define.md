@@ -82,7 +82,22 @@
 |aliasName      | string | 别名 
 |desc           | string | 描述/备注/说明
 |* column_list  | object[]  | 列定义一览  | 参照表table_list的column_list
-|* index_list | object[] | 索引定义一览  | 参照表table_list的index_list
+|* index_list   | object[]  | 索引定义一览  | 参照表table_list的index_list
+
+
+###### release_tag_history 表设计和ER图同步创建新标签
+| 列名 | 类型 | 说明 | 备注
+|-----|------|------|------
+|dbId           | long   | 数据库ID
+|tagName        | string | 表名
+|desc           | string | 描述/备注/说明
+|* tableList   　| object[]  | 表一览  | 这里不包括被删除的表
+  |\\- tableId 	     | long  | 表ID 
+  |\\- versionId     | long  | 版本ID
+|+ erChartInfo     　| object  | ER图数据
+  |\\- erChartId     | long  | ER图ID 
+  |\\- versionId     | long  | ER图版本ID
+|+ auditData    | object | 审计信息 
 
 
 ###### update_history (这个表还只是记录修改历史，目前没有计划用专门画面显示此历史记录) 
@@ -161,9 +176,21 @@
 |-----|------|------|------
 |_id           | long      | ER图ID  | 系统内部ID，自增
 |dbId          | long      | 数据库ID
+|versionId     | long      | 版本ID
 |+ auditData   | object    | 审计信息 
 |title         | string    | ER图文件名
 |content       | string    | ER图数据内容
+
+
+###### er_chart_history
+| 列名 | 类型 | 说明 | 备注
+|-----|------|------|------
+|dbId           | long   | 数据库ID
+|erChartId      | long   | ER图ID
+|versionId      | long   | 版本ID
+|+ auditData    | object | 审计信息 
+|title          | string    | ER图文件名
+|content        | string    | ER图数据内容
 
 
 ###### er_table_xref -- 目前还未使用(预备保存项目与ER图的对照关系)

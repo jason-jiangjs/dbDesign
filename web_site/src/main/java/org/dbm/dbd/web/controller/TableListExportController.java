@@ -42,6 +42,7 @@ public class TableListExportController extends BaseController {
      */
     @RequestMapping(value = "/ajax/releaseNewTag", method = RequestMethod.POST)
     public Map<String, Object> createNewTag(@RequestParam Map<String, String> params) {
+        // 先检查所有表是否都有备份（table_history中有一致的数据）
         List<BaseMongoMap> inEditingList = tableService.getTableInEditing(BizCommUtil.getSelectedDbId());
         if (inEditingList.size() > 0) {
             // 有编辑

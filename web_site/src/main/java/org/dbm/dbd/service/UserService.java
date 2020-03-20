@@ -1,16 +1,16 @@
 package org.dbm.dbd.service;
 
 import org.apache.commons.lang3.StringUtils;
-import org.dbm.dbd.web.util.BizCommUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
 import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.base.service.BaseService;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.common.util.StringUtil;
 import org.dbm.dbd.dao.UserDao;
+import org.dbm.dbd.web.util.BizCommUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
@@ -211,6 +211,47 @@ public class UserService extends BaseService {
         userObj.put("auditData.modifierName", userName);
         userObj.put("auditData.modifiedTime", currTime);
         userDao.updateObject(iid, userObj, true);
+    }
+
+    /**
+     * 查询用户是否对指定数据库有读权限
+     */
+    public boolean hasReadAuthorization(long userId, long dbId) {
+        List<Map<String, Object>> dbList = findUserDbList(userId, false);
+        if (dbList.isEmpty()) {
+            return false;
+        }
+        for (Map<String, Object> dbMap : dbList) {
+            long currDbId = StringUtil.convertToLong(dbMap.get("dbId"));
+            if (currDbId == dbId) {
+                // 只要有数据就说明有权限
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 查询用户是否对指定数据库有写权限
+     */
+    public boolean hasWriteAuthorization(long userId, long dbId) {
+        List<Map<String, Object>> dbList = findUserDbList(userId, false);
+        if (dbList.isEmpty()) {
+            return false;
+        }
+        for (Map<String, Object> dbMap : dbList) {
+            long currDbId = StringUtil.convertToLong(dbMap.get("dbId"));
+            if (currDbId == dbId) {
+                // 只要有数据就说明有读权限
+                int currRole = StringUtil.convertToInt(dbMap.get("role"));
+                if (currRole == 2 || currRole == 8 || currRole == 9) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 
 }

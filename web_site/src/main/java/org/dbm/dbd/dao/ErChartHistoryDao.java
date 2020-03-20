@@ -4,13 +4,13 @@ import org.dbm.common.base.dao.mongo.BaseMongoDao;
 import org.springframework.stereotype.Repository;
 
 /**
- * 表定义历史记录
+ * ER图历史记录
  */
 @Repository
-public class TableHistoryDao extends BaseMongoDao {
+public class ErChartHistoryDao extends BaseMongoDao {
 
     // mongo表名
-    private static final String COLL_NAME = "table_history";
+    private static final String COLL_NAME = "er_chart_history";
 
     @Override
     public String getTableName() {

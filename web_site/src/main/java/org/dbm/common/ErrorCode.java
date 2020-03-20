@@ -65,6 +65,10 @@ public class ErrorCode {
      */
     public static int E5102 = 5102;
     /**
+     * 没有操作权限
+     */
+    public static int E5104 = 5104;
+    /**
      * 验证码无效/错误
      */
     public static int E5105 = 5105;
