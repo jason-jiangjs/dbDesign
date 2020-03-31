@@ -126,6 +126,15 @@ function attMng() {
 }
 
 // 查看ER图
-function lookDiagram() {
-
+function showErDiagram() {
+    layer.msg('正在加载 Draw.io', {icon: 16, shade: 0.3, time:2});
+    $('#topFrame').css('width', '100%');
+    $('#topFrame').css('height', '100%');
+    $('#topFrame').attr('src', 'drawio?dev=1&gapi=0&db=0&od=0&tr=0&gh=0&gl=0&_time=' + new Date().getTime());
+}
+// 关闭ER图
+function closeErDiagram() {
+    $('#topFrame').css('width', '0px');
+    $('#topFrame').css('height', '0px');
+    $('#topFrame').attr('src', '');
 }

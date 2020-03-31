@@ -58,12 +58,12 @@
         </div>
     </div>
 
-    <div id="tblidx_dlg" class="easyui-dialog" title="编辑索引" data-options="iconCls:'fa fa-list',modal:true,closed:true,border:'thin'">
+    <div id="tblidx_dlg" class="easyui-dialog" title="编辑索引" data-options="iconCls:'fa fa-list',modal:true,closed:true,border:'thin',width:910">
         <div class="_idx_edit_toolbar" style="padding:10px 0px 0px 15px;border-top:1px solid #e0e0e0" dbd:authorize="${dbId}">
             <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add',width:90" onclick="javascript:addTblIndex()">添加索引</a>
             <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove',width:90" onclick="javascript:delTblIndex()" style="margin-left:20px">删除索引</a>
         </div>
-        <div style="width:1215px;height:320px;margin:0 auto;margin-top:12px">
+        <div style="width:900px;height:320px;margin:0 auto;margin-top:12px">
             <table id="tblidx_grid" class="easyui-datagrid"
                    data-options="singleSelect:true,striped:true,fit:true,rownumbers:true,method:'get',idField:'idxId',toolbar:'#_idx_edit_toolbar'"></table>
         </div>
@@ -73,8 +73,7 @@
         </div>
     </div>
 
-    <div id="tblatt_dlg" class="easyui-dialog" title="编辑索引" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'">
-        <input id="fb" type="file" style="width:300px;display:none">
+    <div id="tblatt_dlg" class="easyui-dialog" title="查看附件" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'">
         <div class="easyui-panel" data-options="border:false" style="width:520px;height:120px;padding:10px;border-bottom:1px solid #1E9FFF">
         </div>
         <div style="text-align:center;margin-top:15px;margin-bottom:15px">
@@ -101,5 +100,6 @@
     <input type="hidden" id="dbn" th:value="${dbName}" />
     <input type="hidden" id="dbId" th:value="${dbId}" />
     <input type="hidden" id="dbType" th:value="${dbType}" />
+    <iframe scrolling="No" noresize="noresize" frameborder="0" id="topFrame" style="position:fixed;top:0;left:0;z-index:10;background-color:white"></iframe>
 </body>
 </html>

@@ -29,9 +29,6 @@ public class TableListController extends BaseController {
     private TableService tableService;
 
     @Autowired
-    private UpdateHisService updateHisService;
-
-    @Autowired
     private UserService userService;
 
     @Autowired
@@ -63,7 +60,7 @@ public class TableListController extends BaseController {
     }
 
     /**
-     * 查询指定表的定义
+     * 查询指定表的定义(详情)
      */
     @RequestMapping(value = "/ajax/getTable", method = RequestMethod.GET)
     public Map<String, Object> getTable(@RequestParam Map<String, String> params) {
@@ -118,8 +115,7 @@ public class TableListController extends BaseController {
             return ApiResponseUtil.error(ErrorCode.E5101, "数据错误,选定的表不存在.");
         }
 
-        tableService.delTableById(userId, tblId);
-        updateHisService.saveUpdateHis(tblMap, null);
+        tableService.delTableById(userId, tblId, tblMap);
         return ApiResponseUtil.success();
     }
 
@@ -137,7 +133,7 @@ public class TableListController extends BaseController {
                 TablesData4Del::getTableId, Function.identity()));
 
         List<Long> tblIds = params.stream().map(item -> item.getTableId()).collect(Collectors.toList());
-        List<BaseMongoMap> tblDataList = tableService.getTableByIds(BizCommUtil.getSelectedDbId(), tblIds, false, false);
+        List<BaseMongoMap> tblDataList = tableService.getTableByIds(BizCommUtil.getSelectedDbId(), tblIds, false);
         if (tblDataList == null || tblDataList.isEmpty()) {
             // 表不存在
             logger.warn("bulkDeleteTableDef 表不存在 tblIds={}, userId={}", tblIds.toString(), userId);
@@ -173,9 +169,7 @@ public class TableListController extends BaseController {
 
         for (BaseMongoMap tblMap : tblDataList) {
             Long tblId = tblMap.getLongObject("_id");
-
-            tableService.delTableById(userId, tblId);
-            updateHisService.saveUpdateHis(tblMap, null);
+            tableService.delTableById(userId, tblId, tblMap);
         }
         return ApiResponseUtil.success();
     }

@@ -80,7 +80,7 @@ public class TableListExportController extends BaseController {
 
         String tblIdListStr = StringUtils.trimToNull(request.getParameter("tblIdList"));
         List<Long> tblIdList = JacksonUtil.jsonToBeanList(tblIdListStr, Long.class);
-        List<BaseMongoMap> tblList = tableService.getTableByIds(dbId, tblIdList, true, true);
+        List<BaseMongoMap> tblList = tableService.getTableByIds(dbId, tblIdList, true);
         for (BaseMongoMap tblMap :tblList) {
             // 针对每个表
             String tblName = tblMap.getStringAttribute("tableName");

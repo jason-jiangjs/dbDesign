@@ -56,6 +56,33 @@ public class BaseMongoMap<K, V> extends HashMap<K, V> implements Map<K, V> {
         return subNode;
     }
 
+    /**
+     * 取得子节点的值
+     * @param complexKey 节点路径，如 xx.yy.zz, 则调用时为：getSubNode(xx, yy, zz);
+     */
+    public void setSubNode(Object attrValue, String... complexKey) {
+        if (complexKey == null) {
+            return;
+        }
+        int keyLvl = complexKey.length;
+        Object subNode = null;
+
+        for (int i = 0; i < keyLvl; i ++) {
+            if (i == 0) {
+                subNode = get(complexKey[0]);
+            } else {
+                if (subNode == null) {
+                    return;
+                }
+                if (subNode instanceof Map) {
+                    ((Map) subNode).put(complexKey[i], attrValue);
+                } else {
+                    return;
+                }
+            }
+        }
+    }
+
     public int getIntAttribute(K key) {
         return convertToInt(getAttribute(key));
     }

@@ -30,29 +30,50 @@
     <th:block th:if="${not #lists.isEmpty(dbList)}">
         <p style="font-size: small">点击一览中的项目后，跳转到编辑画面</p>
         <div style="margin:20px 0"></div>
-        <ul id="dbList" class="easyui-datalist" lines="true" style="width:100%;height:250px">
-            <li th:each="dbItem : ${dbList}" th:value="${dbItem.id}" th:text="${dbItem.dbNameTxt}"></li>
-        </ul>
+        <div id="dbList" style="width:100%;height:250px"></div>
         <div style="margin-top: 5px">
-            <input type="checkbox" id="defaultFlg"><label style="font-size: small">将所选择的数据库设置为默认工作环境，下次再登录时不会出现该一览画面．</label>
+            <input type="checkbox" id="defaultFlg"><label style="font-size: small">将所选择的数据库加入收藏夹，下次再登录时不会出现该一览画面．</label>
         </div>
     </th:block>
 </div>
-<form id="itemForm" method="post" th:action="@{/table_list}">
-    <input type="hidden" id="dbId" name="ddId" />
-    <input type="hidden" id="checkFlg" name="checkFlg" />
-</form>
-<script>
+<form id="itemForm" method="get" th:action="@{/table_list}"></form>
+<script th:inline="javascript">
     $('#dbList').datalist({
-        onClickRow: function (index, row) {
-            $('#dbId').val(row.value);
-            var isChecked = $('#defaultFlg').prop('checked');
-            if (isChecked) {
-                $('#checkFlg').val(1);
+        data: [[${dbList}]],
+        textFormatter: function (value, row, index) {
+            if (row.isDefaultEnv) {
+                return value + "<span><img style='margin-bottom:-4px;margin-left:10px;width:18px' src='img/wujiaoxing.png'></img></span>";
             } else {
-                $('#checkFlg').val(0);
+                return value;
             }
-            $('#itemForm').submit();
+        },
+        lines: true,
+        striped: true,
+        valueField: 'id',
+        textField: 'dbNameTxt',
+        idField: 'id',
+        onClickRow: function (index, row) {
+            var isChecked = $('#defaultFlg').prop('checked') ? 1 : null;
+            var postData = {
+                dbId: row.id,
+                checkFlg: isChecked
+            };
+
+            var loadLy = layer.load(1);
+            $.ajax({
+                type: 'post',
+                url: Ap_servletContext + '/ajax/setDefaultDbEnv',
+                data: JSON.stringify(postData),
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    layer.close(loadLy);
+                    if (data.code == 0) {
+                        $('#itemForm').submit();
+                    } else {
+                        layer.msg(data.msg + ' code=' + data.code);
+                    }
+                }
+            });
         }
     });
 </script>

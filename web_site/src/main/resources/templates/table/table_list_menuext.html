@@ -18,7 +18,11 @@
     <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看历史发布版本</div>
     <div class="menu-sep"></div>
     <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
-    <div data-options="href:'drawio?dev=1&gapi=0&db=0&od=0&tr=0&gh=0&gl=0',iconCls:'fa fa-paperclip'">查看ER图</div>
+    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:showErDiagram()">查看ER图</div>
+
+    <div class="menu-sep"></div>  <!--/* 下面2个菜单项只会出现一个，要根据条件来判断 */-->
+    <div data-options="name:'setdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(1)">加入到收藏夹</div>
+    <div data-options="name:'unsetdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(0)">取消收藏</div>
     <div class="menu-sep"></div>
     <div data-options="iconCls:'fa fa-backward'" th:href="@{/home?type=1}">返回选择数据库</div>
     <div class="menu-sep"></div>
@@ -68,10 +72,9 @@
 </div>
 
 
-<!--<div id="db-tools_menu" class="easyui-menu" style="width:160px;">-->
-    <!--<div data-options="name:'to_tbl_list',iconCls:'icon-save'" onclick="javascript:convertType(1)" th:if="${dbType==1}">切换到表一览</div>-->
-    <!--<div data-options="name:'to_view_list',iconCls:'icon-save'" onclick="javascript:convertType(2)" th:if="${dbType==1}">切换到视图一览</div>-->
-    <!--<div class="menu-sep" th:if="${dbType==1}"></div>-->
-    <!--<div data-options="name:'setdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(1)">设置缺省工作环境</div>-->
-    <!--<div data-options="name:'unsetdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(0)">取消缺省工作环境</div>-->
-<!--</div>-->
+
+<th:block th:if="${dbMode==1}">
+    <div data-options="name:'to_tbl_list',iconCls:'icon-save'" onclick="javascript:convertType(1)" th:if="${dbType==1}">切换到表一览</div>
+    <div data-options="name:'to_view_list',iconCls:'icon-save'" onclick="javascript:convertType(2)" th:if="${dbType==1}">切换到视图一览</div>
+    <div class="menu-sep" ></div>
+</th:block>

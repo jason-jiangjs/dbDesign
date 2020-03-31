@@ -21,7 +21,7 @@
 <div class="easyui-layout" data-options="fit:true,border:false">
     <div data-options="region:'north',border:false" style="height:110px;padding-top:10px">
         <h2>用户一览</h2>
-        <p th:if="${hasAuth==1}">可以在此画面管理用户，包括创建、编辑、删除和设置访问权限。</p>
+        <p th:if="${hasAuth==1}">可以在此画面管理用户，包括创建用户、删除用户、修改用户信息和设置用户访问权限。</p>
         <p th:if="${hasAuth==0}">对不起，你没有权限操作该业务。</p>
     </div>
     <div data-options="region:'center',border:false" th:if="${hasAuth==1}">

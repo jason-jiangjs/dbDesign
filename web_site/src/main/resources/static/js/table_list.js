@@ -46,25 +46,8 @@ $(function () {
 
     // 下拉菜单的菜单项控制，某些特定场景下不显示或禁用，比如收藏夹，或者是权限控制
     var favDb = $.trim($('#favDb').val());
-    if (favDb == '' || favDb == '0' || favDb != $.trim($('#dbId').val())) {
-        var item = $('#db-tools_menu').menu('findItem', 'setdbenv');
-        if (item) {
-            $('#db-tools_menu').menu('enableItem', item.target);
-        }
-        item = $('#db-tools_menu').menu('findItem', 'unsetdbenv');
-        if (item) {
-            $('#db-tools_menu').menu('disableItem', item.target);
-        }
-    } else {
-        var item = $('#db-tools_menu').menu('findItem', 'setdbenv');
-        if (item) {
-            $('#db-tools_menu').menu('enableItem', item.target);
-        }
-        item = $('#db-tools_menu').menu('findItem', 'unsetdbenv');
-        if (item) {
-            $('#db-tools_menu').menu('enableItem', item.target);
-        }
-    }
+    toggleFavoriteMenuItem(!(favDb && favDb == $.trim($('#dbId').val())));
+    closeErDiagram();
 
     // 创建搜索框
     $('#tbl_searchbox').textbox({
@@ -255,7 +238,7 @@ $(function () {
                         showTxt +=  '用户(ID:' + row.currEditorId + ")正在编辑";
                     }
                     if (row.startEditTime) {
-                        showTxt +=  "<br>开始时间 " + moment(row.startEditTime).format('YYYY-MM-DD HH:mm');
+                        showTxt +=  "<br>" + moment(row.startEditTime).format('YYYY-MM-DD HH:mm');
                     }
                 }
                 return showTxt;
@@ -545,6 +528,7 @@ function createNewTable(value) {
     newTblId ++;
     _curTblId = newTblId;
     _createTblHeadDiv(newTblId);
+    editableMap[_curTblId] = true;
 
     var loadLy = layer.load(1);
     // 查询表定义信息，动态加载列定义
@@ -602,14 +586,40 @@ function delSelectedItem() {
     });
 }
 
+// 切换收藏夹菜单项显示
+// 参数toggleFlag为true表示可以加入收藏夹
+function toggleFavoriteMenuItem (toggleFlag) {
+    if (toggleFlag) {
+        // 未设置过收藏夹，只显示"加入收藏夹"
+        var item = $('#tab-tools_menu_home').menu('findItem', {name:'setdbenv'});
+        if (item) {
+            $('#tab-tools_menu_home').menu('enableItem', item.target);
+        }
+        item = $('#tab-tools_menu_home').menu('findItem', {name:'unsetdbenv'});
+        if (item) {
+            $('#tab-tools_menu_home').menu('disableItem', item.target);
+        }
+    } else {
+        // 已经设置过收藏夹，只显示"取消"
+        var item = $('#tab-tools_menu_home').menu('findItem',  {name:'setdbenv'});
+        if (item) {
+            $('#tab-tools_menu_home').menu('disableItem', item.target);
+        }
+        item = $('#tab-tools_menu_home').menu('findItem', {name:'unsetdbenv'});
+        if (item) {
+            $('#tab-tools_menu_home').menu('enableItem', item.target);
+        }
+    }
+}
+
 // 设置缺省工作环境
+// 参数devType为１时表示设置，为０时表示取消
 function setDevEnv(devType) {
     var loadLy = layer.load(1);
     var postData = {};
     postData.checkFlg = devType;
-    if (devType == 1) {
-        postData.dbId = $.trim($('#dbId').val());
-    }
+    postData.dbId = $.trim($('#dbId').val());
+
     $.ajax({
         type: 'post',
         url: Ap_servletContext + '/ajax/setDefaultDbEnv',
@@ -620,17 +630,7 @@ function setDevEnv(devType) {
             if (data.code == 0) {
                 layer.msg('操作成功');
                 // 刷新菜单
-                if (devType == 0) {
-                    var item = $('#db-tools_menu').menu('findItem', 'setdbenv');
-                    $('#db-tools_menu').menu('enableItem', item.target);
-                    item = $('#db-tools_menu').menu('findItem', 'unsetdbenv');
-                    $('#db-tools_menu').menu('disableItem', item.target);
-                } else {
-                    var item = $('#db-tools_menu').menu('findItem', 'setdbenv');
-                    $('#db-tools_menu').menu('disableItem', item.target);
-                    item = $('#db-tools_menu').menu('findItem', 'unsetdbenv');
-                    $('#db-tools_menu').menu('enableItem', item.target);
-                }
+                toggleFavoriteMenuItem(devType == 0);
             } else {
                 layer.msg(data.msg + ' (code=' + data.code + ")");
             }
@@ -651,14 +651,14 @@ function descformatter(value, row, index) {
     }
     return '';
 }
-// 说明一栏的显示形式
+// 列别名一栏的显示形式
 function nameformatter(value, row, index) {
     if (value) {
         return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + value + '</div>';
     }
     return '';
 }
-
+// 列名一栏的显示形式(目前有mongodb定义时用到)
 function nameDspformatter(value, row, index) {
     if (value) {
         var txt = '';

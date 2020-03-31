@@ -7,9 +7,10 @@ import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.util.ApiResponseUtil;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.common.util.StringUtil;
+import org.dbm.dbd.model.AuditDataBean;
 import org.dbm.dbd.service.ComSequenceService;
 import org.dbm.dbd.service.TableService;
-import org.dbm.dbd.service.UpdateHisService;
+import org.dbm.dbd.web.util.BizCommUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,9 +27,6 @@ public class ColumnListController extends BaseController {
 
     @Autowired
     private ComSequenceService sequenceService;
-
-    @Autowired
-    private UpdateHisService updateHisService;
 
     private static final String[] _idxSign = new String[] { "", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩", "⑪", "⑫", "⑬", "⑭", "⑮", "⑯", "⑰", "⑱", "⑲", "⑳" };
 
@@ -60,7 +58,7 @@ public class ColumnListController extends BaseController {
 
     /**
      * 保存指定表的定义
-     * TODO-- 这里目前还是采用完全覆盖的办法，直接保存数据，先不考虑保存修改历史
+     * 这里目前还是采用完全覆盖的办法，直接保存数据，同时保存修改历史(其实是整体备份)
      * 上传的数据必须是完整的，因为没有临时保存的概念
      */
     @RequestMapping(value = "/ajax/saveColDefine", method = RequestMethod.POST)
@@ -107,28 +105,27 @@ public class ColumnListController extends BaseController {
             }
         }
 
-        long nowTime = DateTimeUtil.getNowTime();
+        long nowTime = DateTimeUtil.getDate().getTime();
         Map<String, Object> retData = new HashMap<>();
         retData.put("lastUpd", Long.toString(nowTime));
         Map<String, Object> tblData = new HashMap<>();
         tblData.put("tableName", params.get("_tbl_name"));
-        tblData.put("tableNameCN", params.get("_tbl_name_cn"));
+        tblData.put("aliasName", params.get("_tbl_name_cn"));
         tblData.put("desc", params.get("_tbl_desc"));
 
         if (tblId < 100) {
             tblId = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_TABLE_ID);
             tblData.put("_id", tblId);
             retData.put("_newTblId", tblId);
-            tblData.put("dbId", dbId);
-            tblData.put("deleteFlg", false);
-            tblData.put("type", 1); // 此值要根据数据库类型来定
-            tblData.put("creator", userId);
-            tblData.put("createdTime", nowTime);
             params.put("_tbl_id", tblId);
+            tblData.put("dbId", dbId);
+            tblData.put("viewType", 1); // 此值要根据数据库类型来定
+            tblData.put("auditData.valid", true);
+            tblData.put("auditData.creatorId", userId);
+            tblData.put("auditData.createdTime", nowTime);
         } else {
-            tblData.put("modifier", userId);
-            tblData.put("modifiedTime", nowTime);
             tblData.put("currEditorId", 0);
+            tblData.put("currEditorName", null);
             tblData.put("startEditTime", null);
         }
 
@@ -143,17 +140,23 @@ public class ColumnListController extends BaseController {
             if (colData.get("columnId") == null) {
                 colData.put("columnId", sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_COLUMN_ID));
                 colData.put("tableId", tblId);
-                colData.put("creator", userId);
-                colData.put("createdTime", nowTime);
+
+                AuditDataBean auditData = new AuditDataBean();
+                auditData.setCreatorId(userId);
+                auditData.setCreatedTime(nowTime);
+                auditData.setModifierId(userId);
+                auditData.setModifierName(BizCommUtil.getLoginUserName());
+                auditData.setModifiedTime(nowTime);
+                colData.put("auditData", auditData);
             } else {
-                colData.put("modifier", userId);
-                colData.put("modifiedTime", nowTime);
+                colData.put("auditData.modifierId", userId);
+                colData.put("auditData.modifierName", BizCommUtil.getLoginUserName());
+                colData.put("auditData.modifiedTime", nowTime);
             }
         }
 
         tblData.put("column_list", colDataList);
-        tableService.saveTblDefInfo(tblId, tblData);
-        updateHisService.saveUpdateHis(dbMap, params);
+        tableService.saveTblDefInfo(tblId, nowTime, tblData);
         return ApiResponseUtil.success(retData);
     }
 
@@ -253,15 +256,13 @@ public class ColumnListController extends BaseController {
             }
         }
 
+        long nowTime = DateTimeUtil.getDate().getTime();
         Map<String, Object> tblData = new HashMap<>();
-        tblData.put("modifier", userId);
-        tblData.put("modifiedTime", DateTimeUtil.getNowTime());
+
         // 注意这里是完全覆盖现有定义，不考虑合并值
         tblData.put("index_list", idxDataList);
         tblData.put("column_list", colList);
-        tableService.saveTblDefInfo(tblId, tblData);
-
-        updateHisService.saveUpdateHis(tdlMap, params);
+        tableService.saveTblDefInfo(tblId, nowTime, tblData);
         return ApiResponseUtil.success();
     }
 

@@ -98,7 +98,7 @@ public class UserService extends BaseService {
                 Map<String, Object> item = new HashMap<>();
                 Long dbId = dbMap.getLongAttribute("_id");
                 if (needCrpId) {
-                    item.put("id", dbId.toString());
+                    item.put("id", dbId);
                 } else {
                     item.put("dbId", dbId);
                 }
@@ -122,8 +122,7 @@ public class UserService extends BaseService {
                 continue;
             }
             if (needCrpId) {
-                Long dbId = dbMap.getLongAttribute("_id");
-                roleMap.put("id", dbId.toString());
+                roleMap.put("id", dbMap.getLongAttribute("_id"));
                 roleMap.remove("dbId");
             }
             roleMap.put("dbNameTxt", getDbNameTxt(dbMap));

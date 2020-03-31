@@ -7,11 +7,13 @@ import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.util.ApiResponseUtil;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.common.util.StringUtil;
-import org.dbm.dbd.service.*;
+import org.dbm.dbd.service.ComSequenceService;
+import org.dbm.dbd.service.DbService;
+import org.dbm.dbd.service.ErChartService;
+import org.dbm.dbd.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +29,6 @@ public class DbMngController extends BaseController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private UpdateHisService updateHisService;
 
     @Autowired
     private ComSequenceService sequenceService;
@@ -119,30 +118,6 @@ public class DbMngController extends BaseController {
 
         dbService.removeDb(userId, dbId);
         return ApiResponseUtil.success();
-    }
-
-    /**
-     * 查询操作历史一览
-     */
-    @RequestMapping(value = "/ajax/mng/getUpdHisList", method = RequestMethod.GET)
-    public Map<String, Object> getUpdateHistory(@RequestParam Map<String, String> params) {
-        int page = StringUtil.convertToInt(params.get("page"));
-        int rows = StringUtil.convertToInt(params.get("rows"));
-
-        Map<String, Object> model = new HashMap<>();
-        String dbIdStr = StringUtils.trimToNull(params.get("ddId"));
-        if (dbIdStr == null) {
-            // 数据库不存在
-            logger.warn("getUpdateHistory 缺少参数dbId");
-            model.put("rows", 0);
-            model.put("total", Collections.EMPTY_LIST);
-            return model;
-        }
-
-        Long dbId = StringUtil.convertToLong(dbIdStr);
-        model.put("rows", updateHisService.getUpdHisList(dbId, page, rows));
-        model.put("total", updateHisService.countUpdHisList(dbId));
-        return model;
     }
 
 }

@@ -378,14 +378,14 @@
 		editorUi.actions.addAction('close', function()
 		{
 			var currentFile = editorUi.getCurrentFile();
-			
+
 			function fn()
 			{
-				editorUi.fileLoaded(null);
+				editorUi.fileLoaded(null, true); // 不要打开Splash页面
 				// todo-- 修改, 关闭本页面,回到表设计页面
-				history.go(-1);
+				window.parent.closeErDiagram();
 			};
-			
+
 			if (currentFile != null && currentFile.isModified())
 			{
 				editorUi.confirm(mxResources.get('allChangesLost'), null, fn,

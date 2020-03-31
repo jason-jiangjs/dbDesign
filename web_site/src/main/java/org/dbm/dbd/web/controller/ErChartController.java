@@ -43,6 +43,11 @@ public class ErChartController extends BaseController {
         }
 
         BaseMongoMap erObj = erChartService.findErChartByDbId(dbId);
+        if (erObj == null) {
+            // 没有时先创建一个
+            erChartService.createBlankErChart(userId, dbId, "Blank Diagram");
+            erObj = erChartService.findErChartByDbId(dbId);
+        }
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("title", erObj.getStringAttribute("title"));
         infoMap.put("content", erObj.getStringAttribute("content"));

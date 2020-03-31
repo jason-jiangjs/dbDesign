@@ -6,6 +6,7 @@ import org.dbm.common.util.CommUtil;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.dbd.dao.ErChartDao;
 import org.dbm.dbd.dao.ErChartHistoryDao;
+import org.dbm.dbd.model.AuditDataBean;
 import org.dbm.dbd.web.util.BizCommUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -52,6 +53,7 @@ public class ErChartService extends BaseService {
         infoMap.put("dbId", dbId);
         infoMap.put("content", CommUtil.getFileString(new ClassPathResource("public/default-blank-diagram.xml")));
         long currTime = DateTimeUtil.getDate().getTime();
+        infoMap.put("auditData.valid", true);
         infoMap.put("auditData.creatorId", userId);
         infoMap.put("auditData.createdTime", currTime);
         infoMap.put("auditData.modifierId", userId);
@@ -85,9 +87,12 @@ public class ErChartService extends BaseService {
         historyInfo.put("erChartId", ercId);
         historyInfo.put("content", info);
         historyInfo.put("versionId", currTime);
-        historyInfo.put("auditData.modifierId", userId);
-        historyInfo.put("auditData.modifierName", BizCommUtil.getLoginUserName());
-        historyInfo.put("auditData.modifiedTime", currTime);
+
+        AuditDataBean auditData = new AuditDataBean();
+        auditData.setModifierId(userId);
+        auditData.setModifierName(BizCommUtil.getLoginUserName());
+        auditData.setModifiedTime(currTime);
+        historyInfo.put("auditData", auditData);
         erChartHistoryDao.insertObject(historyInfo);
     }
 }

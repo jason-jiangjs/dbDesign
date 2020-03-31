@@ -1,9 +1,12 @@
 package org.dbm.dbd.service;
 
+import org.dbm.common.ErrorCode;
 import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.base.service.BaseService;
+import org.dbm.common.util.ApiResponseUtil;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.dbd.dao.TableDao;
+import org.dbm.dbd.dao.TableHistoryDao;
 import org.dbm.dbd.web.util.BizCommUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -23,6 +26,9 @@ public class TableService extends BaseService {
 
     @Autowired
     private TableDao tableDao;
+
+    @Autowired
+    private TableHistoryDao tableHistoryDao;
 
     /**
      * 查询指定数据库的表一览, 优先使用名称查询
@@ -83,15 +89,6 @@ public class TableService extends BaseService {
     public BaseMongoMap getTableById(long tblId) {
         Query queryObj = new Query(where("_id").is(tblId));
         queryObj.addCriteria(where("auditData.valid").is(true));
-        queryObj.fields().include("tableName");
-        queryObj.fields().include("aliasName");
-        queryObj.fields().include("desc");
-        queryObj.fields().include("column_list");
-        queryObj.fields().include("index_list");
-        queryObj.fields().include("dbId");
-        queryObj.fields().include("auditData.modifiedTime");
-        queryObj.fields().include("currEditorId");
-        queryObj.fields().include("startEditTime");
         return tableDao.getMongoMap(queryObj);
     }
 
@@ -99,20 +96,10 @@ public class TableService extends BaseService {
      * 批量查询指定的表
      * 这里的参数从后台seesion获取，防止前台篡改tblId,操作没有权限访问的表
      */
-    public List<BaseMongoMap> getTableByIds(Long dbId, List<Long> tblIds, boolean needDetail, boolean needSorted) {
+    public List<BaseMongoMap> getTableByIds(Long dbId, List<Long> tblIds, boolean needSorted) {
         Query queryObj = new Query(where("_id").in(tblIds));
         queryObj.addCriteria(where("dbId").is(dbId));
         queryObj.addCriteria(where("auditData.valid").is(true));
-        queryObj.fields().include("tableName");
-        queryObj.fields().include("aliasName");
-        if (needDetail) {
-            queryObj.fields().include("column_list");
-            queryObj.fields().include("index_list");
-        }
-        queryObj.fields().include("auditData.modifiedTime");
-        queryObj.fields().include("currEditorId");
-        queryObj.fields().include("currEditorName");
-        queryObj.fields().include("startEditTime");
         if (needSorted) {
             queryObj.with(new Sort(Sort.Direction.ASC, "tableName"));
         }
@@ -122,20 +109,50 @@ public class TableService extends BaseService {
     /**
      * 删除指定的表(逻辑删除)
      */
-    public void delTableById(long userId, long tblId) {
+    public void delTableById(long userId, long tblId, BaseMongoMap tblMap) {
         Map<String, Object> infoMap = new HashMap<>();
+        long currTime = DateTimeUtil.getDate().getTime();
+        infoMap.put("versionId", currTime);
         infoMap.put("auditData.valid", false);
         infoMap.put("auditData.modifierId", userId);
         infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
-        infoMap.put("auditData.modifiedTime", DateTimeUtil.getDate().getTime());
+        infoMap.put("auditData.modifiedTime", currTime);
         tableDao.updateObject(tblId, infoMap, false);
+
+        // 同时保存变更历史
+        saveTableUpdateHistory(userId, tblId, currTime, tblMap);
+    }
+
+    private void saveTableUpdateHistory(long userId, long tblId, long currTime, BaseMongoMap tblMap) {
+        // 同时保存变更历史
+        tblMap.remove("_id");
+        tblMap.remove("currEditorId");
+        tblMap.remove("currEditorName");
+        tblMap.remove("startEditTime");
+
+        tblMap.put("tableId", tblId);
+        tblMap.put("versionId", currTime);
+        tblMap.setSubNode(false, "auditData", "valid");
+        tblMap.setSubNode(userId, "auditData", "modifierId");
+        tblMap.setSubNode(BizCommUtil.getLoginUserName(), "auditData", "modifierName");
+        tblMap.setSubNode(currTime, "auditData", "modifiedTime");
+        tableHistoryDao.insertObject(tblMap);
     }
 
     /**
      * 修改(保存)指定表的定义
      */
-    public void saveTblDefInfo(Long tblId, Map infoMap) {
+    public void saveTblDefInfo(Long tblId, long versionId, Map infoMap) {
+        infoMap.put("versionId", versionId);
+        infoMap.put("auditData.modifierId", BizCommUtil.getLoginUserId());
+        infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
+        infoMap.put("auditData.modifiedTime", versionId);
         tableDao.updateObject(tblId, infoMap, true);
+
+        BaseMongoMap tblMap = getTableById(tblId);
+
+        // 同时保存变更历史
+        saveTableUpdateHistory(BizCommUtil.getLoginUserId(), tblId, versionId, tblMap);
     }
 
     /**

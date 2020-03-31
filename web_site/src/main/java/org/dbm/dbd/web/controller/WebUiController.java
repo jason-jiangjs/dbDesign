@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dbm.common.Constants;
 import org.dbm.common.base.controller.BaseController;
 import org.dbm.common.base.model.mongo.BaseMongoMap;
+import org.dbm.common.util.CommUtil;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.common.util.StringUtil;
 import org.dbm.dbd.service.DbService;
@@ -64,7 +65,7 @@ public class WebUiController extends BaseController {
         CustomerUserDetails userObj = BizCommUtil.getLoginUserDetails();
         Long dbId = userObj.getFavorite();
         if (dbId != null && dbId != 0 && checkFlg == 0) {
-            // 设置了默认工作环境
+            // 设置了默认工作环境, 直接转到表一览页面
             model.setViewName("table/table_list");
 
             BaseMongoMap dbMap = dbService.findDbById(dbId);
@@ -91,7 +92,14 @@ public class WebUiController extends BaseController {
             }
         } else {
             model.setViewName("db_list");
-            model.addObject("dbList", userService.findUserDbList(userObj.getUserId(), true));
+            List<Map<String, Object>> dbList = userService.findUserDbList(userObj.getUserId(), true);
+            for (Map<String, Object> infoMap : dbList) {
+                if (dbId.equals(StringUtil.convertToLong(infoMap.get("id"), null))) {
+                    infoMap.put("isDefaultEnv", 1);
+                    break;
+                }
+            }
+            model.addObject("dbList", dbList);
         }
 
         // 标记当前用户为已登录
@@ -140,25 +148,18 @@ public class WebUiController extends BaseController {
     /**
      * 跳转到表一览(主Tab)画面
      */
-    @RequestMapping(value = "/table_list", method = RequestMethod.POST)
+    @RequestMapping(value = "/table_list", method = RequestMethod.GET)
     public ModelAndView getTableList(@RequestParam Map<String, String> params) {
         ModelAndView model = new ModelAndView();
         model.setViewName("table/table_list");
-        String dbIdStr = StringUtils.trimToNull(params.get("ddId"));
-        if (dbIdStr == null) {
-            // 数据库不存在
-            logger.warn("getTableList 缺少参数dbId");
-            return model;
-        }
 
         Long userId = getLoginUserId();
-        Long dbId = StringUtil.convertToLong(dbIdStr);
-        int checkFlg = StringUtil.convertToInt(params.get("checkFlg"));
-        if (checkFlg == 1) {
-            // 保存默认工作环境
-            userService.setUserFavorite(userId, dbId);
+        Long dbId = BizCommUtil.getSelectedDbId();
+        if (dbId == null || dbId == 0) {
+            // 数据库不存在
+            logger.warn("getTableList 未选择数据库 userId={}", userId);
+            model.addObject("dbId", 0);
         }
-        request.getSession().setAttribute(Constants.KEY_DB_ID, dbId);
 
         BaseMongoMap dbMap = dbService.findDbById(dbId);
         if (dbMap == null || dbMap.isEmpty()) {
