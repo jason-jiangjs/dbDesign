@@ -1,9 +1,7 @@
 package org.dbm.dbd.service;
 
-import org.dbm.common.ErrorCode;
 import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.base.service.BaseService;
-import org.dbm.common.util.ApiResponseUtil;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.dbd.dao.TableDao;
 import org.dbm.dbd.dao.TableHistoryDao;
@@ -33,23 +31,14 @@ public class TableService extends BaseService {
     /**
      * 查询指定数据库的表一览, 优先使用名称查询
      */
-    public List<BaseMongoMap> getTableNameList(String tblName, long dbId, int type, int page, int limit) {
+    public List<BaseMongoMap> getTableNameList(String tblName, long dbId, int type, int page, int limit, boolean needSort) {
         if (dbId == 0 && tblName == null) {
             return Collections.EMPTY_LIST;
         }
 
-        Query queryObj = new Query(where("dbId").is(dbId));
-        if (tblName != null) {
-            // 这里查询表名和别名
-            Criteria criteria0 = new Criteria();
-            Criteria criteria1 = Criteria.where("tableName").regex(tblName, "i");
-            Criteria criteria2 = Criteria.where("aliasName").regex(tblName, "i");
-            criteria0.orOperator(criteria1, criteria2);
-            queryObj.addCriteria(criteria0);
-        }
-        queryObj.addCriteria(where("viewType").is(type));
-        queryObj.addCriteria(where("auditData.valid").is(true));
+        Query queryObj = createQueryParam4Table(tblName, dbId, type);
         queryObj.fields().include("tableName");
+        queryObj.fields().include("versionId");
         queryObj.fields().include("aliasName");
         queryObj.fields().include("currEditorId");
         queryObj.fields().include("currEditorName");
@@ -57,7 +46,9 @@ public class TableService extends BaseService {
         queryObj.fields().include("auditData.modifierName");
         queryObj.fields().include("auditData.modifiedTime");
 
-        queryObj.with(new Sort(Sort.Direction.ASC, "tableName"));
+        if (needSort) {
+            queryObj.with(new Sort(Sort.Direction.ASC, "tableName"));
+        }
         if (limit > 0) {
             queryObj.skip((page - 1) * limit);
             queryObj.limit(limit);
@@ -69,9 +60,14 @@ public class TableService extends BaseService {
      * 统计表个数
      */
     public long countTableList(String tblName, long dbId, int type) {
-        Query queryObj = new Query(where("dbId").is(dbId));
-        queryObj.addCriteria(where("viewType").is(type));
-        queryObj.addCriteria(where("auditData.valid").is(true));
+        return tableDao.countList(createQueryParam4Table(tblName, dbId, type));
+    }
+
+    /**
+     * 创建查询条件对象
+     */
+    private Query createQueryParam4Table(String tblName, long dbId, int type) {
+        Query queryObj = new Query(where("dbId").in(dbId));
         if (tblName != null) {
             // 这里查询表名和别名
             Criteria criteria0 = new Criteria();
@@ -80,7 +76,11 @@ public class TableService extends BaseService {
             criteria0.orOperator(criteria1, criteria2);
             queryObj.addCriteria(criteria0);
         }
-        return tableDao.countList(queryObj);
+        if (type > 0) {
+            queryObj.addCriteria(where("viewType").is(type));
+        }
+        queryObj.addCriteria(where("auditData.valid").is(true));
+        return queryObj;
     }
 
     /**
@@ -132,7 +132,7 @@ public class TableService extends BaseService {
 
         tblMap.put("tableId", tblId);
         tblMap.put("versionId", currTime);
-        tblMap.setSubNode(false, "auditData", "valid");
+        tblMap.setSubNode(true, "auditData", "valid");
         tblMap.setSubNode(userId, "auditData", "modifierId");
         tblMap.setSubNode(BizCommUtil.getLoginUserName(), "auditData", "modifierName");
         tblMap.setSubNode(currTime, "auditData", "modifiedTime");
@@ -193,7 +193,6 @@ public class TableService extends BaseService {
         tableDao.updateObject(query, infoMap, false, true);
     }
 
-
     /**
      * 获取正在被编辑的表（只查询前10条数据）
      */
@@ -208,4 +207,5 @@ public class TableService extends BaseService {
         queryObj.limit(10);
         return tableDao.getMongoMapList(queryObj);
     }
+
 }

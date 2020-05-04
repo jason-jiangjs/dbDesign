@@ -57,7 +57,7 @@ public final class ApiResponseUtil {
     /**
      * 返回异常响应结果，包括error code，简短异常信息说明和业务数据
      */
-    public static Map<String, Object> errorWithData(int code, String msg, Map<String, Object> data, Object... args) {
+    public static Map<String, Object> errorWithData(Map<String, Object> data, int code, String msg, Object... args) {
         Map result = new HashMap();
         result.put("code", code);
         result.put("msg", arrayFormat(msg, args));

@@ -95,7 +95,7 @@ public class DbMngController extends BaseController {
     }
 
     /**
-     * 删除用户
+     * 删除数据库项目
      */
     @RequestMapping(value = "/ajax/mng/delDb", method = RequestMethod.POST)
     public Map<String, Object> deleteDb(@RequestParam Map<String, String> params) {

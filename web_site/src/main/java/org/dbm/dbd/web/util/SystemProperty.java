@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * 获取系统配置信息，可以动态刷新
  * 开发环境时优先从配置文件取值
- * 正式环境时优先从数据库表取值
+ * 时优正式环境先从数据库表取值
  *
  * 使用懒加载
  */
@@ -28,6 +28,10 @@ public class SystemProperty {
     public static void initComConfig(ApplicationContext applicationContext) {
         _applicationContext = applicationContext;
         _environment = applicationContext.getEnvironment();
+    }
+
+    public static void clearCacheMap() {
+        propertyMap.clear();
     }
 
     /**

@@ -64,7 +64,7 @@ public class DbService extends BaseService {
     }
 
     /**
-     * 删除数据库(逻辑删除)
+     * 删除数据库项目(逻辑删除)
      */
     public void removeDb(long userId, long dbId) {
         Map<String, Object> infoMap = new HashMap<>();
@@ -76,9 +76,10 @@ public class DbService extends BaseService {
     }
 
     /**
-     * 保存数据库
+     * 更新数据库信息
      */
     public void saveDb(Long dbId, Map<String, Object> params) {
         dbDao.updateObject(dbId, params, true);
     }
+
 }

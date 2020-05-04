@@ -138,6 +138,7 @@ public class ColumnListController extends BaseController {
                 continue;
             }
             if (colData.get("columnId") == null) {
+                // 新增的列
                 colData.put("columnId", sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_COLUMN_ID));
                 colData.put("tableId", tblId);
 
@@ -149,9 +150,29 @@ public class ColumnListController extends BaseController {
                 auditData.setModifiedTime(nowTime);
                 colData.put("auditData", auditData);
             } else {
-                colData.put("auditData.modifierId", userId);
-                colData.put("auditData.modifierName", BizCommUtil.getLoginUserName());
-                colData.put("auditData.modifiedTime", nowTime);
+                // 修改
+                Object auditData = colData.get("auditData");
+                if (auditData == null) {
+                    AuditDataBean auditDataBean = new AuditDataBean();
+                    auditDataBean.setCreatorId(userId);
+                    auditDataBean.setCreatedTime(nowTime);
+                    auditDataBean.setModifierId(userId);
+                    auditDataBean.setModifierName(BizCommUtil.getLoginUserName());
+                    auditDataBean.setModifiedTime(nowTime);
+                    colData.put("auditData", auditDataBean);
+                } else if (auditData instanceof AuditDataBean) {
+                    AuditDataBean auditDataBean = (AuditDataBean) auditData;
+                    auditDataBean.setModifierId(userId);
+                    auditDataBean.setModifierName(BizCommUtil.getLoginUserName());
+                    auditDataBean.setModifiedTime(nowTime);
+                    colData.put("auditData", auditDataBean);
+                } else if (auditData instanceof Map) {
+                    Map<String, Object> auditDataMap = (Map<String, Object>) auditData;
+                    auditDataMap.put("modifierId", userId);
+                    auditDataMap.put("modifierName", BizCommUtil.getLoginUserName());
+                    auditDataMap.put("modifiedTime", nowTime);
+                    colData.put("auditData", auditDataMap);
+                }
             }
         }
 

@@ -70,13 +70,16 @@ public abstract class BaseMongoDao {
     }
 
     /**
-     * 保存数据(查询关键字为"_id")
+     * 更新数据(查询关键字为"_id")
      */
     public WriteResult updateObject(long id, Map<String, Object> infoMap, boolean upsert) {
         Query query = new Query(where("_id").is(id));
         return updateObject(query, infoMap, upsert, false);
     }
 
+    /**
+     * 根据查询条件更新数据
+     */
     public WriteResult updateObject(Query query, Map<String, Object> infoMap, boolean upsert, boolean multi) {
         BasicDBObject basicDBObject = new BasicDBObject();
         basicDBObject.put("$set", infoMap);

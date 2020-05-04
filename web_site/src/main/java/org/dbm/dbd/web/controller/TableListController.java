@@ -37,6 +37,12 @@ public class TableListController extends BaseController {
     @Autowired
     private MetaDataService metaDataService;
 
+    @Autowired
+    private TagVersionService tagVersionService;
+
+    @Autowired
+    private TableHistoryService tableHistoryService;
+
     /**
      * 查询表的一览
      */
@@ -51,12 +57,34 @@ public class TableListController extends BaseController {
         int page = StringUtil.convertToInt(params.get("page"));
         int rows = StringUtil.convertToInt(params.get("rows"));
         String tblName = StringUtils.trimToNull((String) params.get("tblName"));
-
+        String tagName = StringUtils.trimToNull((String) params.get("tagName"));
         Map<String, Object> model = new HashMap<>();
-        List<BaseMongoMap> dataList = tableService.getTableNameList(tblName, dbId, targetType, page, rows);
-        model.put("rows", dataList);
-        model.put("total", tableService.countTableList(tblName, dbId, targetType));
-        return model;
+
+        if (tagName == null) {
+            List<BaseMongoMap> dataList = tableService.getTableNameList(tblName, dbId, targetType, page, rows, true);
+            model.put("rows", dataList);
+            model.put("total", tableService.countTableList(tblName, dbId, targetType));
+            return model;
+        } else {
+            // 如果是查询历史版本，则要查另外一个表table_history 和table_db_tag_xref
+            BaseMongoMap tagInfo = tagVersionService.getTagInfoByName(tagName);//.getAttribute("searchKeys");
+            List<String> searchKeys = null;
+            if (tagInfo != null) {
+                searchKeys = (List<String> ) tagInfo.get("searchKeys");
+            }
+            if (searchKeys == null || searchKeys.isEmpty()) {
+                logger.warn("getTableListByDbId 该版本下缺少表 userId={} dbId={} params={}", getLoginUserId(), dbId, params.toString());
+                model.put("rows", null);
+                model.put("total", 0);
+                return model;
+            } else {
+                // 去历史表中查询
+                List<BaseMongoMap> dataList = tableHistoryService.getTableListFromHistory(tblName, searchKeys, targetType, page, rows, true);
+                model.put("rows", dataList);
+                model.put("total", tableHistoryService.countTableListFromHistory(tblName, searchKeys, targetType));
+                return model;
+            }
+        }
     }
 
     /**
@@ -82,11 +110,15 @@ public class TableListController extends BaseController {
         Map<String, Object> data = new HashMap<>();
         data.put("tblId", tblId);
         data.put("tblName", dbMap.getStringAttribute("tableName"));
-        data.put("tblNameCn", dbMap.getStringAttribute("tableNameCN"));
+        data.put("aliasName", dbMap.getStringAttribute("aliasName"));
         data.put("tblDesc", dbMap.getStringAttribute("desc"));
-        Long modifiedTime = dbMap.getLongObject("modifiedTime");
+        Object modifiedTime = dbMap.getSubNode("auditData", "modifiedTime");
         if (modifiedTime != null) {
             data.put("lastUpd", modifiedTime.toString()); // !!:这里必须转换为字符串，传long型会丢失精度
+        }
+        Long currEditorId = dbMap.getLongAttribute("currEditorId");
+        if (currEditorId != null) {
+            data.put("currEditorId", currEditorId.toString());
         }
 
         // 列的表头定义
@@ -186,7 +218,7 @@ public class TableListController extends BaseController {
             logger.info("chkTableInEditing 有人正在编辑 count={}, userId={}", inEditingList.size(), getLoginUserId());
             Map<String, Object> data = new HashMap<>();
             data.put("inEditingList", inEditingList);
-            return ApiResponseUtil.error(ErrorCode.E5102, null, data);
+            return ApiResponseUtil.errorWithData(data, ErrorCode.E5102, null);
         }
 
         return ApiResponseUtil.success();

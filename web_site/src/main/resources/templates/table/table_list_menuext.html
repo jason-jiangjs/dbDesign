@@ -2,8 +2,11 @@
     <div style="width:95px"><!--/* 这里要加一层指定宽度,否则tab标题栏会和工具菜单重叠 */-->
         <a href="javascript:void(0)" class="easyui-linkbutton" style="padding-right:5px" data-options="plain:true,iconCls:'fa fa-home fa-lg',width:40" onclick="javascript:jumptoHomeTab()"></a>
         <a id="_home_page_btn" href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,menu:'#tab-tools_menu_home',iconCls:'icon-more'"></a>
-        <a id="_tab_page_btn_editable" href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,menu:'#tab-tools_menu_editable',iconCls:'icon-more'" style="display:none" ></a>
-        <a id="_tab_page_btn_editing" href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,menu:'#tab-tools_menu_editing',iconCls:'icon-more'" style="display:none" ></a>
+        <a id="_tab_page_btn_editable" href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,menu:'#tab-tools_menu_editable',iconCls:'icon-more'" style="display:none"></a>
+        <a id="_tab_page_btn_editing" href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,menu:'#tab-tools_menu_editing',iconCls:'icon-more'" style="display:none"></a>
+        <!--/* 查看查看历史发布版本时的菜单 */-->
+        <a id="tag_home_page_btn" href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,menu:'#tab-tag_menu_home',iconCls:'icon-more'" style="display:none"></a>
+        <a id="tag_table_page_btn" href="javascript:void(0)" class="easyui-menubutton" data-options="plain:true,menu:'#tab-tag_menu_table',iconCls:'icon-more'" style="display:none"></a>
     </div>
 </div>
 <div id="tab-tools_menu_home" class="easyui-menu"><!-- 当为主页时显示此下拉菜单 -->
@@ -13,12 +16,12 @@
     <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportUpdateSql()">导出SQL更改脚本</div>
     <div class="menu-sep"></div>
     <th:block dbd:authorize="${dbId}">
-        <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:releaseNewTag()">发布版本</div>
+        <div data-options="iconCls:'fa fa-history'" onclick="javascript:openNewTagDialog()">发布版本</div>
     </th:block>
-    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看历史发布版本</div>
+    <div data-options="iconCls:'fa fa-binoculars'" onclick="javascript:showProjectHistory()">查看历史发布版本</div>
     <div class="menu-sep"></div>
     <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
-    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:showErDiagram()">查看ER图</div>
+    <div data-options="iconCls:'fa fa-object-group'" onclick="javascript:showErDiagram()">查看ER图</div>
 
     <div class="menu-sep"></div>  <!--/* 下面2个菜单项只会出现一个，要根据条件来判断 */-->
     <div data-options="name:'setdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(1)">加入到收藏夹</div>
@@ -26,7 +29,7 @@
     <div class="menu-sep"></div>
     <div data-options="iconCls:'fa fa-backward'" th:href="@{/home?type=1}">返回选择数据库</div>
     <div class="menu-sep"></div>
-    <div data-options="iconCls:'fa fa-support'" th:href="@{/home?type=1}">帮助</div>
+    <div data-options="iconCls:'fa fa-support'" onclick="javascript:openHelpPage()">帮助</div>
     <div class="menu-sep"></div>
     <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
 </div>
@@ -43,7 +46,11 @@
         <div data-options="iconCls:'fa fa-edit',disabled:true" onclick="javascript:useTemplate()">使用预定义模板</div>
         <div class="menu-sep"></div>
     </th:block>
-    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看历史发布版本</div>
+    <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')">
+        <div data-options="name:'stop_edit',disabled:true" onclick="javascript:forceStopEdit()">强制停止编辑</div>
+        <div class="menu-sep"></div>
+    </th:block>
+    <div data-options="iconCls:'fa fa-binoculars'" onclick="javascript:showEditHistory()">查看修改历史</div>
     <div class="menu-sep"></div>
     <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
     <div class="menu-sep"></div>
@@ -62,7 +69,11 @@
         <div data-options="iconCls:'fa fa-edit'" onclick="javascript:useTemplate()">使用预定义模板</div>
         <div class="menu-sep"></div>
     </th:block>
-    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看历史发布版本</div>
+    <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')">
+        <div data-options="name:'stop_edit',disabled:true" onclick="javascript:forceStopEdit()">强制停止编辑</div>
+        <div class="menu-sep"></div>
+    </th:block>
+    <div data-options="iconCls:'fa fa-binoculars'" onclick="javascript:showEditHistory()">查看修改历史</div>
     <div class="menu-sep"></div>
     <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
     <div class="menu-sep"></div>
@@ -71,7 +82,24 @@
     <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
 </div>
 
-
+<!--/* 下面是查看查看历史发布版本时的菜单 */-->
+<div id="tab-tag_menu_home" class="easyui-menu">
+    <div data-options="iconCls:'fa fa-backward'" onclick="javascript:backtoDefaultHome()">回到正常编辑状态</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-binoculars'" onclick="javascript:showProjectHistory()">查看历史发布版本</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
+    <div data-options="iconCls:'fa fa-binoculars'" onclick="javascript:showErDiagram()">查看ER图</div>
+    <div class="menu-sep"></div>
+    <div data-options="iconCls:'fa fa-support'" onclick="javascript:openHelpPage()">帮助</div>
+    <div class="menu-sep"></div>
+    <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
+</div>
+<div id="tab-tag_menu_table" class="easyui-menu">
+    <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
+    <div class="menu-sep"></div>
+    <div data-options="href:'logout',iconCls:'fa fa-sign-out'">退出</div>
+</div>
 
 <th:block th:if="${dbMode==1}">
     <div data-options="name:'to_tbl_list',iconCls:'icon-save'" onclick="javascript:convertType(1)" th:if="${dbType==1}">切换到表一览</div>

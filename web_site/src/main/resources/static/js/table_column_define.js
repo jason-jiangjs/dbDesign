@@ -133,14 +133,14 @@ $(function () {
 // 用来标识当前表是否正在编辑的变量必须是独立的，也就是要定义为map类型，key的值为_curTblId
 var editIndexMap = [];
 var isRowEditedMap = [];
-// 保存当前可以编辑的表
-var editableMap = [];
+// 保存当前正在编辑的表
+var inEditingTableMap = [];
 // 保存当前可以拖放操作的表
 var dragDropableMap = [];
 
 // 双击表格行，开始编辑，只允许一行一行编辑
 function onClickRowBegEdit(index, field, value) {
-    if (editableMap[_curTblId] == undefined || editableMap[_curTblId] === false) {
+    if (inEditingTableMap[_curTblId] == undefined || inEditingTableMap[_curTblId] === false) {
         return false;
     }
     if (_curTblId == undefined || _curTblId == null || _curTblId == '') {
@@ -148,7 +148,7 @@ function onClickRowBegEdit(index, field, value) {
     }
     isRowEditedMap[_curTblId] = true;
 
-    if (_endEditing()) {
+    if (_endCellEditing()) {
         var gridObj = _getGrid();
         gridObj.datagrid('selectRow', index).datagrid('editCell', { index: index, field: field });
         var ed = gridObj.datagrid('getEditor', { index: index, field: field });
@@ -166,7 +166,10 @@ function onClickRowBegEdit(index, field, value) {
     }
 }
 
-// 显示编辑工具栏
+/**
+ * 显示编辑工具栏
+ * 参数 dspFlg 为true时显示编辑工具栏，为false时隐藏编辑工具栏
+ */
 function _displayEditToolbar(dspFlg) {
     var layoutH = '';
     if (dspFlg) {
@@ -179,12 +182,15 @@ function _displayEditToolbar(dspFlg) {
 
     // 要重新计算layout高度
     var p = $('#tabDiv_' + _curTblId).layout('panel', 'north');	// get the north panel
-    var oldHeight = p.panel('panel').outerHeight();
-    p.panel('resize', {height: layoutH});
-    var newHeight = p.panel('panel').outerHeight();
-    $('#tabDiv_' + _curTblId).layout('resize', {
-        height: ($('#tabDiv_' + _curTblId).height() + newHeight - oldHeight)
-    });
+    // 必须要验证取出的对象是否有效
+    if (p && p.length) {
+        var oldHeight = p.panel('panel').outerHeight();
+        p.panel('resize', {height: layoutH});
+        var newHeight = p.panel('panel').outerHeight();
+        $('#tabDiv_' + _curTblId).layout('resize', {
+            height: ($('#tabDiv_' + _curTblId).height() + newHeight - oldHeight)
+        });
+    }
 }
 
 // 开始编辑，要先去后台确认该表是否有其他人正在编辑
@@ -198,7 +204,7 @@ function chkForEditing() {
             layer.close(loadLy);
             if (data.code == 0) {
                 // 可以开始编辑
-                editableMap[_curTblId] = true;
+                inEditingTableMap[_curTblId] = true;
                 $('#' + _curTblId + ' input._tbl_name').textbox('readonly', false);
                 $('#' + _curTblId + ' input._tbl_name_cn').textbox('readonly', false);
                 $('#' + _curTblId + ' input._tbl_desc').textbox('readonly', false);
@@ -222,7 +228,7 @@ function chkForEditing() {
                 _openNewTab(nowTblId);
 
                 // 可以开始编辑
-                editableMap[_curTblId] = true;
+                inEditingTableMap[_curTblId] = true;
                 $('#' + _curTblId + ' input._tbl_name').textbox('readonly', false);
                 $('#' + _curTblId + ' input._tbl_name_cn').textbox('readonly', false);
                 $('#' + _curTblId + ' input._tbl_desc').textbox('readonly', false);
@@ -248,7 +254,7 @@ function chkForEditing() {
                                     layer.close(loadLy);
                                     if (data.code == 0) {
                                         // 可以开始编辑
-                                        editableMap[_curTblId] = true;
+                                        inEditingTableMap[_curTblId] = true;
                                         $('#' + _curTblId + ' input._tbl_name').textbox('readonly', false);
                                         $('#' + _curTblId + ' input._tbl_name_cn').textbox('readonly', false);
                                         $('#' + _curTblId + ' input._tbl_desc').textbox('readonly', false);
@@ -268,16 +274,15 @@ function chkForEditing() {
     });
 }
 
-// 结束编辑状态
-function _endEditing() {
+// 结束单元格编辑状态
+function _endCellEditing() {
     var curEditIndex = editIndexMap[_curTblId];
-    if (curEditIndex == null || curEditIndex == 0) {
+    if (curEditIndex == null) {
         return true
     }
     var gridObj = _getGrid();
     if (gridObj.datagrid('validateRow', curEditIndex)) {
         gridObj.datagrid('endEdit', curEditIndex);
-        editIndexMap[_curTblId] = null;
         return true;
     } else {
         return false;
@@ -324,9 +329,10 @@ function endEditing() {
         opts.onBeforeClose = bcFunc;  // restore the event function
     }
     function _doEndEditing() {
-        editableMap[_curTblId] = false;
+        inEditingTableMap[_curTblId] = false;
         dragDropableMap[_curTblId] = false;
-        _endEditing();
+        editIndexMap[_curTblId] = null;
+        _endCellEditing();
 
         if (_curTblId && _curTblId < 100) {
             var curIndex = $('#tbl-tabs').tabs('getTabIndex', $('#tbl-tabs').tabs('getSelected'));
@@ -357,7 +363,7 @@ function endEditing() {
 
 // 开启行拖放操作
 function enableDragDrop() {
-    if (editableMap[_curTblId] == undefined || editableMap[_curTblId] === false) {
+    if (inEditingTableMap[_curTblId] == undefined || inEditingTableMap[_curTblId] === false) {
         return false;
     }
     if (_curTblId == undefined || _curTblId == null || _curTblId == '') {
@@ -417,6 +423,7 @@ function delColumn() {
     var s2 = _getGridRowIdx();
     if (s2 < 0) {
         layer.msg("必须选择项目后才能删除．");
+        return false;
     }
 
     layer.confirm('确定要删除选定项目？<br/>该操作不可恢复，是否确认删除？', { icon: 7,
@@ -497,25 +504,25 @@ function saveAll() {
         type: 'post',
         url: Ap_servletContext + '/ajax/saveColDefine',
         data: JSON.stringify(postData),
-        contentType: "application/json; charset=utf-8",
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0) {
-                // editIndexMap[_curTblId] = null;
-                // editableMap[_curTblId] = false;
+                inEditingTableMap[_curTblId] = false; // 先设置编辑标识，否则下面在关闭tab页时会有不必要的操作提示
                 // 保存成功后关闭表格的编辑状态，如果是新建表还要刷新tab
                 if (_curTblId < 100) {
-                    // 刷新当前tab（id, title）
-                    var nowTab = $('#tbl-tabs').tabs('getSelected');  // get selected panel
-                    $('#tbl-tabs').tabs('update', {
-                        tab: nowTab,
-                        options: {
-                            title: tName,
-                            id: data.data._newTblId
-                        }
-                    });
+                    loadLy = layer.load(1);
+                    // 刷新当前tab
+                    // （经试验，只能关闭当前tab,再打开新的tab,虽然体验较差,但是如果直接在本tab页刷新，实现起来较复杂，以后再改进）
+                    var _newTblId = data.data._newTblId;
+                    var tabIdx = $('#tbl-tabs').tabs('getTabIndex', $('#tbl-tabs').tabs('getSelected'));
+                    $('#tbl-tabs').tabs('close', tabIdx);
+                    _openNewTab(_newTblId);
+                    layer.close(loadLy);
                 }
                 _doAfterSave();
+                if (_curTblId < 100) {
+                    _curTblId = data.data._newTblId;
+                }
                 $(prefixId + ' input._tbl_last_updtime').val(data.data.lastUpd);
             } else {
                 layer.msg(data.msg + ' code=' + data.code);
@@ -526,9 +533,10 @@ function saveAll() {
 
 // 正常编辑保存后的处理：修改标识位，恢复画面按钮状态（不需要再去后台关闭编辑状态，这个动作在保存数据的同时已经做掉了）
 function _doAfterSave() {
-    editableMap[_curTblId] = false;
+    isRowEditedMap[_curTblId] = false;
     dragDropableMap[_curTblId] = false;
-    _endEditing();
+    editIndexMap[_curTblId] = null;
+    _endCellEditing();
 
     // 隐藏编辑工具栏
     _displayEditToolbar(false);
@@ -554,10 +562,12 @@ function useTemplate1() {
     _getGrid().datagrid('appendRow', { 'columnName': "created_date", 'type': "datetime ", 'notnull': "Y", 'columnNameCN': "创建时间" });
     _getGrid().datagrid('appendRow', { 'columnName': "updated_date", 'type': "datetime ", 'notnull': "Y", 'columnNameCN': "创建时间" });
     $('#template_dlg').dialog('close');
+    isRowEditedMap[_curTblId] = true;
 }
 // 使用预定义模板2
 function useTemplate2() {
     _getGrid().datagrid('appendRow', { 'columnName': "created_by", 'type': "bigint", 'columnLens': "20", 'notnull': "Y", 'columnNameCN': "创建者ID" });
     _getGrid().datagrid('appendRow', { 'columnName': "created_date", 'type': "datetime ", 'notnull': "Y", 'columnNameCN': "创建时间" });
     $('#template_dlg').dialog('close');
+    isRowEditedMap[_curTblId] = true;
 }

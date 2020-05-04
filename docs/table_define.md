@@ -19,6 +19,7 @@
 |_id           | long      | 数据库ID  | 系统内部ID，自增
 |+ auditData   | object    | 审计信息 
 |dbName        | string    | 数据库名称(项目名称)
+|lastTagName   | string    | 最近一个发布版本的标签名
 |desc          | string    | 描述
 |dbMode        | int       | 类型  | 1:关系型数据库(mysql/oracle/db2...) 2:非关系型数据库(mongo/solr...)
 |dbProvider    | string    | 数据库提供商
@@ -36,6 +37,7 @@
 |+ auditData    | object | 审计信息 
 |tableName      | string | 表名
 |aliasName      | string | 别名 
+|bizGroup       | string | 业务组  | 选填项,用于区分各业务系统,例如:订单系统/库存系统/商品管理系统/用户管理系统等
 |desc           | string | 描述/备注/说明
 |viewType       | int    | 类型  | 目前只有关系型数据库用到, 默认为1, (1:表　2:视图)
 |viewDefinition | string | 视图定义  | 只有在'viewType'为2时才有值.(此时'column_list'和'index_list'无值)
@@ -77,12 +79,25 @@
 |dbId           | long   | 数据库ID
 |tableId        | long   | 表ID
 |versionId      | long   | 版本ID
+|searchKey      | string | 检索关键字  | 格式：'表ID'-'版本ID'
+|updateDesc     | string | 本次编辑描述  | 保存变更时自动生成概要,主要是修改了哪些字段等等
 |+ auditData    | object | 审计信息 
 |tableName      | string | 表名
 |aliasName      | string | 别名 
 |desc           | string | 描述/备注/说明
 |* column_list  | object[]  | 列定义一览  | 参照表table_list的column_list
 |* index_list   | object[]  | 索引定义一览  | 参照表table_list的index_list
+
+
+###### table_db_tag_xref
+| 列名 | 类型 | 说明 | 备注
+|-----|------|------|------
+|dbId           | long     | 数据库ID
+|tagName        | string   | 发布版本的标签名
+|tagDesc        | string   | 发布版本的说明
+|* searchKeys   | string[] | 检索关键字列表  | 格式：'表ID'-'版本ID'
+|erChartSearchKey   | string | ER图的检索关键字  | 格式：'ER图ID'-'版本ID';目前的设计是一个项目/数据库只对应一个ER图
+|+ auditData    | object   | 审计信息 
 
 
 ###### release_tag_history 表设计和ER图同步创建新标签

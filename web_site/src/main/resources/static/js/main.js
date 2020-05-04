@@ -10,6 +10,7 @@ $(function () {
 
     // 全局的ajax访问设置，处理ajax请求时sesion超时
     $.ajaxSetup({
+        contentType: "application/json; charset=utf-8",
         complete: function(xhr, status) {
             if (xhr.responseText && status == 'error') {
                 var errObj = JSON.parse(xhr.responseText);
@@ -64,3 +65,16 @@ function $translate(key) {
     }
 }
 
+function compatibleIETests() {
+    var userAgent = navigator.userAgent; //取得浏览器的userAgent字符串
+    var isIE = userAgent.indexOf("MSIE") > -1; //判断是否IE<11浏览器
+    if(isIE) {
+        var reIE = new RegExp("MSIE (\\d+\\.\\d+);");
+        reIE.test(userAgent);
+        var fIEVersion = parseFloat(RegExp["$1"]);
+        if (fIEVersion == 6 || fIEVersion == 7 || fIEVersion == 8 || fIEVersion == 9 || fIEVersion == 10) {
+            return false;
+        }
+    }
+    return true;
+}

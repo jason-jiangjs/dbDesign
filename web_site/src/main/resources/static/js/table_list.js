@@ -81,9 +81,7 @@ $(function () {
                 // 回到主页
                 _curTblId = 0;
                 // 切换菜单显示
-                $('#_home_page_btn').css("display", "inline");
-                $('#_tab_page_btn_editable').css("display", "none");
-                $('#_tab_page_btn_editing').css("display", "none");
+                toggleShowMenuItem(isShowTagHistory, null, 1);
                 return;
             }
             var pp = $('#tbl-tabs').tabs('getTab', index); // tab页切换时要记住当前页id
@@ -94,14 +92,7 @@ $(function () {
             // 取消在首页中的选中行
             $('#tbl-def-grid').datagrid('unselectAll');
             // 切换菜单显示
-            $('#_home_page_btn').css("display", "none");
-            if (isTabInEditing()) {
-                $('#_tab_page_btn_editable').css("display", "none");
-                $('#_tab_page_btn_editing').css("display", "inline");
-            } else {
-                $('#_tab_page_btn_editable').css("display", "inline");
-                $('#_tab_page_btn_editing').css("display", "none");
-            }
+            toggleShowMenuItem(isShowTagHistory, isTabInEditing(), 0);
         },
         // Tab页关闭前的验证, 主要是检查是否处于编辑状态
         onBeforeClose: function(title, index) {
@@ -169,7 +160,7 @@ $(function () {
         method: 'get',
         pagination: true,
         pageSize: defaultPageSize,
-        pageList: [100, 500],
+        pageList: [50, 100, 500],
         singleSelect: true,
         checkOnSelect: false,
         selectOnCheck: false
@@ -180,10 +171,16 @@ $(function () {
         if (defaultPageSize != nowOpts.pageSize) {
             localStorage.setItem($('#useId').val() + "_" + $('#dbId').val(), nowOpts.pageSize);
         }
-    };
+     };
     options.onClickRow = function(index, row) {
         // 打开tab页
-        var tblId = row._id;
+        var tblId = null;
+        if (isShowTagHistory) {
+            // 如果是在查看版本历史
+            tblId = row.tableId;
+        } else {
+            tblId = row._id;
+        }
         if (tblId) {
             _curTblId = tblId;
             // 先查看是否已存在，若已存在则切换tab
@@ -191,18 +188,14 @@ $(function () {
                 $('#tbl-tabs').tabs('select', row.tableName); // 这里不刷新数据，编辑时再确认是否有修改
                 return;
             }
-
             _openNewTab(tblId);
-            // 切换菜单显示
-            $('#_home_page_btn').css("display", "none");
-            $('#_tab_page_btn').css("display", "inline");
         } else {
             $.messager.alert('发生错误', '可能是数据加载错误．', 'error');
         }
     };
     options.url = Ap_servletContext + '/ajax/getTableList?dbId=' + $('#dbId').val() + '&targetType=' + $('#targetType').val() + '&_t=' + new Date().getTime();
     options.columns = [[
-        {field:'',checkbox:true},
+        {field:'',checkbox:true,width:25},
         {field:'_id',title:'No.', width:25, align:'center',
             formatter: function(value,row,index) { // in v1.7.6 rownumberWidth属性无效，只能先暂时用这个方法
                 var nowOpts = $('#tbl-def-grid').datagrid('options');
@@ -272,7 +265,7 @@ $(function () {
 // 判断当前tab页是否处于编辑状态
 // 是则返回true
 function isTabInEditing() {
-    if (editableMap[_curTblId] || (_curTblId && _curTblId < 100)) {
+    if (_curTblId && inEditingTableMap[_curTblId]) {
         // 只要有效值就说明在编辑
         return true;
     }
@@ -288,7 +281,7 @@ function _openNewTab(tblId) {
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0 && data.data) {
-                _createTblHeadDiv(tblId, data.data.tblName, data.data.tblNameCn, data.data.tblDesc, data.data.lastUpd);
+                _createTblHeadDiv(tblId, data.data);
                 _createTblGrid(tblId, data.data.columns);
             } else {
                 layer.msg(data.msg + ' (code=' + data.code + ")");
@@ -299,7 +292,9 @@ function _openNewTab(tblId) {
 
 // 回到列表页
 function jumptoHomeTab() {
+    var loadLy = layer.load(1);
     $('#tbl-tabs').tabs('select', 0);
+    layer.close(loadLy);
 }
 
 // 浮出框,显示已打开的表一览(tab控件标题栏超长时才有此功能)
@@ -392,16 +387,17 @@ function convertType(value) {
 }
 
 // 创建表头说明
-function _createTblHeadDiv(tblId, tblName, tblNameCn, tblDesc, lastUpd) {
+// 参数'tblInfo'中已包含的字段包括： tblName, aliasName, tblDesc, lastUpd, currEditorId
+function _createTblHeadDiv(tblId, tblInfo) {
     var isCreated = false;
-    if (tblName == '' || tblName == null || tblName == undefined) {
+    if (tblInfo.tblName == '' || tblInfo.tblName == null || tblInfo.tblName == undefined) {
         isCreated = true;
-        tblName = '新建表';
+        tblInfo.tblName = '新建表';
     }
     // 先动态创建tab
     $('#tbl-tabs').tabs('add', {
         id: tblId,  // tab页的id默认是当前表的id(从数据库而来的)
-        title: tblName,
+        title: tblInfo.tblName,
         content: '<div id="tabDiv_' + tblId + '" class="easyui-layout" fit="true"></div>',
         closable: true
     });
@@ -436,29 +432,32 @@ function _createTblHeadDiv(tblId, tblName, tblNameCn, tblDesc, lastUpd) {
 
     // 设置表名等初始值
     if (isCreated) {
-        // 有编辑权限
+        // 这里是指打开tab页新建表(肯定是编辑状态)
         _displayEditToolbar(true);
-        $('#_tab_page_btn_editable').css("display", "none");
-        $('#_tab_page_btn_editing').css("display", "inline");
+        // 切换菜单显示
+        toggleShowMenuItem(false, true, 0);
 
         $(prefixId + ' input._tbl_name').textbox();
         $(prefixId + ' input._tbl_name_cn').textbox();
         $(prefixId + ' input._tbl_desc').textbox({ multiline: true });
     } else {
         _displayEditToolbar(false);
-        $(prefixId + ' input._tbl_name').textbox({value: tblName, 'readonly': true});
-        $(prefixId + ' input._tbl_name_cn').textbox({value: tblNameCn, 'readonly': true});
-        $(prefixId + ' input._tbl_desc').textbox({value: tblDesc, multiline: true, 'readonly': true});
-        $(prefixId + ' input._tbl_name_p').val(tblName);
-        $(prefixId + ' input._tbl_name_cn_p').val(tblNameCn);
-        $(prefixId + ' input._tbl_desc_p').val(tblDesc);
+        // 切换菜单显示
+        toggleShowMenuItem(false, false, 0);
+
+        $(prefixId + ' input._tbl_name').textbox({value: tblInfo.tblName, 'readonly': true});
+        $(prefixId + ' input._tbl_name_cn').textbox({value: tblInfo.aliasName, 'readonly': true});
+        $(prefixId + ' input._tbl_desc').textbox({value: tblInfo.tblDesc, multiline: true, 'readonly': true});
+        // 这里用来保存原始值，可以判断字段值是否被修改
+        $(prefixId + ' input._tbl_name_p').val(tblInfo.tblName);
+        $(prefixId + ' input._tbl_name_cn_p').val(tblInfo.aliasName);
+        $(prefixId + ' input._tbl_desc_p').val(tblInfo.tblDesc);
+        $(prefixId + ' input._tbl_last_updtime').val(tblInfo.lastUpd);
+        $(prefixId + ' input._tbl_currEditorId').val(tblInfo.currEditorId);
     }
     // $("input", $(prefixId + ' input._tbl_desc').next("span textarea")).click(function() {
     //     alert("ok"); //unselectGridItem
     // });
-
-
-    $(prefixId + ' input._tbl_last_updtime').val(lastUpd);
 }
 
 // 创建表的定义一览
@@ -527,8 +526,8 @@ function createNewTable(value) {
     }
     newTblId ++;
     _curTblId = newTblId;
-    _createTblHeadDiv(newTblId);
-    editableMap[_curTblId] = true;
+    _createTblHeadDiv(newTblId, {});
+    inEditingTableMap[_curTblId] = true;
 
     var loadLy = layer.load(1);
     // 查询表定义信息，动态加载列定义
@@ -558,6 +557,9 @@ function delSelectedItem() {
         return { 'tableId':obj._id, 'tableName':obj.tableName, 'modifiedTime':obj.modifiedTime === undefined ? null : obj.modifiedTime}
     });
 
+    // 再检查是否有正在编辑的表
+
+
     layer.confirm('确定要删除所选定的项目？<br>该操作不可恢复，是否确认删除？', { icon: 7,
         btn: ['确定','取消'] //按钮
     }, function(index) {
@@ -568,13 +570,15 @@ function delSelectedItem() {
             type: 'post',
             url: Ap_servletContext + '/ajax/bulkDelTableDef',
             data: JSON.stringify(tblList),
-            contentType: "application/json; charset=utf-8",
             success: function (data) {
                 layer.close(loadLy);
                 if (data.code == 0) {
                     loadLy = layer.load(1);
                     // 删除成功后刷新table list
                     $('#tbl-def-grid').datagrid("load", {});
+                    // 如果有已打开的tab页，则关闭
+
+
                     layer.close(loadLy);
                 } else {
                     layer.msg(data.msg + ' (code=' + data.code + ")");
@@ -584,6 +588,52 @@ function delSelectedItem() {
     }, function() {
         // 无操作
     });
+}
+
+// 切换下拉菜单显示
+// 参数inHisVersion 为true表示正在查看的是历史发布版本
+// 参数inEditing 为true表示正在编辑中
+// 参数pathStatus 表示页面跳转路径 0:表示从首页跳转到tab页  1:表示从tab页跳转到首页
+function toggleShowMenuItem (inHisVersion, inEditing, pathStatus) {
+    if (inHisVersion) {
+        // 如果是在查看版本历史
+        $('#_home_page_btn').css("display", "none");
+        $('#_tab_page_btn_editable').css("display", "none");
+        $('#_tab_page_btn_editing').css("display", "none");
+
+        if (pathStatus) {
+            // 去首页
+            $('#tag_home_page_btn').css("display", "inline");
+            $('#tag_table_page_btn').css("display", "none");
+            var favDb = $.trim($('#favDb').val());
+            toggleFavoriteMenuItem(!(favDb && favDb == $.trim($('#dbId').val())));
+        } else {
+            $('#tag_home_page_btn').css("display", "none");
+            $('#tag_table_page_btn').css("display", "inline");
+        }
+    } else {
+        $('#tag_home_page_btn').css("display", "none");
+        $('#tag_table_page_btn').css("display", "none");
+
+        if (pathStatus) {
+            // 去首页
+            $('#_home_page_btn').css("display", "inline");
+            $('#_tab_page_btn_editable').css("display", "none");
+            $('#_tab_page_btn_editing').css("display", "none");
+            var favDb = $.trim($('#favDb').val());
+            toggleFavoriteMenuItem(!(favDb && favDb == $.trim($('#dbId').val())));
+        } else {
+            $('#_home_page_btn').css("display", "none");
+            if (inEditing) {
+                // 编辑状态
+                $('#_tab_page_btn_editable').css("display", "none");
+                $('#_tab_page_btn_editing').css("display", "inline");
+            } else {
+                $('#_tab_page_btn_editable').css("display", "inline");
+                $('#_tab_page_btn_editing').css("display", "none");
+            }
+        }
+    }
 }
 
 // 切换收藏夹菜单项显示
@@ -624,7 +674,6 @@ function setDevEnv(devType) {
         type: 'post',
         url: Ap_servletContext + '/ajax/setDefaultDbEnv',
         data: JSON.stringify(postData),
-        contentType: "application/json; charset=utf-8",
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0) {
@@ -676,3 +725,6 @@ function nameDspformatter(value, row, index) {
     }
     return '';
 }
+
+
+

@@ -22,9 +22,9 @@
                 <div data-options="region:'north',border:false" style="height:60px;padding:20px 10px 10px 10px">
                     <span style="float: left">
                         <input id="tbl_searchbox" type="text" style="width:250px">
-                        <span th:if="${lastTagVersion}"><span style="padding-left:60px;padding-right:2px">最近一次发布</span>[[${lastTagVersion}]]</span>
+                        <span><span id="nowTagInfo" style="padding-left:60px;padding-right:2px;display:none"></span></span>
                     </span>
-                    <span style="float: right;margin-right:10px" dbd:authorize="${dbId}">
+                    <span id="itemOptButton" style="float: right;margin-right:10px" dbd:authorize="${dbId}">
                         <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="javascript:createNewTable()" style="width:90px">新建表</a>
                         <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove'" onclick="javascript:delSelectedItem()" style="width:90px;margin-left:10px">删除表</a>
                     </span>
@@ -42,14 +42,14 @@
                 <td style="width:80px">表名</td>
                 <td><input class="_tbl_name" style="width:350px"></td>
                 <td rowspan="2" style="width:60px;text-align:right;padding-right:10px;padding-top:6px" valign="top">备注</td>
-                <td rowspan="2"><input class="_tbl_desc" style="width:500px;height:64px"></td>
+                <td rowspan="2"><input class="_tbl_desc" style="width:500px;height:64px;padding-top:3px"></td>
             </tr>
             <tr>
                 <td>别名</td><td><input class="_tbl_name_cn" style="width:350px"></td>
             </tr>
         </table>
         <input type="hidden" class="_tbl_name_p"><input type="hidden" class="_tbl_desc_p"><input type="hidden" class="_tbl_name_cn_p">
-        <input type="hidden" class="_tbl_last_updtime">
+        <input type="hidden" class="_tbl_last_updtime"><input type="hidden" class="_tbl_currEditorId">
         <div class="_tbl_edit_toolbar" style="padding:7px 0px 7px 12px;border-top:1px solid #e0e0e0;display:none" dbd:authorize="${dbId}">
             <a href="#" class="_linkbtn_add" onclick="javascript:addColumn()" style="width:90px">添加栏位</a>
             <a href="#" class="_linkbtn_edit" onclick="javascript:insertColumn()" style="width:90px;margin-left:10px">插入栏位</a>
@@ -70,6 +70,22 @@
         <div style="text-align:center;margin-top:15px;margin-bottom:15px">
             <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitTblIdx()">保存</a>
             <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelTblIdx()">取消</a>
+        </div>
+    </div>
+
+    <div id="tblnewtag_dlg" class="easyui-dialog" title="发布新版本" data-options="iconCls:'fa fa-paperclip',modal:true,draggable:false,closed:true,border:'thin',width:380">
+        <div style="margin:20px 0px 10px 30px">
+            <input id="newTagName" class="easyui-textbox" data-options="required:true,label:'版本名称'" style="width:300px"></div>
+        <div style="margin:10px 0px 20px 30px">
+            <input id="tagDesc" class="easyui-textbox" data-options="multiline:true,required:true,label:'版本说明'" style="width:300px;height:90px;padding-top:3px"></div>
+        <div style="text-align:center;margin-top:15px;margin-bottom:15px">
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitNewTag()">确定</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelNewTag()">取消</a>
+        </div>
+    </div>
+    <div id="tagList_dlg" class="easyui-dialog" title="查看历史发布版本" data-options="iconCls:'fa fa-list',modal:true,draggable:false,closed:true,border:'thin',width:700,height:400">
+        <div style="margin:12px;height:340px">
+            <table id="tagList_grid"></table>
         </div>
     </div>
 
@@ -94,7 +110,7 @@
     <div id="filteredDataDialog" style="width:250px;z-index:999;position:absolute;top:35px;left:1px;display:none">
         <div id="filteredDataList"></div>
     </div>
-    <input type="text" id="useId" th:value="${session.SPRING_SECURITY_CONTEXT.authentication.principal.userId}" />
+    <input type="hidden" id="useId" th:value="${session.SPRING_SECURITY_CONTEXT.authentication.principal.userId}" />
     <input type="hidden" id="favDb" th:value="${session.SPRING_SECURITY_CONTEXT.authentication.principal.favorite}" />
     <input type="hidden" id="readAttr" th:value="${userReadonly}" />
     <input type="hidden" id="dbn" th:value="${dbName}" />

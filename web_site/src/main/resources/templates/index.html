@@ -4,7 +4,7 @@
     <th:block th:replace="/layout/head"></th:block>
 </head>
 
-<body style="">
+<body>
 <div style="width:400px;height:300px;margin:0 auto;margin-top:100px">
     <h2>帐号登录</h2>
     <div style="margin:20px 0;"></div>
@@ -22,10 +22,20 @@
             </div>
         </form>
     </div>
-    <div style="margin-top:20px;font-size:12px;color: #0E2D5F">第三方登录<span style="font-size:10.8px;transform-origin: 0;transform: scale(0.90);margin-left:10px">(第三方登录的用户必须设置访问权限后才能正式使用．)</span></div>
-    <div style="width:400px;margin-top:5px"><img th:src="@{/img/gitlab.gif}" style="width:90px;cursor:pointer" onclick="gitlabThdLogin()"></div>
+    <div id="thdLogin" style="margin-top:20px">
+        <div style="font-size:12px;color: #0E2D5F">第三方登录<span style="font-size:10.8px;margin-left:10px">(第三方登录的用户必须设置访问权限后才能正式使用．)</span></div>
+        <div style="width:400px;margin-top:5px"><img th:src="@{/img/gitlab.gif}" style="width:90px;cursor:pointer" onclick="gitlabThdLogin()"></div>
+    </div>
+</div>
+<div id="ieTips" style="width:500px;margin:0 auto;padding-top:50px;padding-left:30px;font-size:12px;color:orangered;display:none">
+    您的IE浏览器版本过低，请升级到IE11，或者换用其他浏览器如Chrome、Firefox.
 </div>
 <script>
+    if (!compatibleIETests()) {
+        // 使用了低版本的IE
+        var divBox = document.getElementById('ieTips');
+        divBox.style.display = 'block';
+    }
     function gitlabThdLogin() {
         window.location.href = Ap_servletContext + '/trdlogin/gitlab';
     }

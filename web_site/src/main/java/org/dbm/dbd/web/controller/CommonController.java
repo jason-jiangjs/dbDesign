@@ -1,11 +1,16 @@
 package org.dbm.dbd.web.controller;
 
 import org.dbm.common.Constants;
+import org.dbm.common.ErrorCode;
 import org.dbm.common.base.controller.BaseController;
 import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.util.ApiResponseUtil;
+import org.dbm.common.util.CommUtil;
+import org.dbm.common.util.DateTimeUtil;
+import org.dbm.common.util.StringUtil;
 import org.dbm.dbd.service.DbService;
 import org.dbm.dbd.service.MetaDataService;
+import org.dbm.dbd.web.util.SystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -59,4 +64,21 @@ public class CommonController extends BaseController {
         return ApiResponseUtil.success(data);
     }
 
+    /**
+     * 清空缓存
+     */
+    @RequestMapping(value = "/admin/ui/clearCacheMap", method = RequestMethod.GET)
+    public Map<String, Object> clearCacheMap(@RequestParam Map<String, String> params) {
+        Integer chkKey = StringUtil.convertToInt(params.get("key"), null);
+        if (chkKey == null) {
+            return ApiResponseUtil.error(ErrorCode.W1001, "缺少必须的参数.");
+        }
+        String nowDate = DateTimeUtil.getNow(DateTimeUtil.COMPRESS_MONTHDAY_FORMAT);
+        if (chkKey != Integer.parseInt(nowDate.substring(0, 2)) + Integer.parseInt(nowDate.substring(2, 4)) + 1) {
+            return ApiResponseUtil.error(ErrorCode.W1001, "参数错误.");
+        }
+
+        SystemProperty.clearCacheMap();
+        return ApiResponseUtil.success();
+    }
 }

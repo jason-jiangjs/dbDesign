@@ -218,7 +218,6 @@ function submitForm() {
         type: 'post',
         url: Ap_servletContext + '/ajax/mng/saveUserInfo',
         data: JSON.stringify(postData),
-        contentType: "application/json; charset=utf-8",
         success: function (data) {
             layer.close(loadLy);
             if (data.code == 0) {
