@@ -8,6 +8,7 @@ import org.dbm.common.util.ApiResponseUtil;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.common.util.StringUtil;
 import org.dbm.dbd.service.UserService;
+import org.dbm.dbd.web.util.BizCommUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -91,14 +92,13 @@ public class UserMngController extends BaseController {
                 }
                 item.put("dbId", dbId);
                 item.put("role", StringUtil.convertToInt(item.get("role")));
-                item.remove("dbName");
+                item.remove("dbNameTxt");
                 item.remove("default");
             }
         }
 
         if (optType == 1) {
-            params.put("creator", adminId);
-            params.put("createdTime", DateTimeUtil.getNowTime());
+            // 新增用户
             userService.addUser(params);
         } else {
             BaseMongoMap userObj = userService.getUserById(tiid);
@@ -108,13 +108,14 @@ public class UserMngController extends BaseController {
             }
 
             Map<String, Object> valMap = new HashMap<>();
-            valMap.put("userId", params.get("accNo"));
+            valMap.put("account", params.get("accNo"));
             valMap.put("userName", params.get("accName"));
             valMap.put("status", StringUtil.convertToInt(params.get("status")));
             valMap.put("role", StringUtil.convertToInt(params.get("role")));
-            valMap.put("roleList", (List<Map<String, Object>>) params.get("roleList"));
-            valMap.put("modifier", adminId);
-            valMap.put("modifiedTime", DateTimeUtil.getNowTime());
+            valMap.put("roleList", params.get("roleList"));
+            valMap.put("auditData.modifierId", adminId);
+            valMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
+            valMap.put("auditData.modifiedTime", DateTimeUtil.getDate().getTime());
             userService.updateUserInfo(userObj.getLongAttribute("_id"), valMap);
         }
         return ApiResponseUtil.success();
@@ -125,7 +126,6 @@ public class UserMngController extends BaseController {
      */
     @RequestMapping(value = "/ajax/mng/delUser", method = RequestMethod.POST)
     public Map<String, Object> deleteUser(@RequestParam Map<String, String> params) {
-        Long adminId = getLoginUserId();
         Long userId = StringUtil.convertToLong(params.get("userId"));
         if (userId == 0) {
             logger.warn("deleteUser 缺少参数 userId");
@@ -137,7 +137,7 @@ public class UserMngController extends BaseController {
             return ApiResponseUtil.error(ErrorCode.E5011, "该用户不存在/已删除 userId={}", userId);
         }
 
-        userService.removeUser(adminId, userId);
+        userService.removeUser(userId);
         return ApiResponseUtil.success();
     }
 

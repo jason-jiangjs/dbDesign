@@ -105,7 +105,7 @@ public class WebUiController extends BaseController {
         // 标记当前用户为已登录
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("inLogin", 1);
-        infoMap.put("loginTime", DateTimeUtil.getNowTime());
+        infoMap.put("loginTime", DateTimeUtil.getDate().getTime());
         userService.updateUserInfo(userObj.getUserId(), infoMap);
         return model;
     }

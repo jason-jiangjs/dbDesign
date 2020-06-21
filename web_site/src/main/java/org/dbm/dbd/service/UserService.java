@@ -3,7 +3,6 @@ package org.dbm.dbd.service;
 import org.apache.commons.lang3.StringUtils;
 import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.base.service.BaseService;
-import org.dbm.common.util.DateTimeUtil;
 import org.dbm.common.util.StringUtil;
 import org.dbm.dbd.dao.UserDao;
 import org.dbm.dbd.web.util.BizCommUtil;
@@ -42,9 +41,7 @@ public class UserService extends BaseService {
     public void setUserFavorite(long userId, long dbId) {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("favorite", dbId);
-        infoMap.put("auditData.modifierId", userId);
-        infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
-        infoMap.put("auditData.modifiedTime", DateTimeUtil.getDate().getTime());
+        BizCommUtil.setModifyAuditData(infoMap);
         userDao.updateObject(userId, infoMap, false);
     }
 
@@ -146,12 +143,10 @@ public class UserService extends BaseService {
     /**
      * 删除用户
      */
-    public void removeUser(Long adminId, long userId) {
+    public void removeUser(long userId) {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("status", 4);
-        infoMap.put("auditData.modifierId", adminId);
-        infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
-        infoMap.put("auditData.modifiedTime", DateTimeUtil.getDate().getTime());
+        BizCommUtil.setModifyAuditData(infoMap);
         userDao.updateObject(userId, infoMap, false);
     }
 
@@ -171,13 +166,7 @@ public class UserService extends BaseService {
         List<Map<String, Object>> roleList = (List<Map<String, Object>>) params.get("roleList");
         userObj.put("roleList", roleList);
 
-        long currTime = DateTimeUtil.getDate().getTime();
-        userObj.put("auditData.valid", true);
-        userObj.put("auditData.creatorId", BizCommUtil.getLoginUserId());
-        userObj.put("auditData.createdTime", currTime);
-        userObj.put("auditData.modifierId", BizCommUtil.getLoginUserId());
-        userObj.put("auditData.modifierName", BizCommUtil.getLoginUserName());
-        userObj.put("auditData.modifiedTime", currTime);
+        userObj.put("auditData", BizCommUtil.createAuditData());
         userDao.updateObject(iid, userObj, true);
     }
 
@@ -202,13 +191,7 @@ public class UserService extends BaseService {
         userObj.put("registered", false);
         userObj.put("from", fromSrc);
 
-        long currTime = DateTimeUtil.getDate().getTime();
-        userObj.put("auditData.valid", true);
-        userObj.put("auditData.creatorId", iid);
-        userObj.put("auditData.createdTime", currTime);
-        userObj.put("auditData.modifierId", iid);
-        userObj.put("auditData.modifierName", userName);
-        userObj.put("auditData.modifiedTime", currTime);
+        userObj.put("auditData", BizCommUtil.createAuditData());
         userDao.updateObject(iid, userObj, true);
     }
 

@@ -5,12 +5,12 @@ import org.dbm.common.ErrorCode;
 import org.dbm.common.base.controller.BaseController;
 import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.util.ApiResponseUtil;
-import org.dbm.common.util.DateTimeUtil;
 import org.dbm.common.util.StringUtil;
 import org.dbm.dbd.service.ComSequenceService;
 import org.dbm.dbd.service.DbService;
 import org.dbm.dbd.service.ErChartService;
 import org.dbm.dbd.service.UserService;
+import org.dbm.dbd.web.util.BizCommUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -71,9 +71,7 @@ public class DbMngController extends BaseController {
             // 新增
             dbId = sequenceService.getNextSequence(ComSequenceService.ComSequenceName.FX_USER_ID);
             params.put("_id", dbId);
-            params.put("deleteFlg", false);
-            params.put("creator", adminId);
-            params.put("createdTime", DateTimeUtil.getNowTime());
+            params.put("auditData", BizCommUtil.createAuditData());
             dbService.saveDb(dbId, params);
 
             // 创建一个默认的空白ER图, 关联到该数据库,
@@ -87,8 +85,8 @@ public class DbMngController extends BaseController {
                 logger.warn("saveDbInfo 数据库不存在/已删除 dbId={}", dbId);
                 return ApiResponseUtil.error(ErrorCode.E5001, "该数据库不存在/已删除 dbId={}", dbId);
             }
-            params.put("modifier", adminId);
-            params.put("modifiedTime", DateTimeUtil.getNowTime());
+
+            BizCommUtil.setModifyAuditData(params);
             dbService.saveDb(dbId, params);
         }
         return ApiResponseUtil.success();

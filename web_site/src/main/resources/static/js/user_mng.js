@@ -95,7 +95,7 @@ $(function () {
         // 加载用户信息
         $('#userId').val(row._id);
         $('#optType').val(0);
-        $('#accNo').textbox('setValue', row.userId);
+        $('#accNo').textbox('setValue', row.account);
         $('#userName').textbox('setValue', row.userName);
         $('#role').combobox('select', row.role);
         $('#status').combobox('select', row.status);
@@ -111,7 +111,7 @@ $(function () {
     options.url = Ap_servletContext + '/ajax/mng/getUserList?_t=' + new Date().getTime();
     options.columns = [[
         {field:'_id',title:'ID',width:80},
-        {field:'userId',title:'登录帐号',width:100},
+        {field:'account',title:'登录帐号',width:100},
         {field:'userName',title:'姓名',width:100},
         {field:'from',title:'来源',width:100},
         {field:'role',title:'角色',width:80,

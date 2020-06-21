@@ -12,9 +12,11 @@
 <div id="tab-tools_menu_home" class="easyui-menu"><!-- 当为主页时显示此下拉菜单 -->
     <div data-options="iconCls:'fa fa-refresh'" th:href="@{/home?type=1}">刷新</div>
     <div class="menu-sep"></div>
-    <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportSql()">导出SQL脚本</div>
-    <div data-options="iconCls:'fa fa-file-text-o'" onclick="javascript:exportUpdateSql()">导出SQL更改脚本</div>
-    <div class="menu-sep"></div>
+    <th:block dbd:authorize="${dbId}">
+        <div data-options="iconCls:'fa fa-download'" onclick="javascript:exportSql()">导出SQL脚本</div>
+        <div onclick="javascript:exportUpdateSql()">导出SQL更改脚本</div>
+        <div class="menu-sep"></div>
+    </th:block>
     <th:block dbd:authorize="${dbId}">
         <div data-options="iconCls:'fa fa-history'" onclick="javascript:openNewTagDialog()">发布版本</div>
     </th:block>
@@ -24,8 +26,8 @@
     <div data-options="iconCls:'fa fa-object-group'" onclick="javascript:showErDiagram()">查看ER图</div>
 
     <div class="menu-sep"></div>  <!--/* 下面2个菜单项只会出现一个，要根据条件来判断 */-->
-    <div data-options="name:'setdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(1)">加入到收藏夹</div>
-    <div data-options="name:'unsetdbenv',iconCls:'icon-save'" onclick="javascript:setDevEnv(0)">取消收藏</div>
+    <div data-options="name:'setdbenv',iconCls:'fa fa-flag-checkered'" onclick="javascript:setDevEnv(1)">加入到收藏夹</div>
+    <div data-options="name:'unsetdbenv'" onclick="javascript:setDevEnv(0)">取消收藏</div>
     <div class="menu-sep"></div>
     <div data-options="iconCls:'fa fa-backward'" th:href="@{/home?type=1}">返回选择数据库</div>
     <div class="menu-sep"></div>
@@ -47,7 +49,7 @@
         <div class="menu-sep"></div>
     </th:block>
     <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')">
-        <div data-options="name:'stop_edit',disabled:true" onclick="javascript:forceStopEdit()">强制停止编辑</div>
+        <div data-options="name:'stop_edit',iconCls:'fa fa-bomb',disabled:true" onclick="javascript:forceStopEdit()">强制停止编辑</div>
         <div class="menu-sep"></div>
     </th:block>
     <div data-options="iconCls:'fa fa-binoculars'" onclick="javascript:showEditHistory()">查看修改历史</div>
@@ -70,7 +72,7 @@
         <div class="menu-sep"></div>
     </th:block>
     <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')">
-        <div data-options="name:'stop_edit',disabled:true" onclick="javascript:forceStopEdit()">强制停止编辑</div>
+        <div data-options="name:'stop_edit',iconCls:'fa fa-bomb',disabled:true" onclick="javascript:forceStopEdit()">强制停止编辑</div>
         <div class="menu-sep"></div>
     </th:block>
     <div data-options="iconCls:'fa fa-binoculars'" onclick="javascript:showEditHistory()">查看修改历史</div>

@@ -56,8 +56,7 @@ public class LoginController extends BaseController {
         Map<String, Object> infoMap = new HashMap<>();
         infoMap.put("password", cryptEncoder.encode(newPasswd));
         infoMap.put("status", 1);
-        infoMap.put("modifier", userId);
-        infoMap.put("modifiedTime", DateTimeUtil.getNowTime());
+        BizCommUtil.setModifyAuditData(infoMap);
         userService.updateUserInfo(userId, infoMap);
         return ApiResponseUtil.success();
     }

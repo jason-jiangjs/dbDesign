@@ -1,6 +1,5 @@
 package org.dbm.common.util;
 
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,14 +83,6 @@ public final class DateTimeUtil {
      */
     public static String getNow(String pattern) {
         return format(getDate(), pattern);
-    }
-
-    /**
-     * 得到系统当前日期(北京时间:yyyyMMddHHmmssSSS)
-     */
-    public static long getNowTime() {
-        String date = DateTimeUtil.getNow(COMPRESS_DATETIME_FORMAT);
-        return NumberUtils.toLong(date);
     }
 
     /**
