@@ -45,9 +45,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.jgraph</groupId>
-            <artifactId>mxgraph</artifactId>
-            <version>3.9.11</version>
+            <groupId>com.mxgraph</groupId>
+            <artifactId>mxgraph-core</artifactId>
+            <version>3.9.12</version>
         </dependency>
 
     </dependencies>
