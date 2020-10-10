@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 /**
- * 用户管理（添加／删除／修改权限等）
+ * Gitlab的第三方登录
  */
 @Controller
 public class ThirdLoginController extends BaseController {
