@@ -22,16 +22,6 @@ public class ComConfigDao extends BaseMongoDao {
     /**
      * 取得配置属性值
      */
-    public List<Map> getProperties() {
-        Query query = new Query();
-        query.fields().exclude("_id");
-        query.fields().exclude("remarks");
-        return mongoTemplate.find(query, Map.class, COLL_NAME);
-    }
-
-    /**
-     * 取得配置属性值
-     */
     public Object getProperty(String key) {
         Query query = new Query(where("propName").is(key));
         query.fields().exclude("_id");
