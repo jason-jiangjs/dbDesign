@@ -104,7 +104,7 @@ function submitForm() {
         postData._id = parseInt(idStr);
     }
     postData.dbName = $.trim($('#dbName').textbox('getValue'));
-    postData.dbNameCN = $.trim($('#dbNameCN').textbox('getValue'));
+    // postData.dbNameCN = $.trim($('#dbNameCN').textbox('getValue'));
     postData.desc = $.trim($('#desc').textbox('getValue'));
     postData.typeVer = $.trim($('#ver').textbox('getValue'));
     var verInfo = $.trim($('#typeStr').combobox('getValue'));

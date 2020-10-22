@@ -123,7 +123,7 @@ public class TableService extends BaseService {
         saveTableUpdateHistory(userId, tblId, currTime, tblMap);
     }
 
-    private void saveTableUpdateHistory(long userId, long tblId, long currTime, BaseMongoMap tblMap) {
+    private void saveTableUpdateHistory(Long userId, long tblId, long currTime, BaseMongoMap tblMap) {
         // 同时保存变更历史
         tblMap.remove("_id");
         tblMap.remove("currEditorId");
@@ -144,9 +144,16 @@ public class TableService extends BaseService {
      */
     public void saveTblDefInfo(Long tblId, long versionId, Map infoMap) {
         infoMap.put("versionId", versionId);
-        infoMap.put("auditData.modifierId", BizCommUtil.getLoginUserId());
-        infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
-        infoMap.put("auditData.modifiedTime", versionId);
+
+        if (infoMap.get("auditData") == null) {
+            // 如果没有使用AuditDataBean对象，则必须创建auditData子Map
+            if (infoMap.get("auditData.modifierId") == null) {
+                infoMap.put("auditData.modifierId", BizCommUtil.getLoginUserId());
+                infoMap.put("auditData.modifierName", BizCommUtil.getLoginUserName());
+            }
+            infoMap.put("auditData.modifiedTime", versionId);
+        }
+
         tableDao.updateObject(tblId, infoMap, true);
 
         BaseMongoMap tblMap = getTableById(tblId);

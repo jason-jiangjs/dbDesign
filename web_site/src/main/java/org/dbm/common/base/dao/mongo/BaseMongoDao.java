@@ -63,7 +63,7 @@ public abstract class BaseMongoDao {
     }
 
     /**
-     * 插入数据，指定表
+     * 插入数据，指定表 (注意：这里的Map中key不能包含‘.’，如果有，必须转换形式，用子对象替换)
      */
     public void insertObject(Map dataObj) {
         mongoTemplate.save(dataObj, getTableName());

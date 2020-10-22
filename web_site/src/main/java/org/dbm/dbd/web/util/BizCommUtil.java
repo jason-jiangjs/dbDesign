@@ -27,6 +27,9 @@ public final class BizCommUtil {
      * 取得当前登录用户的用户ID
      */
     public static Long getLoginUserId() {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            return null;
+        }
         CustomerUserDetails user = (CustomerUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (user == null) {
             return null;
@@ -38,6 +41,9 @@ public final class BizCommUtil {
      * 取得当前登录用户的用户名(不是登录帐号)
      */
     public static String getLoginUserName() {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            return null;
+        }
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (user == null) {
             return null;
