@@ -19,10 +19,16 @@ table.datagrid-btable {
 .grid-cell-textEllipsis:hover {
     white-space:normal;
     word-break: break-all;
+    padding-top: 4px;
+    padding-bottom: 4px;
 }
 
 .colgrid-cell-textEllipsis {
     overflow: hidden;/*不允许滚动条*/
     white-space: nowrap;/*不允许文本换行*/
     text-overflow: ellipsis;/*文本超长显示省略号*/
+}
+
+.col-show-grid-multi-text {
+    width:100%;display:block;word-break: break-all;word-wrap: break-word;margin-top:4px;margin-bottom:4px
 }

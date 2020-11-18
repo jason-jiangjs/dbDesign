@@ -698,14 +698,14 @@ function descformatter(value, row, index) {
     if (value) {
         var reg = new RegExp("\n", "g");
         var str = value.replace(reg, "<br/>");
-        return '<div style="width:100%;display:block;word-break: break-all;word-wrap: break-word;margin-top:3px;margin-bottom:3px">' + str + '</div>';
+        return '<div class="col-show-grid-multi-text">' + str + '</div>';
     }
     return '';
 }
 // 列别名一栏的显示形式
 function nameformatter(value, row, index) {
     if (value) {
-        return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + value + '</div>';
+        return '<div class="col-show-grid-multi-text">' + value + '</div>';
     }
     return '';
 }
