@@ -469,10 +469,12 @@ function _createTblGrid(tblId, colHeader) {
         colDef[colHeader[0][index].field] = ''; // 该变量只有在创建表时才有用，数据稍有冗余
         if (colHeader[0][index].field == 'desc') {
             colHeader[0][index].formatter = descformatter;
-        } else if (colHeader[0][index].field == 'columnNameCN') {
+        } else if (colHeader[0][index].field == 'aliasName') {
             colHeader[0][index].formatter = nameformatter;
         } else if (colHeader[0][index].field == 'columnName' && $.trim($('#dbType').val()) == 2) {
             colHeader[0][index].formatter = nameDspformatter;
+        } else if (colHeader[0][index].field == 'default') {
+            colHeader[0][index].formatter = defaultColformatter;
         }
     });
 
@@ -706,6 +708,27 @@ function nameformatter(value, row, index) {
         return '<div style="width: 100%;display:block;word-break: break-all;word-wrap: break-word">' + value + '</div>';
     }
     return '';
+}
+
+function overColShow(obj,e) {
+    var showDiv = document.getElementById('showColDiv');
+    var theEvent = window.event|| e;
+    showDiv.style.left = (theEvent.clientX + 20) + "px";
+    showDiv.style.top = (theEvent.clientY - 20) + "px";
+    showDiv.style.display = 'block';
+    showDiv.innerHTML = obj.innerHTML;
+}
+function outColHide() {
+    var showDiv = document.getElementById('showColDiv');
+    showDiv.style.display = 'none';
+    showDiv.innerHTML = '';
+}
+// 缺省值一栏的显示形式
+function defaultColformatter(value, row, index) {
+    if (value && value.length > 6) {
+        return '<div class="colgrid-cell-textEllipsis" onmouseover="overColShow(this,event)" onmouseout="outColHide()">' + value + '</div>';
+    }
+    return value;
 }
 // 列名一栏的显示形式(目前有mongodb定义时用到)
 function nameDspformatter(value, row, index) {

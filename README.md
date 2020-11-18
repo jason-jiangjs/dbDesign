@@ -36,7 +36,7 @@ mxGraph jar包未收录到mvnrepository.com，必须先手工安装到本地库
 然后执行mvn操作  
 mvn install:install-file -DgroupId=com.mxgraph -DartifactId=mxgraph-core -Dversion=3.9.12 -Dpackaging=jar -Dfile=mxgraph-core.jar
 
-maven编译安装时需要指定参数 "-P dev"或"-P prod"：  
+maven编译构建时需要指定参数 "-P dev"或"-P prod"：  
 mvn package -P dev  
 !!! 第一次运行时必须执行上面操作，否则会报错找不到类"com.mxgraph.view.mxGraph"  
 

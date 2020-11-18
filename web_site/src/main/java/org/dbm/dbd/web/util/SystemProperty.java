@@ -10,6 +10,7 @@ import org.springframework.core.env.Environment;
 /**
  * 获取系统配置信息，可以动态刷新
  * 优先从数据库表取值, 取不到值时再从配置文件取值
+ * 本地开发环境下，如果配置文件也有值，则覆盖数据库表中取到的值
  *
  * 这里不考虑读取性能问题，不缓存属性值
  */
@@ -34,27 +35,31 @@ public class SystemProperty {
     public static <T> T resolveProperty(String name, Object defaultVal, Class<T> clz) {
         Object rst = getComConfigDao().getProperty(name);
         if (rst == null) {
+            // 先从数据库表取值, 取不到值时再从配置文件取值
             rst = StringUtils.trimToNull(_environment.getProperty(name));
+            if (rst == null) {
+                // 从配置文件取不到值时直接返回设定的缺省值
+                return (T) defaultVal;
+            }
+        } else {
+            if (_environment.acceptsProfiles("dev")) {
+                // 本地开发环境下，如果配置文件也有值，则覆盖数据库表中取到的值
+                Object rst4Dev = StringUtils.trimToNull(_environment.getProperty(name));
+                if (rst4Dev != null) {
+                    return (T) rst4Dev;
+                }
+            }
         }
 
         return (T) rst;
     }
 
     public static String resolveStringProperty(String name) {
-        Object rst = getComConfigDao().getProperty(name);
-        if (rst == null) {
-            rst = StringUtils.trimToNull(_environment.getProperty(name));
-        }
-
-        return (String) rst;
+        return resolveProperty(name, null, String.class);
     }
 
     public static String resolveStringProperty(String name, String defaultValue) {
-        String rst = resolveStringProperty(name);
-        if (rst == null || rst.trim().length() == 0) {
-            return defaultValue;
-        }
-        return rst;
+        return resolveProperty(name, defaultValue, String.class);
     }
 
     public static int resolveIntProperty(String name) {

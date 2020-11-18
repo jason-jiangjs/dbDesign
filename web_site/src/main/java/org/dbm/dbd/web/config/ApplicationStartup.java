@@ -4,21 +4,22 @@ import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
+import org.dbm.dbd.dao.ComConfigDao;
+import org.dbm.dbd.web.util.SystemProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.dbm.dbd.web.util.SystemProperty;
-import org.dbm.dbd.dao.ComConfigDao;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by dell on 2017/4/19.
  */
+@Profile("prod")
 public class ApplicationStartup implements ApplicationListener<ContextRefreshedEvent> {
 
     @Override
