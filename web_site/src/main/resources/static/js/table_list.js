@@ -33,17 +33,6 @@ $(function () {
         return;
     }
 
-    // $('#main_page').append("<script type=\"text/plain\" id=\"myEditor\" style=\"width:1000px;height:590px;\"></script>");
-    // myUm = UM.getEditor('myEditor', {
-    //     /* 传入配置参数,可配参数列表看umeditor.config.js */
-    //     toolbar: ['source | undo redo | bold italic underline strikethrough | superscript subscript | forecolor backcolor | removeformat |',
-    //         'insertorderedlist insertunorderedlist | selectall cleardoc paragraph | fontfamily fontsize' ,
-    //         '| justifyleft justifycenter justifyright justifyjustify |',
-    //         '| horizontal preview']
-    // });
-    // myUm.setDisabled();
-
-
     // 下拉菜单的菜单项控制，某些特定场景下不显示或禁用，比如收藏夹，或者是权限控制
     var favDb = $.trim($('#favDb').val());
     toggleFavoriteMenuItem(!(favDb && favDb == $.trim($('#dbId').val())));
