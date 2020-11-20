@@ -60,7 +60,7 @@ function showProjectHistory() {
         $('#tagList_grid').datagrid('load', {});
     } else {
         $('#tagList_grid').datagrid({
-            singleSelect: true, striped: true, fit: true, rownumbers: true, method: 'get', idField: 'tagName',
+            singleSelect: true, striped: true, fit: true, rownumbers: true, method: 'get', idField: 'tagName',border:'thin',
             emptyMsg: '没有发布过版本，无数据。',
             url: Ap_servletContext + '/ajax/mng/getProjTagList?_t=' + new Date().getTime(),
             columns: [[
