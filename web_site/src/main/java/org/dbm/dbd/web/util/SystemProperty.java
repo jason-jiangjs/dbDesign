@@ -25,6 +25,10 @@ public class SystemProperty {
         _environment = applicationContext.getEnvironment();
     }
 
+    public static ApplicationContext getApplicationContext() {
+        return _applicationContext;
+    }
+
     /**
      * @return the "ComConfigDao" bean from the application context
      */

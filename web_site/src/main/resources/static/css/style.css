@@ -44,7 +44,7 @@ table.datagrid-btable {
 }
 
 .file-append-block {
-    text-align:center;width:64px;height:64px;border:1px solid #e7ecf1;padding-top:8px;cursor: pointer;
+    text-align:center;width:64px;height:64px;border:1px solid #e7ecf1;cursor: pointer;
 }
 
 .file-append-block:hover {

@@ -18,7 +18,7 @@ public class GFSFileDao extends BaseMongoDao {
     private GridFsTemplate gfsTemplate;
 
     // mongo表名
-    private static final String COLL_NAME = "file_attachment";
+    private static final String COLL_NAME = "fs.files";
 
     @Override
     public String getTableName() {
@@ -30,13 +30,6 @@ public class GFSFileDao extends BaseMongoDao {
      */
     public List<GridFSDBFile> findFile(Query query) {
         return gfsTemplate.find(query);
-    }
-
-    /**
-     * 删除指定文件
-     */
-    public void deleteFile(Query query) {
-        gfsTemplate.delete(query);
     }
 
     /**

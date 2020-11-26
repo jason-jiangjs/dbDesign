@@ -90,7 +90,7 @@
         <div class="file-upload-container">
             <div id="filelist" class="uploader-list"></div>
             <div id="filePickerWrapper" class="file-append-block" style="display: none">
-                <i style="font-size:32px;line-height:32px;color: #698cba">+</i>
+                <i style="font-size:32px;line-height:64px;height:64px;color: #698cba">+</i>
             </div>
         </div>
         <div style="text-align:center;padding:10px 0px;font-size: 12px">
@@ -99,6 +99,10 @@
     </div>
     <div id="dlg_upload_tools">
         <a href="javascript:void(0)" class="icon-edit" style="margin-right:10px" onclick="javascript:begintoUploadAtta()"></a>
+    </div>
+    <div id="file_view_dlg" class="easyui-dialog" title="文件预览" data-options="iconCls:'fa fa-search',modal:true,closed:true,border:'thin',width:1024,height:500">
+        <div id="file_view_block">
+        </div>
     </div>
 
     <div id="template_dlg" class="easyui-dialog" title="使用预先定义的模板" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'" style="padding:20px">

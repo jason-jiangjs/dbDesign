@@ -5,7 +5,7 @@
 var _curDbId = null;
 
 $(function () {
-    var _curDbId = $.trim($('#dbId').val()); // 异常情况下，这里使用了dbId作为error code
+    _curDbId = $.trim($('#dbId').val()); // 异常情况下，这里使用了dbId作为error code
     if (_curDbId == 0 || _curDbId == 1) {
         $.messager.alert({
             iconCls: 'icon-no',

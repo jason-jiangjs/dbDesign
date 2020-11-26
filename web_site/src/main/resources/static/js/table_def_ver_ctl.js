@@ -220,6 +220,7 @@ function submitNewTag() {
 var isOnUploadAtta = false;
 function begintoUploadAtta() {
     // 先检查是否已经有人在编辑，不允许多人同时编辑
+    // 要去后台校验
     if (isOnUploadAtta) {
         return false;
     }
@@ -236,11 +237,7 @@ function begintoUploadAtta() {
             pick: '#filePickerWrapper',
             resize: false,
             dnd: '#tblatt_dlg',
-            paste: document.body,
-            'formData': {
-                dbId: _curDbId,
-                tableId: _curTblId
-            }
+            paste: document.body
         });
         // 当有文件添加进来的时候
         _uploader.on( 'beforeFileQueued', function( file ) {
@@ -264,7 +261,16 @@ function begintoUploadAtta() {
                 layer.msg('重复上传文件，"' + file.name + '"已存在.');
                 return false;
             }
-            file.realSize= file.size;
+            file.realSize = file.size;
+            file.dbId = _curDbId;
+            file.tableId = _curTblId;
+            if (file.dbId == undefined || file.dbId == null) {
+                layer.msg('未选择指定的项目，请重新选择。');
+                return false;
+            }
+            if (file.tableId == undefined || file.tableId == null) {
+                file.tableId = 0;
+            }
             return true;
         });
         _uploader.on('uploadBeforeSend', function(block, data, headers) {
@@ -272,6 +278,8 @@ function begintoUploadAtta() {
             // file为分块对应的file对象。
             var file = block.file;
             data.realSize= file.realSize;
+            data.dbId = file.dbId;
+            data.tableId = file.tableId;
         });
 
         var loadLy = null;
@@ -280,64 +288,12 @@ function begintoUploadAtta() {
             loadLy = layer.load(1);
         });
         _uploader.on( 'uploadSuccess', function( file, res ) {
-            var $li = $('<li class="file-atta_block"><img></li>'),
-                $img = $li.find('img');
-            // $list为容器jQuery实例
-            $btns = $('<div class="file-panel">' +
-                '<span class="amplify fa fa-search-plus fa-2x"></span><span class="cancel fa fa-trash-o fa-2x"></span>' +
-                '</div>').appendTo( $li );
-            $('#filelist').append($li);
-
-            $li.on( 'mouseenter', function() {
-                $btns.stop().animate({height: 32});
-            });
-            $li.on( 'mouseleave', function() {
-                $btns.stop().animate({height: 0});
-            });
-            $btns.on( 'click', 'span', function() {
-                var index = $(this).index(),
-                    deg;
-
-                switch ( index ) {
-                    case 0:
-                        uploader.removeFile( file );
-                        return;
-
-                    case 1:
-                        file.rotation += 90;
-                        break;
-
-                    case 2:
-                        file.rotation -= 90;
-                        break;
-                }
-
-            });
-
-            if (file.type.indexOf("image") == 0) {
-                // 创建缩略图
-                _uploader.makeThumb( file, function( error, src ) {
-                    if ( error ) {
-                        $img.replaceWith('<span>不能预览</span>');
-                        return;
-                    }
-                    $img.attr( 'src', src );
-                }, 60, 60 );
-            } else {
-                var dotIdx = file.name.lastIndexOf(".");
-                var extName = file.name.substring(dotIdx + 1).toLowerCase();
-                if (extName == 'pdf') {
-                    $img.attr( 'src', 'img/PDF.png' );
-                } else if (extName == 'doc' || extName == 'docx') {
-                    $img.attr( 'src', 'img/WORD.png' );
-                } else if (extName == 'xls' || extName == 'xlsx') {
-                    $img.attr( 'src', 'img/EXCEL.png' );
-                } else if (extName == 'ppt' || extName == 'pptx') {
-                    $img.attr( 'src', 'img/PPT.png' );
-                } else {
-                    $img.attr( 'src', 'img/unknow.png' );
-                }
+            // 取得文件访问URL
+            if (res.fileUrl == null || res.fileUrl == undefined) {
+                layer.msg('文件' + file.name + '上传时出错，请联系管理员.');
+                return false;
             }
+            appendFile(res.fileId, file.name, res.fileUrl, res.contentType);
         });
 
         _uploader.on( 'uploadError', function( file, res ) {
@@ -352,9 +308,124 @@ function begintoUploadAtta() {
     $('#filePickerWrapper').show();
 }
 
+// 添加文件
+function appendFile(fileId, fileName, fileUrl, contentType) {
+    var fileType = getUploadFileType(fileName, contentType);
+
+    var $li = $('<li id="' + fileId + '-li-img" class="file-atta_block"><img style="max-height:64px"></li>'),
+        $img = $li.find('img');
+    // $list为容器jQuery实例
+    var $btns = null;
+    if (fileType == "image" || fileType == "pdf") {
+        $btns = $('<div class="file-panel"><span class="amplify fa fa-search-plus fa-2x"></span><span id="' + fileId + '" class="cancel fa fa-trash-o fa-2x"></span></div>');
+    } else {
+        $btns = $('<div class="file-panel"><span class="amplify fa fa-download fa-2x"></span><span id="' + fileId + '" class="cancel fa fa-trash-o fa-2x"></span></div>');
+    }
+    $li.append( $btns );
+    $('#filelist').append($li);
+
+    $li.on( 'mouseenter', function() {
+        $btns.stop().animate({height: 32});
+    });
+    $li.on( 'mouseleave', function() {
+        $btns.stop().animate({height: 0});
+    });
+    $btns.on( 'click', 'span', function() {
+        var index = $(this).index();
+        switch ( index ) {
+            case 0:
+                // 查看
+                if (fileType == "image" || fileType == "pdf") {
+                    // 只是图片和pdf文件有预览
+                    $('#file_view_block').empty();
+                    var $fileViewDiv = null;
+                    if (fileType == "image") {
+                        $fileViewDiv = $('<img src="' + fileUrl + '" alt="" width="100%" height="auto">');
+                    } else {
+                        $fileViewDiv = $('<iframe src="' + fileUrl + '" frameborder="0" width="100%" style="min-height:463px"></iframe>');
+                    }
+                    $('#file_view_block').append($fileViewDiv);
+                    $('#file_view_dlg').dialog('open');
+                } else {
+                    // 其他文件都是下载后再查看
+                    // office文档无法使用view.officeapps.live.com的方案，因为是在内网，附件无法从外网访问
+                    window.open(fileUrl);
+                }
+                return;
+
+            case 1:
+                // 删除
+                if (!isOnUploadAtta) {
+                    layer.msg("必须在编辑模式下才可删除文件，<br/>请先点击对话框右上角编辑按钮");
+                    return;
+                }
+                var loadLy = layer.load(1);
+                var postData = {};
+                postData.fileId = $.trim($(this).attr("id"));
+
+                $.ajax({
+                    type: 'post',
+                    url: Ap_servletContext + '/ajax/common/file/deleteAtta',
+                    data: JSON.stringify(postData),
+                    success: function (data) {
+                        layer.close(loadLy);
+                        if (data.code == 0) {
+                            layer.msg('删除成功');
+                            // 刷新附件
+                            $("#" + postData.fileId + "-li-img").remove();
+                        } else {
+                            layer.msg(data.msg + ' (code=' + data.code + ")");
+                        }
+                    }
+                });
+                return;
+        }
+    });
+
+    if (fileType == "image") {
+        // 创建缩略图
+        $img.attr( 'src', fileUrl );
+    } else {
+        var dotIdx = fileName.lastIndexOf(".");
+        var extName = fileName.substring(dotIdx + 1).toLowerCase();
+        if (extName == 'pdf') {
+            $img.attr( 'src', 'img/PDF.png' );
+        } else if (extName == 'doc' || extName == 'docx') {
+            $img.attr( 'src', 'img/WORD.png' );
+        } else if (extName == 'xls' || extName == 'xlsx') {
+            $img.attr( 'src', 'img/EXCEL.png' );
+        } else if (extName == 'ppt' || extName == 'pptx') {
+            $img.attr( 'src', 'img/PPT.png' );
+        } else {
+            $img.attr( 'src', 'img/unknow.png' );
+        }
+    }
+}
+
+// 判断附件的文件类型
+function getUploadFileType(fileName, contentType) {
+    if (contentType.indexOf("image") == 0) {
+        return "image";
+    } else {
+        var dotIdx = fileName.lastIndexOf(".");
+        var extName = fileName.substring(dotIdx + 1).toLowerCase();
+        if (extName == 'pdf') {
+            return "pdf";
+        } else if (extName == 'doc' || extName == 'docx' || extName == 'xls' || extName == 'xlsx' || extName == 'ppt' || extName == 'pptx') {
+            return "office";
+        } else {
+            return "unknow";
+        }
+    }
+}
+
 // 关闭附件对话框
 function onCloseUploadAttaDlg() {
-    $('#filePickerWrapper').hidden();
+    var fileWrapper = $('#filePickerWrapper');
+    if (fileWrapper) {
+        fileWrapper.hide();
+    }
+    $('#filelist').empty();
     if (_uploader) {
         _uploader.destroy();
         _uploader = null;
@@ -366,15 +437,33 @@ var _uploader = null;
 // 附件的新增删除不受"开始编辑"按钮控制，独立的权限
 function attMng() {
     // 默认不是编辑状态，先从后台取回附件数据
-
-
-    // 从后端获取指定的附件，如果是在主页打开该对话框，则查询的是全局的附件
-
-
+    var curTblId = _curTblId;
+    if (curTblId == undefined || curTblId == null) {
+        curTblId = 0;
+    }
+    var param = "?tblId=" + curTblId + "&dbId=" + _curDbId + "&_t=" + new Date().getTime();
+    var loadLy = layer.load(1);
+    $.ajax({
+        type: 'get',
+        url: Ap_servletContext + '/ajax/common/file/getAttaList' + param,
+        success: function (data) {
+            layer.close(loadLy);
+            if (data.code == 0) {
+                var fileList = data.data.fileList;
+                if (fileList.length == 0) {
+                    return;
+                }
+                fileList.forEach(function(uploadedFile) {
+                    appendFile(uploadedFile.fileId, uploadedFile.fileName, uploadedFile.fileUrl, uploadedFile.contentType);
+                });
+            } else {
+                layer.msg(data.msg + ' code=' + data.code);
+            }
+        }
+    });
 
     // 弹出对话框
     $('#tblatt_dlg').dialog('open');
-
 }
 
 // 查看ER图
