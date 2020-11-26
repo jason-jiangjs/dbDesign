@@ -32,3 +32,80 @@ table.datagrid-btable {
 .col-show-grid-multi-text {
     width:100%;display:block;word-break: break-all;word-wrap: break-word;margin-top:4px;margin-bottom:4px
 }
+
+.file-atta_block {
+    text-align: center;
+    width: 64px;
+    height: 64px;
+    border: 1px solid #e7ecf1;
+    cursor: pointer;
+    margin-bottom: 5px;
+    margin-right: 5px;
+}
+
+.file-append-block {
+    text-align:center;width:64px;height:64px;border:1px solid #e7ecf1;padding-top:8px;cursor: pointer;
+}
+
+.file-append-block:hover {
+    background: #6b9cde;
+}
+
+.file-upload-container {
+    width:520px;height:150px;padding:10px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.uploader-list {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+ .uploader-list li {
+    width: 64px;
+    height: 64px;
+    text-align: center;
+    margin: 0 8px 20px 0;
+    position: relative;
+    display: inline;
+    float: left;
+    overflow: hidden;
+    font-size: 12px;
+}
+
+ div.file-panel {
+    position: absolute;
+    height: 0;
+    filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#80000000', endColorstr='#80000000')\0;
+    background: rgba( 0, 0, 0, 0.5 );
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: 300;
+}
+
+ div.file-panel span {
+    width: 64px;
+    height: 24px;
+    cursor: pointer;
+}
+
+ div.file-panel span.amplify {
+     width: 31px;
+     height: 32px;
+     padding-top: 3px;
+     color: white;
+}
+ div.file-panel span.amplify:hover {
+     color: #6dbfff;
+}
+ div.file-panel span.cancel {
+     width: 31px;
+     height: 32px;
+     padding-top: 3px;
+     color: white;
+}
+ div.file-panel span.cancel:hover {
+     color: #6dbfff;
+}

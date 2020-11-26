@@ -209,3 +209,27 @@
 
 
 ###### er_table_xref -- 目前还未使用(预备保存项目与ER图的对照关系)
+
+
+
+###### file_attachment
+| 列名 | 类型 | 说明 | 备注
+|-----|------|------|------
+|dbId           | long   | 数据库ID
+|tableId        | long   | 表ID          | 值为'0'时表示是全局附件
+|versionId      | long   | 版本ID
+|fileId         | string    | 文件存储ID
+|+ auditData    | object | 审计信息 
+
+
+###### file_attachment_history
+| 列名 | 类型 | 说明 | 备注
+|-----|------|------|------
+|dbId           | long   | 数据库ID
+|tableId        | long   | 表ID          | 值为'0'时表示是全局附件
+|versionId      | long   | 版本ID
+|fileId         | string    | 文件存储ID
+|type           | int    | 类型 | 1:新增 3:删除 (这里没有修改)
+|+ auditData    | object | 审计信息 
+
+

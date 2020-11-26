@@ -85,13 +85,20 @@
         </div>
     </div>
 
-    <div id="tblatt_dlg" class="easyui-dialog" title="查看附件" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'">
-        <div class="easyui-panel" data-options="border:false" style="width:520px;height:120px;padding:10px;border-bottom:1px solid #1E9FFF">
+    <div id="tblatt_dlg" class="easyui-dialog" title="查看附件"
+         data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin',tools:'#dlg_upload_tools',onBeforeClose:onCloseUploadAttaDlg">
+        <div class="file-upload-container">
+            <div id="filelist" class="uploader-list"></div>
+            <div id="filePickerWrapper" class="file-append-block" style="display: none">
+                <i style="font-size:32px;line-height:32px;color: #698cba">+</i>
+            </div>
         </div>
-        <div style="text-align:center;margin-top:15px;margin-bottom:15px">
-            <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px" onclick="submitTblAtt()">保存</a>
-            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-left:20px;width:60px" onclick="cancelTblAtt()">取消</a>
+        <div style="text-align:center;padding:10px 0px;font-size: 12px">
+            此区域支持截图工具复制粘贴上传，文件拖拽上传。 (上传文件前请先点击右上角编辑按钮)
         </div>
+    </div>
+    <div id="dlg_upload_tools">
+        <a href="javascript:void(0)" class="icon-edit" style="margin-right:10px" onclick="javascript:begintoUploadAtta()"></a>
     </div>
 
     <div id="template_dlg" class="easyui-dialog" title="使用预先定义的模板" data-options="iconCls:'fa fa-paperclip',modal:true,closed:true,border:'thin'" style="padding:20px">

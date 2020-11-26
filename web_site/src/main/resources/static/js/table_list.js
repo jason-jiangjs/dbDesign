@@ -2,12 +2,11 @@
  * 列表页相关js代码（包括初始化）
  */
 
-// 画面项目初始化
-// var myUm = null;
+var _curDbId = null;
 
 $(function () {
-    var curDbId = $.trim($('#dbId').val()); // 异常情况下，这里使用了dbId作为error code
-    if (curDbId == 0 || curDbId == 1) {
+    var _curDbId = $.trim($('#dbId').val()); // 异常情况下，这里使用了dbId作为error code
+    if (_curDbId == 0 || _curDbId == 1) {
         $.messager.alert({
             iconCls: 'icon-no',
             title: '数据错误',
@@ -19,7 +18,7 @@ $(function () {
             }
         });
         return;
-    } else if (curDbId == 2 || curDbId == 3) {
+    } else if (_curDbId == 2 || _curDbId == 3) {
         $.messager.alert({
             iconCls: 'icon-no',
             title: '权限错误',
@@ -249,6 +248,7 @@ $(function () {
 
     // easyui的textbox未提供onclick事件，只能采用下面方法解决
     $('body').on('click', 'input._tbl_desc + span :first-child', unselectGridItem);
+
 });
 
 // 判断当前tab页是否处于编辑状态

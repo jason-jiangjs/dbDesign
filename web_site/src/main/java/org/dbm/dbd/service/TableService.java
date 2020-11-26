@@ -67,7 +67,7 @@ public class TableService extends BaseService {
      * 创建查询条件对象
      */
     private Query createQueryParam4Table(String tblName, long dbId, int type) {
-        Query queryObj = new Query(where("dbId").in(dbId));
+        Query queryObj = new Query(where("dbId").is(dbId));
         if (tblName != null) {
             // 这里查询表名和别名
             Criteria criteria0 = new Criteria();

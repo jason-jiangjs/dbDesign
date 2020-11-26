@@ -216,25 +216,164 @@ function submitNewTag() {
     }
 }
 
-// 查看附件
-function attMng() {
-    if (_curTblId == 0 || _curTblId == undefined || _curTblId == null) {
+// 开始修改附件
+var isOnUploadAtta = false;
+function begintoUploadAtta() {
+    // 先检查是否已经有人在编辑，不允许多人同时编辑
+    if (isOnUploadAtta) {
         return false;
     }
-    var gridObj = $('#tblidx_grid');
-    var s1 = gridObj.datagrid('getSelected');
-    if (s1 == null || s1 == undefined) {
-        // 没有选择时，表示是整个表的附件
+    isOnUploadAtta = true;
 
+    if (_uploader == null) {
+        if ( !WebUploader.Uploader.support() ) {
+            alert( 'Web Uploader 不支持您的浏览器！如果你使用的是IE浏览器，请尝试升级 flash 播放器');
+            throw new Error( 'WebUploader does not support the browser you are using.' );
+        }
+        _uploader = WebUploader.create({
+            auto: true,
+            server: Ap_servletContext + '/ajax/common/fileUpload',
+            pick: '#filePickerWrapper',
+            resize: false,
+            dnd: '#tblatt_dlg',
+            paste: document.body,
+            'formData': {
+                dbId: _curDbId,
+                tableId: _curTblId
+            }
+        });
+        // 当有文件添加进来的时候
+        _uploader.on( 'beforeFileQueued', function( file ) {
+            console.log('fileQueued' + file);
+            // 这里有个特殊情况，要先判断超时
+            var isTimeout = true;
+            $.ajax({
+                async: false,
+                type: 'get',
+                url: Ap_servletContext + '/ajax/common/checkSession?_t=' + new Date().getTime(),
+                success: function (data) {
+                    isTimeout = false;
+                }
+            });
+            if (isTimeout) {
+                return false;
+            }
 
-    } else {
-        // 表示是当前行的附件
+            var fileArr = _uploader.getFiles().filter(item => { return item.name == file.name});
+            if (fileArr.length > 0) {
+                layer.msg('重复上传文件，"' + file.name + '"已存在.');
+                return false;
+            }
+            file.realSize= file.size;
+            return true;
+        });
+        _uploader.on('uploadBeforeSend', function(block, data, headers) {
+            // block为分块数据。
+            // file为分块对应的file对象。
+            var file = block.file;
+            data.realSize= file.realSize;
+        });
 
+        var loadLy = null;
+        _uploader.on( 'uploadProgress', function( file, percentage ) {
+            // 不使用进度条，就只是简单的使用一个遮盖层
+            loadLy = layer.load(1);
+        });
+        _uploader.on( 'uploadSuccess', function( file, res ) {
+            var $li = $('<li class="file-atta_block"><img></li>'),
+                $img = $li.find('img');
+            // $list为容器jQuery实例
+            $btns = $('<div class="file-panel">' +
+                '<span class="amplify fa fa-search-plus fa-2x"></span><span class="cancel fa fa-trash-o fa-2x"></span>' +
+                '</div>').appendTo( $li );
+            $('#filelist').append($li);
 
+            $li.on( 'mouseenter', function() {
+                $btns.stop().animate({height: 32});
+            });
+            $li.on( 'mouseleave', function() {
+                $btns.stop().animate({height: 0});
+            });
+            $btns.on( 'click', 'span', function() {
+                var index = $(this).index(),
+                    deg;
+
+                switch ( index ) {
+                    case 0:
+                        uploader.removeFile( file );
+                        return;
+
+                    case 1:
+                        file.rotation += 90;
+                        break;
+
+                    case 2:
+                        file.rotation -= 90;
+                        break;
+                }
+
+            });
+
+            if (file.type.indexOf("image") == 0) {
+                // 创建缩略图
+                _uploader.makeThumb( file, function( error, src ) {
+                    if ( error ) {
+                        $img.replaceWith('<span>不能预览</span>');
+                        return;
+                    }
+                    $img.attr( 'src', src );
+                }, 60, 60 );
+            } else {
+                var dotIdx = file.name.lastIndexOf(".");
+                var extName = file.name.substring(dotIdx + 1).toLowerCase();
+                if (extName == 'pdf') {
+                    $img.attr( 'src', 'img/PDF.png' );
+                } else if (extName == 'doc' || extName == 'docx') {
+                    $img.attr( 'src', 'img/WORD.png' );
+                } else if (extName == 'xls' || extName == 'xlsx') {
+                    $img.attr( 'src', 'img/EXCEL.png' );
+                } else if (extName == 'ppt' || extName == 'pptx') {
+                    $img.attr( 'src', 'img/PPT.png' );
+                } else {
+                    $img.attr( 'src', 'img/unknow.png' );
+                }
+            }
+        });
+
+        _uploader.on( 'uploadError', function( file, res ) {
+            console.log(file);
+            layer.msg('上传文件出错 ' + file.name);
+        });
+
+        _uploader.on( 'uploadComplete', function( file, res ) {
+            layer.close(loadLy);
+        });
     }
+    $('#filePickerWrapper').show();
+}
+
+// 关闭附件对话框
+function onCloseUploadAttaDlg() {
+    $('#filePickerWrapper').hidden();
+    if (_uploader) {
+        _uploader.destroy();
+        _uploader = null;
+    }
+}
+
+// 查看附件
+var _uploader = null;
+// 附件的新增删除不受"开始编辑"按钮控制，独立的权限
+function attMng() {
+    // 默认不是编辑状态，先从后台取回附件数据
+
+
+    // 从后端获取指定的附件，如果是在主页打开该对话框，则查询的是全局的附件
+
+
 
     // 弹出对话框
-    // $('#tblatt_dlg').dialog('open');
+    $('#tblatt_dlg').dialog('open');
 
 }
 

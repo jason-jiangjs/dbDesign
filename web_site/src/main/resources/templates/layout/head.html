@@ -1,25 +1,20 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
 <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport'/>
-
-<title th:unless="${pageTitle == 'TEMPLATE'}"
-       th:utext="${#strings.isEmpty(pageTitle) ? 'table web design' : pageTitle}"></title>
-
-<title th:if="${pageTitle == 'TEMPLATE'}" th:remove="tag">
-    <title th:inline="text" th:include="${templateName} :: title"/>
-</title>
-<title>L | Admin-index</title>
+<title>table web design</title>
 <link rel="shortcut icon" th:href="@{/img/favicon.ico}" type="image/x-icon" />
 <link rel="stylesheet" th:href="@{/js/lib/easyui/themes/default/easyui.css}">
 <link rel="stylesheet" th:href="@{/js/lib/easyui/themes/color.css}">
 <link rel="stylesheet" th:href="@{/js/lib/easyui/themes/icon.css}">
 <link rel="stylesheet" th:href="@{/css/font-awesome.css}">
 <link rel="stylesheet" th:href="@{/css/style.css}">
+<link rel="stylesheet" type="text/css" th:href="@{/js/lib/webuploader/webuploader.css}">
 <script th:src="@{/js/lib/jquery-1.12.4.min.js}"></script>
 <script th:src="@{/js/lib/easyui/jquery.easyui.min.js}"></script>
 <script th:src="@{/js/lib/easyui/locale/easyui-lang-zh_CN.js}"></script>
 <script th:src="@{/js/lib/layer/layer.js}"></script>
 <script th:src="@{/js/main.js}"></script>
+<script type="text/javascript" th:src="@{/js/lib/webuploader/webuploader.html5only.min.js}"></script>
 
 <th:block th:if="${session._user_language}">
     <script th:src="@{'/js/messages/msg_' + ${session._user_language} + '.js'}"></script>

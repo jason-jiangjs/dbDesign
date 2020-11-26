@@ -59,4 +59,10 @@ public class CommonController extends BaseController {
         return ApiResponseUtil.success(data);
     }
 
+    /**
+     * 检查用户会话是否存在
+     */
+    @RequestMapping(value = "/ajax/common/checkSession", method = RequestMethod.GET)
+    public void checkUserSession() {
+    }
 }
