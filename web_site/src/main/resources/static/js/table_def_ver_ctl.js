@@ -342,7 +342,7 @@ function appendFile(fileId, fileName, fileUrl, contentType) {
                     if (fileType == "image") {
                         $fileViewDiv = $('<img src="' + fileUrl + '" alt="" width="100%" height="auto">');
                     } else {
-                        $fileViewDiv = $('<iframe src="' + fileUrl + '" frameborder="0" width="100%" style="min-height:463px"></iframe>');
+                        $fileViewDiv = $('<iframe src="' + fileUrl + '" frameborder="0" width="100%" style="min-height:563px"></iframe>');
                     }
                     $('#file_view_block').append($fileViewDiv);
                     $('#file_view_dlg').dialog('open');
@@ -430,6 +430,7 @@ function onCloseUploadAttaDlg() {
         _uploader.destroy();
         _uploader = null;
     }
+    isOnUploadAtta = false;
 }
 
 // 查看附件
