@@ -13,8 +13,8 @@
     <div data-options="iconCls:'fa fa-refresh'" th:href="@{/home?type=1}">刷新</div>
     <div class="menu-sep"></div>
     <th:block dbd:authorize="${dbId}">
-        <div data-options="iconCls:'fa fa-download'" onclick="javascript:exportSql()">导出SQL脚本</div>
-        <div onclick="javascript:exportUpdateSql()">导出SQL更改脚本</div>
+        <div data-options="iconCls:'fa fa-download'" onclick="javascript:exportSelectedSql()">导出SQL脚本</div>
+        <div onclick="javascript:exportSelectedUpdateSql()">导出SQL更改脚本</div>
         <div class="menu-sep"></div>
     </th:block>
     <th:block dbd:authorize="${dbId}">
@@ -52,6 +52,11 @@
         <div data-options="name:'stop_edit',iconCls:'fa fa-bomb',disabled:true" onclick="javascript:forceStopEdit()">强制停止编辑</div>
         <div class="menu-sep"></div>
     </th:block>
+    <th:block dbd:authorize="${dbId}">
+        <div data-options="iconCls:'fa fa-download'" onclick="javascript:exportTableSql()">导出SQL脚本</div>
+        <div onclick="javascript:exportTabledUpdateSql()">导出SQL更改脚本</div>
+        <div class="menu-sep"></div>
+    </th:block>
     <div data-options="iconCls:'fa fa-binoculars'" onclick="javascript:showEditHistory()">查看修改历史</div>
     <div class="menu-sep"></div>
     <div data-options="iconCls:'fa fa-paperclip'" onclick="javascript:attMng()">查看附件</div>
@@ -73,6 +78,11 @@
     </th:block>
     <th:block sec:authorize="hasAnyAuthority('PROJ_MNG_USER,ADMIN_USER')">
         <div data-options="name:'stop_edit',iconCls:'fa fa-bomb',disabled:true" onclick="javascript:forceStopEdit()">强制停止编辑</div>
+        <div class="menu-sep"></div>
+    </th:block>
+    <th:block dbd:authorize="${dbId}">
+        <div data-options="iconCls:'fa fa-download'" onclick="javascript:exportTableSql()">导出SQL脚本</div>
+        <div onclick="javascript:exportTabledUpdateSql()">导出SQL更改脚本</div>
         <div class="menu-sep"></div>
     </th:block>
     <div data-options="iconCls:'fa fa-binoculars'" onclick="javascript:showEditHistory()">查看修改历史</div>

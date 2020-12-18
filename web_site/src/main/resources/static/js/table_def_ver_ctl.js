@@ -1,48 +1,6 @@
 /**
- * 主要是设计稿的版本控制，以及sql脚本输出
+ * 主要是表设计时的版本控制，以及sql脚本输出
  */
-
-
-
-// 导出SQL文
-// 主页：导出所选择的表
-function exportSql() {
-    var tblIdList = [];
-    if (opType == 1) {
-        if (_curTblId == 0 || _curTblId == undefined || _curTblId == '') {
-            return;
-        }
-        if (_curTblId < 100) {
-            layer.msg("创建表时不可直接导出表定义，必须先保存．");
-            return;
-        }
-        tblIdList.push(_curTblId);
-    } else {
-        // 获取所选中的表
-        var tblList = $('#tbl-def-grid').datagrid('getChecked');
-        if (tblList.length == 0) {
-            layer.msg('未选择要删除的表');
-            return false;
-        }
-        tblList.forEach(function(obj, index) {
-            tblIdList.push(obj._id);
-        });
-    }
-
-    var url = Ap_servletContext + '/ajax/exportSql';
-
-    var tmpInput = $("<input type='text' name='tblIdList'/>");
-    tmpInput.attr("value", JSON.stringify(tblIdList));
-    var myform = $("<form></form>").attr("action", url).attr("method", "post");
-    myform.append(tmpInput);
-    myform.appendTo('body').submit().remove();
-}
-
-// 导出SQL文
-// 主页：导出所选择的表的变更SQL脚本(相对于以前发布的版本)
-function exportUpdateSql() {
-
-}
 
 // 表示当前是否在查看历史版本
 var isShowTagHistory = false;
@@ -483,4 +441,33 @@ function closeErDiagram() {
 
 function openHelpPage() {
     window.open(Ap_servletContext + '/docs/help.html');
+}
+
+// 查看表定义的修改历史
+// 列出每一次的修改点
+function showEditHistory() {
+    // 从后台获取表定义的修改历史
+    if (_curTblId == undefined || _curTblId == null) {
+        layer.alert('出错了，当前未选择任何表！');
+        return false;
+    }
+    var param = "?tblId=" + _curTblId + "&dbId=" + _curDbId + "&_t=" + new Date().getTime();
+    var loadLy = layer.load(1);
+    $.ajax({
+        type: 'get',
+        url: Ap_servletContext + '/ajax/table/getSQLUpdateList' + param,
+        success: function (data) {
+            layer.close(loadLy);
+            if (data.code == 0) {
+                var updatedList = data.data.updatedList;
+                if (updatedList.length == 0) {
+                    layer.msg('当前查看的表没有修改历史');
+                    return;
+                }
+                $('#tblEditHisDlg').dialog('open');
+            } else {
+                layer.msg(data.msg + ' code=' + data.code);
+            }
+        }
+    });
 }
