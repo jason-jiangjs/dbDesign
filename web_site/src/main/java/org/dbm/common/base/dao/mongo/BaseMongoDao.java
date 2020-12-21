@@ -27,7 +27,7 @@ public abstract class BaseMongoDao {
     /**
      * 取得该DAO所对应的表名称
      */
-    public String getTableName() {
+    protected String getTableName() {
         return "";
     }
 

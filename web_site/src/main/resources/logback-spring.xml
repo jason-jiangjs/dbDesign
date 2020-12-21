@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+    <!-- %m输出的信息,%p日志级别,%t线程名,%d日期,%c类的全名,,,, -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <!--<pattern>%d %p (%file:%line\)- %m%n</pattern>-->
+            <!--格式化输出：%d:表示日期    %thread:表示线程名     %-5level:级别从左显示5个字符宽度  %msg:日志消息    %n:是换行符-->
+            <pattern>1-%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{5} - %highlight%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+        <root level="INFO">
+            <appender-ref ref="console"/>
+        </root>
+        <logger name="org.dbm" level="DEBUG" additivity="false">
+            <appender-ref ref="console" />
+        </logger>
+
+</configuration>

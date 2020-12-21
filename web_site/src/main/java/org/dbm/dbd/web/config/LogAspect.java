@@ -1,0 +1,55 @@
+package org.dbm.dbd.web.config;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.dbm.common.base.model.mongo.BaseMongoMap;
+import org.dbm.common.util.JacksonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+
+import java.util.List;
+
+@Aspect
+@Component
+public class LogAspect
+{
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Pointcut("execution(public * org.dbm.common.base.dao.mongo.BaseMongoDao.*(..))")
+    public void normalLog()
+    {
+    }
+
+    @Before("normalLog()")
+    public void doBefore(JoinPoint joinPoint)
+    {
+        RequestAttributes reqAttrs = RequestContextHolder.getRequestAttributes();
+        reqAttrs.getAttribute("curr_url_req", 0);
+        logger.debug("{} {}.{} param: {}", reqAttrs.getAttribute("curr_url_req", 0),
+                joinPoint.getTarget().getClass().getName(),
+                joinPoint.getSignature().getName(),
+                JacksonUtil.bean2JsonNotNull(joinPoint.getArgs()));
+    }
+
+    @AfterReturning(returning = "result", pointcut = "normalLog()")
+    public void doAfterReturning(JoinPoint joinPoint, Object result)
+    {
+        RequestAttributes reqAttrs = RequestContextHolder.getRequestAttributes();
+        if (result != null && result instanceof BaseMongoMap) {
+            logger.debug("{} {}.{} 查询有结果", reqAttrs.getAttribute("curr_url_req", 0),
+                    joinPoint.getTarget().getClass().getName(),
+                    joinPoint.getSignature().getName());
+        } else if (result != null && result instanceof List) {
+            logger.debug("{} {}.{} 查询有结果 件数={}", reqAttrs.getAttribute("curr_url_req", 0),
+                    joinPoint.getTarget().getClass().getName(),
+                    joinPoint.getSignature().getName(), ((List) result).size());
+        }
+    }
+
+}

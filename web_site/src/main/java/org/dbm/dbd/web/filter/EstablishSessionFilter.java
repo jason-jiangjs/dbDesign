@@ -13,6 +13,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -25,7 +26,7 @@ import java.util.Map;
  * 验证会话，成功后将userid放到request中
  */
 //@Order(1)
-//@WebFilter(filterName = "testFilter1", urlPatterns = "/*")
+@WebFilter(filterName = "testFilter1", urlPatterns = "/ajax/*")
 public class EstablishSessionFilter extends GenericFilterBean {
 
     private static final Logger logger = LoggerFactory.getLogger(EstablishSessionFilter.class);
@@ -64,6 +65,7 @@ public class EstablishSessionFilter extends GenericFilterBean {
             CommUtil.outToPrintWriter(response, result);
             return;
         }
+        request.setAttribute("curr_url_req", ((HttpServletRequest) request).getServletPath());
         //session.setAttribute(acceccToken, "_last_access_time", DateTimeUtil.getNow(DateTimeUtil.COMPRESS_DATETIME_FORMAT));
         filterChain.doFilter(request, response);
     }
