@@ -30,8 +30,11 @@ public class LogAspect
     public void doBefore(JoinPoint joinPoint)
     {
         RequestAttributes reqAttrs = RequestContextHolder.getRequestAttributes();
-        reqAttrs.getAttribute("curr_url_req", 0);
-        logger.debug("{} {}.{} param: {}", reqAttrs.getAttribute("curr_url_req", 0),
+        String reqUrl = null;
+        if (reqAttrs != null) {
+            reqUrl = (String) reqAttrs.getAttribute("curr_url_req", 0);
+        }
+        logger.debug("{} {}.{} param: {}", reqUrl,
                 joinPoint.getTarget().getClass().getName(),
                 joinPoint.getSignature().getName(),
                 JacksonUtil.bean2JsonNotNull(joinPoint.getArgs()));
@@ -41,12 +44,16 @@ public class LogAspect
     public void doAfterReturning(JoinPoint joinPoint, Object result)
     {
         RequestAttributes reqAttrs = RequestContextHolder.getRequestAttributes();
+        String reqUrl = null;
+        if (reqAttrs != null) {
+            reqUrl = (String) reqAttrs.getAttribute("curr_url_req", 0);
+        }
         if (result != null && result instanceof BaseMongoMap) {
-            logger.debug("{} {}.{} 查询有结果", reqAttrs.getAttribute("curr_url_req", 0),
+            logger.debug("{} {}.{} 查询有结果", reqUrl,
                     joinPoint.getTarget().getClass().getName(),
                     joinPoint.getSignature().getName());
         } else if (result != null && result instanceof List) {
-            logger.debug("{} {}.{} 查询有结果 件数={}", reqAttrs.getAttribute("curr_url_req", 0),
+            logger.debug("{} {}.{} 查询有结果 件数={}", reqUrl,
                     joinPoint.getTarget().getClass().getName(),
                     joinPoint.getSignature().getName(), ((List) result).size());
         }
