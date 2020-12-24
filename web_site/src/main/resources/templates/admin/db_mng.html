@@ -12,7 +12,7 @@
             <a href="#" class="easyui-menubutton" data-options="menu:'#mm1',iconCls:'icon-more',width:93">菜单</a>
         </div>
         <div id="mm1" style="width:150px;">
-            <div data-options="iconCls:'fa fa-backward'" th:href="@{/home}">返回</div>
+            <div data-options="iconCls:'fa fa-backward'" th:href="@{/home?type=1}">返回</div>
             <div class="menu-sep"></div>
             <div data-options="iconCls:'fa fa-sign-out'" th:href="@{/logout}">退出</div>
         </div>
@@ -40,20 +40,20 @@
             <table cellpadding="5" style="margin-bottom:10px">
                 <tr>
                     <td style="width:80px">名称:</td>
-                    <td style="width:500px" colspan="2"><input class="easyui-textbox" id="dbName" data-options="required:true" style="width:300px"></td>
+                    <td style="width:500px" colspan="2"><input class="easyui-textbox" id="dbName" data-options="required:true,prompt:'请输入'" style="width:300px"></td>
                 </tr>
                 <tr>
-                    <td style="width:35px">说明:</td>
-                    <td colspan="2"><input class="easyui-combobox" id="projStatus" data-options="limitToList:true,panelHeight:100,editable:false,required:true" style="width:173px"></td>
+                    <td style="width:35px">状态:</td>
+                    <td colspan="2"><input class="easyui-combobox" id="projectStatus" data-options="limitToList:true,panelHeight:100,editable:false,required:true,prompt:'请选择'" style="width:173px"></td>
                 </tr>
                 <tr>
                     <td>类型</td>
-                    <td style="width:205px"><input class="easyui-combobox" id="typeStr" data-options="limitToList:true,panelHeight:150,editable:false,required:true" style="width:173px"></td>
-                    <td><span style="padding-right:15px">版本</span><input class="easyui-textbox" id="ver" data-options="required:true" style="width:80px"></td>
+                    <td style="width:205px"><input class="easyui-combobox" id="dbProvider" data-options="limitToList:true,panelHeight:150,editable:false,required:true,prompt:'请选择'" style="width:173px"></td>
+                    <td><span style="padding-right:15px">版本</span><input class="easyui-textbox" id="dbVersion" data-options="required:true,prompt:'请输入'" style="width:80px"></td>
                 </tr>
                 <tr>
                     <td>备注:</td>
-                    <td colspan="2"><input class="easyui-textbox" id="desc" multiline="true" style="width:480px;height:120px" /></td>
+                    <td colspan="2"><input class="easyui-textbox" id="desc" multiline="true" data-options="prompt:'请输入'" style="width:480px;height:120px;padding-top:4px" /></td>
                 </tr>
             </table>
         </form>

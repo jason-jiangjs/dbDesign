@@ -26,7 +26,7 @@ $(function () {
         {field:'dbName',title:'名称',width:100},
         {field:'typeStr',title:'版本号',width:60,
             formatter: function(value, row, index) {
-                return $.trim(row.dbProvider) + ' ' + $.trim(row.dbVersion);
+                return $.trim(row.dbProvider) + ' => ' + $.trim(row.dbVersion);
             }},
         {field:'projectStatus',title:'状态',width:40,
             formatter: function(value, row, index) {
@@ -52,7 +52,7 @@ $(function () {
 
     $('#db_grid').datagrid(options);
 
-    $('#projStatus').combobox({
+    $('#projectStatus').combobox({
         data: [{
             "id": 1,
             "text": "正常"
@@ -66,32 +66,39 @@ $(function () {
         valueField: 'id',
         textField: 'text'
     });
-    $('#typeStr').combobox({
-        data: [{
-            "id": 1,
-            "text": "mysql",
-            "type": 1
-        },{
-            "id": 2,
-            "text": "oracle",
-            "type": 1
-        },{
-            "id": 3,
-            "text": "db2",
-            "type": 1
-        },{
-            "id": 4,
-            "text": "mongodb",
-            "type": 2
-        },{
-            "id": 5,
-            "text": "solr",
-            "type": 3
-        }],
+    $('#dbProvider').combobox({
+        data: _dbProviderData,
         valueField: 'id',
         textField: 'text'
     });
 });
+
+var _dbProviderData =
+    [{
+        "id": 1,
+        "text": "mysql",
+        "type": 1
+    },{
+        "id": 2,
+        "text": "oracle",
+        "type": 1
+    },{
+        "id": 3,
+        "text": "db2",
+        "type": 1
+    },{
+        "id": 4,
+        "text": "mongodb",
+        "type": 2
+    },{
+        "id": 5,
+        "text": "solr",
+        "type": 3
+    }];
+
+function _getDbProviderData(id) {
+    return _dbProviderData[id - 1];
+}
 
 // 提交修改(保存)
 function submitForm() {
@@ -104,28 +111,26 @@ function submitForm() {
         postData._id = parseInt(idStr);
     }
     postData.dbName = $.trim($('#dbName').textbox('getValue'));
-    // postData.dbNameCN = $.trim($('#dbNameCN').textbox('getValue'));
+    if (postData.dbName == '') {
+        layer.msg("必须输入数据库名称！");
+        return;
+    }
     postData.desc = $.trim($('#desc').textbox('getValue'));
-    postData.typeVer = $.trim($('#ver').textbox('getValue'));
-    var verInfo = $.trim($('#typeStr').combobox('getValue'));
-    postData.typeStrVal = verInfo;
+    postData.dbVersion = $.trim($('#dbVersion').textbox('getValue'));
+    var verData = _getDbProviderData($('#dbProvider').combobox('getValue'));
 
     // 先验证必须值
-    if (postData.dbName == '' || verInfo == '' || postData.typeVer == '') {
+    if (postData.dbName == '' || verData == undefined || postData.dbVersion == '') {
         layer.msg("数据库名称，以及类型和版本必须输入！");
         return;
     }
+    postData.dataTypeId = verData.id;
+    postData.dbProvider = verData.text;
+    postData.gridHeadType = verData.type;
 
-    var dbData = $('#typeStr').combobox('getData');
-    for (idx in dbData) {
-        if (verInfo == dbData[idx].id) {
-            postData.typeStr = dbData[idx].text;
-            postData.type = dbData[idx].type;
-            break;
-        }
-    }
-    if (postData.typeStr == undefined || postData.typeStr == null || postData.typeStr == '') {
-        layer.msg("类型和版本必须输入！");
+    postData.projectStatus = $('#projectStatus').combobox('getValue');
+    if (postData.projectStatus == '') {
+        layer.msg("数据库状态必须输入！");
         return;
     }
 

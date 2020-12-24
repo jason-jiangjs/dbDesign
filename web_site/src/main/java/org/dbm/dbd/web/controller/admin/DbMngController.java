@@ -59,10 +59,7 @@ public class DbMngController extends BaseController {
         Long adminId = getLoginUserId();
         Long dbId = StringUtil.convertToLong(params.get("_id"));
         String dbName = StringUtils.trimToNull((String) params.get("dbName"));
-        String typeStr = StringUtils.trimToNull((String) params.get("typeStr"));
-        int type = StringUtil.convertToInt(params.get("type"));
-
-        if (dbName == null || type == 0 || typeStr == null) {
+        if (dbName == null) {
             logger.warn("saveDbInfo 缺少参数 params={}", params.toString());
             return ApiResponseUtil.error(ErrorCode.W1001, "缺少参数，请填写完整再保存。");
         }

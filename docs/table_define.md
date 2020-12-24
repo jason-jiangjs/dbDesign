@@ -21,7 +21,6 @@
 |dbName        | string    | 数据库名称(项目名称)
 |lastTagName   | string    | 最近一个发布版本的标签名
 |desc          | string    | 描述
-|dbMode        | int       | 类型  | 1:关系型数据库(mysql/oracle/db2...) 2:非关系型数据库(mongo/solr...)
 |dbProvider    | string    | 数据库提供商
 |dbVersion     | string    | 数据库版本
 |dataTypeId    | int       | 数据库(数据类型)区分  | 1:mysql 2:oracle 3:db2 4:mongo 5:solr...　参照表col_data_type_define，<br>目前只有这些，以后有再添加，因为每种数据库的数据类型都不一样，必须要有一个区分

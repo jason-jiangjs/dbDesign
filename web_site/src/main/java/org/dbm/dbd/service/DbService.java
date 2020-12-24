@@ -47,6 +47,7 @@ public class DbService extends BaseService {
         Query queryObj = new Query();
         if (checked) {
             queryObj.addCriteria(where("auditData.valid").is(true));
+            queryObj.addCriteria(where("projectStatus").in(1, 2));
         }
         if (limit > 0) {
             queryObj.skip((page - 1) * limit);
