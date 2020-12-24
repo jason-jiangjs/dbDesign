@@ -67,7 +67,7 @@ public class TableListExportController extends BaseController {
             return ApiResponseUtil.error(ErrorCode.W1001, null).toString();
         }
         BaseMongoMap dbMap = dbService.findDbById(dbId);
-        int dbType = dbMap.getIntAttribute("type");
+        int dbType = dbMap.getIntAttribute("dataTypeId");
         if (dbType != 1) {
             logger.warn("exportSql 暂不支持 dbid={}", dbId);
             return ApiResponseUtil.error(ErrorCode.E5001, "暂不支持输出脚本").toString();
@@ -81,9 +81,12 @@ public class TableListExportController extends BaseController {
         String tblIdListStr = StringUtils.trimToNull(request.getParameter("tblIdList"));
         List<Long> tblIdList = JacksonUtil.jsonToBeanList(tblIdListStr, Long.class);
         List<BaseMongoMap> tblList = tableService.getTableByIds(dbId, tblIdList, true);
+        String fileName = null;
+
         for (BaseMongoMap tblMap :tblList) {
             // 针对每个表
             String tblName = tblMap.getStringAttribute("tableName");
+            fileName = tblName;
             outputStr.add("-- ----------------------------\n");
             outputStr.add("-- Table structure for " + tblName + "\n");
             outputStr.add("-- ----------------------------\n");
@@ -129,15 +132,12 @@ public class TableListExportController extends BaseController {
                     }
 
                     // 时间格式固定输出
-                    if ("created_date".equalsIgnoreCase(colName)) {
-                        line += " DEFAULT CURRENT_TIMESTAMP";
-                    }
                     if ("updated_date".equalsIgnoreCase(colName)) {
-                        line += " DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+                        line += " ON UPDATE CURRENT_TIMESTAMP";
                     }
 
-                    if (StringUtils.isNotBlank((String) colItem.get("columnNameCN"))) {
-                        line += " COMMENT '" + colItem.get("columnNameCN") + "'";
+                    if (StringUtils.isNotBlank((String) colItem.get("aliasName"))) {
+                        line += " COMMENT '" + colItem.get("aliasName") + "'";
                     }
 
                     if (idx == size) {
@@ -170,17 +170,22 @@ public class TableListExportController extends BaseController {
                     outputStr.add(line);
                 }
             }
-            String tableNameCN = tblMap.getStringAttribute("tableNameCN");
+            String tableNameCN = tblMap.getStringAttribute("aliasName");
             if (tableNameCN == null) {
                 outputStr.add(");\n");
             } else {
-                outputStr.add(") COMMENT='" + tblMap.getStringAttribute("tableNameCN") + "';\n");
+                outputStr.add(") COMMENT='" + tblMap.getStringAttribute("aliasName") + "';\n");
             }
             outputStr.add("\n");
         }
 
         resp.setContentType("application/octet-stream");
-        resp.setHeader("Content-Disposition","attachment;filename=sql_" + DateTimeUtil.getNow(DateTimeUtil.COMPRESS_DATETIME_FORMAT) + ".sql");
+        if (tblList.size() == 1) {
+            fileName = "attachment;filename=sql_" + fileName + "_" + DateTimeUtil.getNow(DateTimeUtil.COMPRESS_DATETIME_FORMAT) + ".sql";
+        } else {
+            fileName = "attachment;filename=sql_" + DateTimeUtil.getNow(DateTimeUtil.COMPRESS_DATETIME_FORMAT) + ".sql";
+        }
+        resp.setHeader("Content-Disposition", fileName);
 //        resp.setContentLength((int) file.length());
 
         try {
