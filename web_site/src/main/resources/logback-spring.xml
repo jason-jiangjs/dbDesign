@@ -12,11 +12,22 @@
         </encoder>
     </appender>
 
+    <springProfile name="dev">
         <root level="INFO">
             <appender-ref ref="console"/>
         </root>
         <logger name="org.dbm" level="DEBUG" additivity="false">
             <appender-ref ref="console" />
         </logger>
+    </springProfile>
+
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="console"/>
+        </root>
+        <logger name="org.dbm" level="INFO" additivity="false">
+            <appender-ref ref="console" />
+        </logger>
+    </springProfile>
 
 </configuration>

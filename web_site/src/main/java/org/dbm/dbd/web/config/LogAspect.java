@@ -49,13 +49,26 @@ public class LogAspect
             reqUrl = (String) reqAttrs.getAttribute("curr_url_req", 0);
         }
         if (result != null && result instanceof BaseMongoMap) {
-            logger.debug("{} {}.{} 查询有结果", reqUrl,
-                    joinPoint.getTarget().getClass().getName(),
-                    joinPoint.getSignature().getName());
+            if (logger.isDebugEnabled()) {
+                logger.debug("{} {}.{} 查询有结果 数据：{}", reqUrl,
+                        joinPoint.getTarget().getClass().getName(),
+                        joinPoint.getSignature().getName(), JacksonUtil.bean2Json(result));
+            } else {
+                logger.info("{} {}.{} 查询有结果", reqUrl,
+                        joinPoint.getTarget().getClass().getName(),
+                        joinPoint.getSignature().getName());
+            }
+
         } else if (result != null && result instanceof List) {
-            logger.debug("{} {}.{} 查询有结果 件数={}", reqUrl,
-                    joinPoint.getTarget().getClass().getName(),
-                    joinPoint.getSignature().getName(), ((List) result).size());
+            if (logger.isDebugEnabled()) {
+                logger.debug("{} {}.{} 查询有结果 件数={} 数据：{}", reqUrl,
+                        joinPoint.getTarget().getClass().getName(),
+                        joinPoint.getSignature().getName(), ((List) result).size(), JacksonUtil.bean2Json(result));
+            } else {
+                logger.info("{} {}.{} 查询有结果 件数={}", reqUrl,
+                        joinPoint.getTarget().getClass().getName(),
+                        joinPoint.getSignature().getName(), ((List) result).size());
+            }
         }
     }
 
