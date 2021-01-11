@@ -137,7 +137,7 @@ public class TableListExportController extends BaseController {
                     }
 
                     if (StringUtils.isNotBlank((String) colItem.get("aliasName"))) {
-                        line += " COMMENT '" + colItem.get("aliasName") + "'";
+                        line += " COMMENT '" + StringUtils.trimToEmpty((String) colItem.get("aliasName")) + "'";
                     }
 
                     if (idx == size) {
@@ -171,10 +171,10 @@ public class TableListExportController extends BaseController {
                 }
             }
             String tableNameCN = tblMap.getStringAttribute("aliasName");
-            if (tableNameCN == null) {
+            if (StringUtils.isBlank(tableNameCN)) {
                 outputStr.add(");\n");
             } else {
-                outputStr.add(") COMMENT='" + tblMap.getStringAttribute("aliasName") + "';\n");
+                outputStr.add(") COMMENT='" + StringUtils.trimToEmpty(tableNameCN) + "';\n");
             }
             outputStr.add("\n");
         }

@@ -138,6 +138,7 @@ $(function () {
         defaultPageSize = 100;
     }
 
+    var isChkGridAllDatas = false;
     // 加载列定义
     var options = {
         idField: '_id',
@@ -158,6 +159,9 @@ $(function () {
         var nowOpts = $('#tbl-def-grid').datagrid('options');
         if (defaultPageSize != nowOpts.pageSize) {
             localStorage.setItem($('#useId').val() + "_" + $('#dbId').val(), nowOpts.pageSize);
+        }
+        if (isChkGridAllDatas) {
+            $('#tbl-def-grid').datagrid('checkAll');
         }
      };
     options.onClickRow = function(index, row) {
@@ -245,6 +249,20 @@ $(function () {
         }
     ]];
     $('#tbl-def-grid').datagrid(options);
+    // var pager = $('#tbl-def-grid').datagrid().datagrid('getPager');
+    // pager.pagination({buttons: $('#pageExtButtons')});
+    // $('#chkAllDatas').checkbox({
+    //     onChange: function(checked) {
+    //         if (checked)
+    //         {
+    //             $('#tbl-def-grid').datagrid('checkAll');
+    //             isChkGridAllDatas = true;
+    //         } else {
+    //             $('#tbl-def-grid').datagrid('uncheckAll');
+    //             isChkGridAllDatas = false;
+    //         }
+    //     }
+    // });
 
     // easyui的textbox未提供onclick事件，只能采用下面方法解决
     $('body').on('click', 'input._tbl_desc + span :first-child', unselectGridItem);
@@ -547,11 +565,14 @@ function delSelectedItem() {
     tblList = tblList.map(function(obj) {
         return { 'tableId':obj._id, 'tableName':obj.tableName, 'modifiedTime':obj.modifiedTime === undefined ? null : obj.modifiedTime}
     });
+    var tblNameList = tblList.map(function(obj) {
+        return obj.tableName;
+    });
 
     // 再检查是否有正在编辑的表
 
 
-    layer.confirm('确定要删除所选定的项目？<br>该操作不可恢复，是否确认删除？', { icon: 7,
+    layer.confirm('确定要删除所选定的项目？<br>表:' + JSON.stringify(tblNameList) + '<br>该操作不可恢复，是否确认删除？', { icon: 7,
         btn: ['确定','取消'] //按钮
     }, function(index) {
         layer.close(index);
