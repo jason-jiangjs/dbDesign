@@ -217,7 +217,7 @@ var mxSettings =
 			openCounter: 0,
 			version: mxSettings.currentVersion,
 			// Only defined and true for new settings which haven't been saved
-			isNew: false, // todo-- 修改(原值设为true),在IE下此值为true时导致sidebar栏出现scratchpad框
+			isNew: true,
 			unit: mxConstants.POINTS,
 			isRulerOn: false
 		};

@@ -2942,15 +2942,16 @@
 	    }
 	    
 	    var buttons = document.createElement('div');
+		buttons.setAttribute('id', 'scratchpadBtns');
 	    buttons.style.position = 'absolute';
 	    buttons.style.right = '0px';
 	    buttons.style.top = '0px';
-	    buttons.style.padding = '8px'
+	    buttons.style.padding = '8px';
 	    
 	    // Workaround for CSS error in IE8 (standards and quirks)
 	    if (!mxClient.IS_QUIRKS && document.documentMode != 8)
 	    {
-	    		buttons.style.backgroundColor = 'inherit';
+	    	buttons.style.backgroundColor = 'inherit';
 	    }
 	    
 	    title.style.position = 'relative';
@@ -3635,7 +3636,7 @@
 		var div =  this.createDiv('geSidebarContainer geSidebarFooter');
 		div.style.position = 'absolute';
 		div.style.overflow = 'hidden';
-
+		
 		var elt2 = document.createElement('a');
 		elt2.className = 'geTitle';
 		elt2.style.color = '#DF6C0C';
@@ -3652,15 +3653,15 @@
 		{
 			evt.preventDefault();
 		}));
-
+		
 		mxEvent.addListener(elt2, 'click', mxUtils.bind(this, function(evt)
 		{
 			this.actions.get('shapes').funct();
 			mxEvent.consume(evt);
 		}));
-
+		
 		div.appendChild(elt2);
-
+		
 		return div;
 	};
 	

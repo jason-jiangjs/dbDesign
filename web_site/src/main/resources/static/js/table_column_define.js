@@ -556,18 +556,18 @@ function useTemplate() {
 
 // 使用预定义模板1
 function useTemplate1() {
-    _getGrid().datagrid('appendRow', { 'columnName': "valid", 'type': "tinyint", 'columnLens': "2", 'notnull': "Y", 'default': "1", 'columnNameCN': "数据是否有效", 'desc': "0:无效 1:有效" });
-    _getGrid().datagrid('appendRow', { 'columnName': "created_by", 'type': "bigint", 'columnLens': "20", 'notnull': "Y", 'columnNameCN': "创建者ID" });
-    _getGrid().datagrid('appendRow', { 'columnName': "updated_by", 'type': "bigint", 'columnLens': "20", 'notnull': "Y", 'columnNameCN': "更新者ID" });
-    _getGrid().datagrid('appendRow', { 'columnName': "created_date", 'type': "datetime ", 'notnull': "Y", 'columnNameCN': "创建时间" });
-    _getGrid().datagrid('appendRow', { 'columnName': "updated_date", 'type': "datetime ", 'notnull': "Y", 'columnNameCN': "创建时间" });
+    _getGrid().datagrid('appendRow', { 'columnName': "valid", 'type': "tinyint", 'columnLens': "2", 'notnull': "Y", 'default': "1", 'aliasName': "数据是否有效", 'desc': "0:无效 1:有效" });
+    _getGrid().datagrid('appendRow', { 'columnName': "created_by", 'type': "bigint", 'columnLens': "20", 'notnull': "Y", 'aliasName': "创建者ID" });
+    _getGrid().datagrid('appendRow', { 'columnName': "updated_by", 'type': "bigint", 'columnLens': "20", 'notnull': "Y", 'aliasName': "更新者ID" });
+    _getGrid().datagrid('appendRow', { 'columnName': "created_date", 'type': "datetime ", 'notnull': "Y", 'aliasName': "创建时间" });
+    _getGrid().datagrid('appendRow', { 'columnName': "updated_date", 'type': "datetime ", 'notnull': "Y", 'aliasName': "更新时间" });
     $('#template_dlg').dialog('close');
     isRowEditedMap[_curTblId] = true;
 }
 // 使用预定义模板2
 function useTemplate2() {
-    _getGrid().datagrid('appendRow', { 'columnName': "created_by", 'type': "bigint", 'columnLens': "20", 'notnull': "Y", 'columnNameCN': "创建者ID" });
-    _getGrid().datagrid('appendRow', { 'columnName': "created_date", 'type': "datetime ", 'notnull': "Y", 'columnNameCN': "创建时间" });
+    _getGrid().datagrid('appendRow', { 'columnName': "created_by", 'type': "bigint", 'columnLens': "20", 'notnull': "Y", 'aliasName': "创建者ID" });
+    _getGrid().datagrid('appendRow', { 'columnName': "created_date", 'type': "datetime ", 'notnull': "Y", 'aliasName': "创建时间" });
     $('#template_dlg').dialog('close');
     isRowEditedMap[_curTblId] = true;
 }

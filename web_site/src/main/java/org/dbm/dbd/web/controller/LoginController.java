@@ -8,6 +8,7 @@ import org.dbm.common.base.model.mongo.BaseMongoMap;
 import org.dbm.common.util.ApiResponseUtil;
 import org.dbm.common.util.DateTimeUtil;
 import org.dbm.common.util.StringUtil;
+import org.dbm.dbd.service.DbService;
 import org.dbm.dbd.service.UserService;
 import org.dbm.dbd.web.login.CustomerUserDetails;
 import org.dbm.dbd.web.util.BizCommUtil;
@@ -29,6 +30,9 @@ public class LoginController extends BaseController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DbService dbService;
 
     /**
      * 保存新密码(session中必须已有user_id)
@@ -70,8 +74,14 @@ public class LoginController extends BaseController {
         Long dbId = StringUtil.convertToLong(params.get("dbId"));
         if (dbId == 0) {
             logger.warn("setDefaultDbEnv 缺少dbId userId={}", userId);
-            return ApiResponseUtil.error(ErrorCode.W1001, "错误操作,未选择指定的表.(缺少参数 dbId)");
+            return ApiResponseUtil.error(ErrorCode.W1001, "错误操作,未选择数据库.(缺少参数 dbId)");
         }
+        BaseMongoMap dbInfo = dbService.findDbById(dbId);
+        if (dbInfo == null) {
+            logger.warn("setDefaultDbEnv 指定项目不存在 userId={} dbId={}", userId, dbId);
+            return ApiResponseUtil.error(ErrorCode.E5001, "错误,选择的数据库不存在.");
+        }
+        request.getSession().setAttribute("_curr_proj_db_name", dbInfo.getStringAttribute("dbName"));
 
         // 要先判断是否有权限读取该er图
         if (!userService.hasReadAuthorization(userId, dbId)) {

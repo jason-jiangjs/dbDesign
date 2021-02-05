@@ -1675,17 +1675,11 @@ App.prototype.init = function()
 
 	this.updateHeader();
 	// todo-- 修改 手动触发全屏
-	var bbb = document.getElementById('fullscreen_btn_id');
-	if (bbb.fireEvent) {
-		bbb.fireEvent('onclick');
-	} else {
-		var ev = document.createEvent("HTMLEvents");
-		ev.initEvent("click", false, true);
-		bbb.dispatchEvent(ev);
-	}
-	this.actions.get('formatPanel').funct();
-	bbb.parentNode.removeChild(bbb);
-	// bbb.remove(); // 不支持IE
+	window.setTimeout(mxUtils.bind(this, function()
+	{
+		this.toggleElement.click();
+		document.getElementById('compact_toggle_btn_id').style.display = 'none';
+	}), 0);
 
 	if (this.menubar != null)
 	{
@@ -5851,12 +5845,11 @@ App.prototype.updateHeader = function()
 		toggleFormatPanel();
 
 		this.fullscreenElement = document.createElement('a');
-        this.fullscreenElement.setAttribute('id', 'fullscreen_btn_id'); // todo-- 修改 添加button的id
 		this.fullscreenElement.setAttribute('title', mxResources.get('fullscreen'));
 		this.fullscreenElement.style.position = 'absolute';
 		this.fullscreenElement.style.display = 'inline-block';
 		this.fullscreenElement.style.top = (uiTheme == 'atlas') ? '8px' : '6px';
-		this.fullscreenElement.style.right = (uiTheme != 'atlas' && urlParams['embed'] != '1') ? '50px' : '30px';
+		this.fullscreenElement.style.right = (uiTheme != 'atlas' && urlParams['embed'] != '1') ? '10px' : '30px';
 		this.fullscreenElement.style.padding = '2px';
 		this.fullscreenElement.style.fontSize = '14px';
 		this.fullscreenElement.className = (uiTheme != 'atlas') ? 'geButton' : '';
@@ -5893,11 +5886,11 @@ App.prototype.updateHeader = function()
 		{
 			if (uiTheme != 'atlas' && urlParams['embed'] != '1')
 			{
-				this.toggleCompactMode(!collapsed);
+				this.toggleCompactMode(true);  // todo-- 修改 默认只显示菜单
 			}
 
 			this.toggleFormatPanel(!collapsed);
-			// this.hsplitPosition = (!collapsed) ? 0 : initialPosition; // todo-- 修改 默认显示左侧模板栏
+			this.hsplitPosition = (!collapsed) ? 0 : initialPosition;
 			this.hideFooter();
 			collapsed = !collapsed;
 			mxEvent.consume(evt);
@@ -5909,6 +5902,7 @@ App.prototype.updateHeader = function()
 		if (urlParams['embed'] != '1')
 		{
 			this.toggleElement = document.createElement('a');
+			this.toggleElement.setAttribute('id', 'compact_toggle_btn_id'); // todo-- 修改 添加button的id
 			this.toggleElement.setAttribute('title', mxResources.get('collapseExpand'));
 			this.toggleElement.className = 'geButton';
 			this.toggleElement.style.position = 'absolute';

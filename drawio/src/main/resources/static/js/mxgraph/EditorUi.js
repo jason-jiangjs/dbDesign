@@ -3337,11 +3337,12 @@ EditorUi.prototype.createDivs = function()
 	this.footerContainer.style.bottom = '0px';
 	this.footerContainer.style.zIndex = mxPopupMenu.prototype.zIndex - 2;
 	this.hsplit.style.width = this.splitSize + 'px';
-	// this.sidebarFooterContainer = this.createSidebarFooterContainer(); // todo-- 修改,不显示图型模板选择
-	// if (this.sidebarFooterContainer)
-	// {
-	// 	this.sidebarFooterContainer.style.left = '0px';
-	// }
+	this.sidebarFooterContainer = this.createSidebarFooterContainer();
+	
+	if (this.sidebarFooterContainer)
+	{
+		this.sidebarFooterContainer.style.left = '0px';
+	}
 	
 	if (!this.editor.chromeless)
 	{

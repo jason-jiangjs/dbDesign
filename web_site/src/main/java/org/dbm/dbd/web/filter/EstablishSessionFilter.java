@@ -3,6 +3,7 @@ package org.dbm.dbd.web.filter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.web.filter.GenericFilterBean;
 import org.dbm.common.Constants;
@@ -31,16 +32,16 @@ public class EstablishSessionFilter extends GenericFilterBean {
 
     private static final Logger logger = LoggerFactory.getLogger(EstablishSessionFilter.class);
 
-    @Autowired
-    private Environment environment;
+    @Value("login.check.exclude_url")
+    private String excludeUrlStr;
 
     private List<String> excludeUrls = null;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpReq = (HttpServletRequest) request;
-        if (excludeUrls == null) {
-            excludeUrls = Arrays.asList(environment.getProperty("login.check.exclude_url").split(","));
+        if (excludeUrls == null && excludeUrlStr != null) {
+            excludeUrls = Arrays.asList(excludeUrlStr.split(","));
             String url = httpReq.getServletPath();
             if (!"".equals(url) && !"/".equals(url)) {
                 for (int i = 0; i < excludeUrls.size(); i ++) {

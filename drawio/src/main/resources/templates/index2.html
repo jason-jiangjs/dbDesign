@@ -418,6 +418,17 @@
  * Main
  */
 App.main();
+window.setTimeout(mxUtils.bind(this, function()
+{
+	var bbb = document.getElementById('scratchpadBtns').parentNode;
+	if (bbb.fireEvent) {
+		bbb.fireEvent('onclick');
+	} else {
+		var ev = document.createEvent("HTMLEvents");
+		ev.initEvent("click", false, true);
+		bbb.dispatchEvent(ev);
+	}
+}), 0);
 </script>
 </body>
 </html>

@@ -106,9 +106,8 @@ LocalFile.prototype.saveFile = function(title, revision, success, error)
 		{
 			// this.ui.doSaveLocalFile(data, title, (binary) ?	'image/png' : 'text/xml', binary);
 			// todo -- 修改 不保存为本地文件, 而是上传到后台服务器
-			var postData = { 'dbId': 1001, 'tableId': 10910};
+			var postData = { };
 			var that = this;
-			postData.erChartId = 1001;
 			postData.content = data; // 这里暂定文件名不会被修改
 			$.ajax({
 				type: 'post',

@@ -24,9 +24,9 @@
 	Sidebar.prototype.libAliases = {'aws2': 'aws3', 'gcp' : 'gcp2'};
 	
 	/**
-	 * 	todo-- 修改 缺省模板,删除bpmn
+	 * 
 	 */
-	Sidebar.prototype.defaultEntries = 'general;uml;er;flowchart;basic;arrows2';
+	Sidebar.prototype.defaultEntries = 'general;uml;er;bpmn;flowchart;basic;arrows2';
 	
 	/**
 	 * Library definitions 
